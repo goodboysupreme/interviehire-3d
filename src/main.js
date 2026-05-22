@@ -335,6 +335,9 @@ if (canvas && container) {
         activeTarget = spherePositions;
         activeColorTarget = sphereColors;
         linesOpacityTarget = 0.12; // fade lines in
+        gsap.to(camera.position, { x: -2.5, duration: 1.2, ease: 'power2.out' });
+      } else {
+        gsap.to(camera.position, { x: 0, duration: 1.2, ease: 'power2.out' });
       }
     }
   });
@@ -439,7 +442,7 @@ sections.forEach((sec) => {
 });
 
 // Hero animations
-gsap.from('.hero-content h1', {
+gsap.from('.hero-left h1', {
   y: 35,
   opacity: 0,
   duration: 1.3,
@@ -447,7 +450,7 @@ gsap.from('.hero-content h1', {
   ease: 'power4.out'
 });
 
-gsap.from('.hero-content p, .hero-content .badge', {
+gsap.from('.hero-left p, .hero-left .badge', {
   y: 20,
   opacity: 0,
   duration: 1.0,
@@ -461,6 +464,42 @@ gsap.from('.hero-cta', {
   duration: 0.8,
   delay: 0.7,
   ease: 'power3.out'
+});
+
+// Animate progress bar fill to 98%
+const progressFill = document.getElementById('hero-progress-fill');
+if (progressFill) {
+  gsap.to(progressFill, {
+    width: '98%',
+    duration: 2.0,
+    delay: 1.0,
+    ease: 'power2.out'
+  });
+}
+
+// Idle floating animation for Hero Cards (using top/bottom to avoid transform collision)
+gsap.to('#card-match-3d', {
+  top: '+=12px',
+  duration: 3,
+  repeat: -1,
+  yoyo: true,
+  ease: 'power1.inOut'
+});
+gsap.to('#card-review-3d', {
+  top: '-=15px',
+  duration: 3.5,
+  repeat: -1,
+  yoyo: true,
+  ease: 'power1.inOut',
+  delay: 0.4
+});
+gsap.to('#card-hired-3d', {
+  bottom: '+=10px',
+  duration: 2.8,
+  repeat: -1,
+  yoyo: true,
+  ease: 'power1.inOut',
+  delay: 0.8
 });
 
 // ==========================================
@@ -502,6 +541,51 @@ cards.forEach((card) => {
 const tabButtons = document.querySelectorAll('#solution-tabs-container .tab-btn');
 const layerCards = document.querySelectorAll('#solution-layers-stack .solution-card');
 
+function updatePipeline(tabId) {
+  const laserPath = document.getElementById('pipeline-laser-path');
+  const node1 = document.getElementById('node-step1');
+  const node2 = document.getElementById('node-step2');
+  const node3 = document.getElementById('node-step3');
+  const node4 = document.getElementById('node-step4');
+
+  if (!laserPath) return;
+
+  if (tabId === 'layer1') {
+    // Animate path drawing to 400 (up to node 2)
+    gsap.to(laserPath, { strokeDashoffset: 400, duration: 1.0, ease: 'power2.out' });
+    
+    if (node1) node1.classList.add('active');
+    if (node2) node2.classList.add('active');
+    if (node3) node3.classList.remove('active');
+    if (node4) node4.classList.remove('active');
+    
+    soundEngine.playChime([261.63, 329.63], 0.12, 0.15); // C4 -> E4
+  } else if (tabId === 'layer2') {
+    // Animate path drawing to 220 (up to node 3)
+    gsap.to(laserPath, { strokeDashoffset: 220, duration: 1.0, ease: 'power2.out' });
+    
+    if (node1) node1.classList.add('active');
+    if (node2) node2.classList.add('active');
+    if (node3) node3.classList.add('active');
+    if (node4) node4.classList.remove('active');
+    
+    soundEngine.playChime([261.63, 329.63, 392.00], 0.12, 0.15); // C4 -> E4 -> G4
+  } else if (tabId === 'layer3') {
+    // Animate path drawing to 0 (all the way to node 4)
+    gsap.to(laserPath, { strokeDashoffset: 0, duration: 1.2, ease: 'power2.out' });
+    
+    if (node1) node1.classList.add('active');
+    if (node2) node2.classList.add('active');
+    if (node3) node3.classList.add('active');
+    if (node4) node4.classList.add('active');
+    
+    soundEngine.playChime([261.63, 329.63, 392.00, 523.25], 0.15, 0.12); // C4 -> E4 -> G4 -> C5
+  }
+}
+
+// Initial active setup (AI screening is node-step1 + node-step2)
+updatePipeline('layer1');
+
 tabButtons.forEach((btn) => {
   btn.addEventListener('click', () => {
     tabButtons.forEach(b => b.classList.remove('active'));
@@ -514,8 +598,24 @@ tabButtons.forEach((btn) => {
         card.classList.add('active');
       }
     });
+
+    updatePipeline(targetTab);
   });
 });
+
+// Interactive Nodes click routing
+const nodeStep1 = document.getElementById('node-step1');
+const nodeStep2 = document.getElementById('node-step2');
+const nodeStep3 = document.getElementById('node-step3');
+const nodeStep4 = document.getElementById('node-step4');
+const tabLayer1 = document.getElementById('tab-layer1');
+const tabLayer2 = document.getElementById('tab-layer2');
+const tabLayer3 = document.getElementById('tab-layer3');
+
+if (nodeStep1 && tabLayer1) nodeStep1.addEventListener('click', () => tabLayer1.click());
+if (nodeStep2 && tabLayer1) nodeStep2.addEventListener('click', () => tabLayer1.click());
+if (nodeStep3 && tabLayer2) nodeStep3.addEventListener('click', () => tabLayer2.click());
+if (nodeStep4 && tabLayer3) nodeStep4.addEventListener('click', () => tabLayer3.click());
 
 // ==========================================
 // 5. CALCULATOR
@@ -753,7 +853,7 @@ requestAnimationFrame(updateFollower);
 
 // Hook cursor hover and click sounds for all interactive components
 const interactiveElements = document.querySelectorAll(
-  'a, button, input, select, textarea, .btn, .tab-btn, .glass-card, #logo-link, footer .footer-logo'
+  'a, button, input, select, textarea, .btn, .tab-btn, .glass-card, #logo-link, footer .footer-logo, .pipeline-node'
 );
 
 interactiveElements.forEach((el) => {
