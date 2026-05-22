@@ -32,7 +32,7 @@ if (canvas && container) {
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  // Glowing particle texture
+  // Glowing particle texture (Gold and Crimson)
   function createParticleTexture() {
     const pCanvas = document.createElement('canvas');
     pCanvas.width = 32;
@@ -40,8 +40,8 @@ if (canvas && container) {
     const ctx = pCanvas.getContext('2d');
     const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
     gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-    gradient.addColorStop(0.2, 'rgba(6, 182, 212, 0.8)');
-    gradient.addColorStop(0.5, 'rgba(99, 102, 241, 0.3)');
+    gradient.addColorStop(0.2, 'rgba(212, 175, 55, 0.85)'); // Gold center
+    gradient.addColorStop(0.5, 'rgba(255, 13, 63, 0.35)'); // Red ring
     gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 32, 32);
@@ -53,12 +53,12 @@ if (canvas && container) {
   const numPoints = 600;
   const phi = Math.PI * (3 - Math.sqrt(5)); // Golden angle
 
-  // Base colors
-  const colorCyan = new THREE.Color('#06b6d4');
-  const colorIndigo = new THREE.Color('#6366f1');
-  const colorPurple = new THREE.Color('#a855f7');
-  const colorPink = new THREE.Color('#ec4899');
-  const colorGray = new THREE.Color('#475569');
+  // Base colors mapped to Gold and Crimson theme
+  const colorCyan = new THREE.Color('#ffc72c'); // Bright Gold
+  const colorIndigo = new THREE.Color('#ff0d3f'); // Crimson Cyber Red
+  const colorPurple = new THREE.Color('#d4af37'); // Metallic Gold
+  const colorPink = new THREE.Color('#8b0000'); // Deep Red
+  const colorGray = new THREE.Color('#2a2a2a'); // Dark Charcoal
 
   // Morph Target Arrays
   const spherePositions = new Float32Array(numPoints * 3);
@@ -228,7 +228,7 @@ if (canvas && container) {
   lineGeometry.setIndex(lineIndices);
 
   const lineMaterial = new THREE.LineBasicMaterial({
-    color: 0x6366f1,
+    color: 0xd4af37, // Metallic Gold
     transparent: true,
     opacity: 0.12,
     blending: THREE.AdditiveBlending
@@ -551,8 +551,14 @@ function calculateSavings() {
 }
 
 if (hiresSlider && salarySlider) {
-  hiresSlider.addEventListener('input', calculateSavings);
-  salarySlider.addEventListener('input', calculateSavings);
+  hiresSlider.addEventListener('input', (e) => {
+    calculateSavings();
+    soundEngine.playSlider(parseFloat(e.target.value), parseFloat(hiresSlider.min), parseFloat(hiresSlider.max));
+  });
+  salarySlider.addEventListener('input', (e) => {
+    calculateSavings();
+    soundEngine.playSlider(parseFloat(e.target.value), parseFloat(salarySlider.min), parseFloat(salarySlider.max));
+  });
   calculateSavings();
 }
 
@@ -579,3 +585,187 @@ if (pilotForm) {
     }, 1200);
   });
 }
+
+// ==========================================
+// 7. INTERACTIVE WEB AUDIO SYNTHESIZER
+// ==========================================
+
+class SoundEngine {
+  constructor() {
+    this.ctx = null;
+    this.muted = true;
+    this.lastSliderSoundTime = 0;
+  }
+
+  init() {
+    if (this.ctx) return;
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  setMute(muted) {
+    this.muted = muted;
+    if (!muted) {
+      this.init();
+      // Melodic unmute sound (Gold vibe)
+      this.playChime([261.63, 329.63, 392.00, 523.25], 0.08, 0.12);
+    } else {
+      // Muted descending sweep
+      this.playChime([392.00, 329.63, 261.63], 0.06, 0.08);
+    }
+  }
+
+  playChime(notes, duration = 0.1, delayMultiplier = 0.15) {
+    if (this.muted || !this.ctx) return;
+    const now = this.ctx.currentTime;
+    notes.forEach((freq, index) => {
+      const osc = this.ctx.createOscillator();
+      const gainNode = this.ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + index * delayMultiplier);
+      
+      gainNode.gain.setValueAtTime(0, now + index * delayMultiplier);
+      gainNode.gain.linearRampToValueAtTime(0.06, now + index * delayMultiplier + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + index * delayMultiplier + duration);
+      
+      osc.connect(gainNode);
+      gainNode.connect(this.ctx.destination);
+      
+      osc.start(now + index * delayMultiplier);
+      osc.stop(now + index * delayMultiplier + duration);
+    });
+  }
+
+  playHover() {
+    if (this.muted || !this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gainNode = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(987.77, now); // B5
+    osc.frequency.exponentialRampToValueAtTime(587.33, now + 0.06); // D5
+
+    gainNode.gain.setValueAtTime(0.012, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+
+    osc.connect(gainNode);
+    gainNode.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.06);
+  }
+
+  playClick() {
+    if (this.muted || !this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gainNode = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(440, now);
+    osc.frequency.setValueAtTime(880, now + 0.03);
+
+    gainNode.gain.setValueAtTime(0.04, now);
+    gainNode.gain.linearRampToValueAtTime(0.025, now + 0.03);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+
+    osc.connect(gainNode);
+    gainNode.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.1);
+  }
+
+  playSlider(value, min = 0, max = 100) {
+    if (this.muted || !this.ctx) return;
+    
+    // Throttle slider sound to prevent audio buffer overload
+    const now = Date.now();
+    if (now - this.lastSliderSoundTime < 60) return;
+    this.lastSliderSoundTime = now;
+
+    const audioNow = this.ctx.currentTime;
+    const percent = (value - min) / (max - min);
+    // Gold/Red range: 220Hz (Warm Gold) to 587Hz (Cyber Red)
+    const freq = 220 + percent * 367;
+
+    const osc = this.ctx.createOscillator();
+    const gainNode = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, audioNow);
+
+    gainNode.gain.setValueAtTime(0.015, audioNow);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioNow + 0.1);
+
+    osc.connect(gainNode);
+    gainNode.connect(this.ctx.destination);
+
+    osc.start(audioNow);
+    osc.stop(audioNow + 0.1);
+  }
+}
+const soundEngine = new SoundEngine();
+
+// Sound toggle button setup
+const soundToggleBtn = document.getElementById('sound-toggle-btn');
+if (soundToggleBtn) {
+  soundToggleBtn.addEventListener('click', () => {
+    const isMuted = soundToggleBtn.classList.toggle('muted');
+    soundEngine.setMute(isMuted);
+  });
+}
+
+// ==========================================
+// 8. CUSTOM CURSOR TRAIL PHYSICS
+// ==========================================
+
+const cursorDot = document.getElementById('custom-cursor');
+const cursorFollower = document.getElementById('cursor-follower');
+
+let posX = 0, posY = 0;
+let mouseX = 0, mouseY = 0;
+
+window.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+
+  if (cursorDot) {
+    cursorDot.style.left = `${mouseX}px`;
+    cursorDot.style.top = `${mouseY}px`;
+  }
+});
+
+function updateFollower() {
+  const ease = 0.12; // Trail easing coefficient
+  posX += (mouseX - posX) * ease;
+  posY += (mouseY - posY) * ease;
+
+  if (cursorFollower) {
+    cursorFollower.style.left = `${posX}px`;
+    cursorFollower.style.top = `${posY}px`;
+  }
+
+  requestAnimationFrame(updateFollower);
+}
+requestAnimationFrame(updateFollower);
+
+// Hook cursor hover and click sounds for all interactive components
+const interactiveElements = document.querySelectorAll(
+  'a, button, input, select, textarea, .btn, .tab-btn, .glass-card, #logo-link, footer .footer-logo'
+);
+
+interactiveElements.forEach((el) => {
+  el.addEventListener('mouseenter', () => {
+    document.body.classList.add('cursor-hovering');
+    soundEngine.playHover();
+  });
+  el.addEventListener('mouseleave', () => {
+    document.body.classList.remove('cursor-hovering');
+  });
+  el.addEventListener('click', () => {
+    soundEngine.playClick();
+  });
+});
+
