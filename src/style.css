@@ -651,14 +651,14 @@ nav a:hover {
 
 .solution-layers {
   position: relative;
-  min-height: 290px;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  min-height: 290px; /* Safe minimum height, grid will automatically expand for taller text */
 }
 
 .solution-card {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
+  grid-area: 1 / 1;
   opacity: 0;
   visibility: hidden;
   transform: translateY(20px) scale(0.98);
@@ -785,6 +785,7 @@ nav a:hover {
   z-index: 3;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
   transform: translateZ(30px);
+  pointer-events: none; /* Make badge click-through so it never blocks hotspots */
 }
 
 .video-status-badge .status-dot {
@@ -1254,7 +1255,7 @@ footer {
     grid-template-columns: 1fr;
     gap: 40px;
   }
-  
+
   .hero h1 {
     font-size: 2.8rem;
   }

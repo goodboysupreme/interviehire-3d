@@ -742,7 +742,8 @@ function updatePipeline(tabId) {
 updatePipeline('layer1');
 
 tabButtons.forEach((btn) => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation(); // Avoid parent card event bubble issues
     tabButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
@@ -760,7 +761,8 @@ tabButtons.forEach((btn) => {
 
 // Click listener routing for video hotspots
 hotspots.forEach((hs) => {
-  hs.addEventListener('click', () => {
+  hs.addEventListener('click', (e) => {
+    e.stopPropagation(); // Prevent duplicate sound triggers from bubbling up to parent cards
     const targetTab = hs.getAttribute('data-tab');
     const matchingBtn = document.getElementById(`tab-${targetTab}`);
     if (matchingBtn) {
