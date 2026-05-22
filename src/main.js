@@ -6,6 +6,128 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 // ==========================================
+// AUDIO SYNTHESIZER ENGINE (Declared early to avoid ReferenceErrors)
+// ==========================================
+class SoundEngine {
+  constructor() {
+    this.ctx = null;
+    this.muted = true;
+    this.lastSliderSoundTime = 0;
+  }
+
+  init() {
+    if (this.ctx) return;
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  setMute(muted) {
+    this.muted = muted;
+    if (!muted) {
+      this.init();
+      // Melodic unmute sound (Gold vibe)
+      this.playChime([261.63, 329.63, 392.00, 523.25], 0.08, 0.12);
+    } else {
+      // Muted descending sweep
+      this.playChime([392.00, 329.63, 261.63], 0.06, 0.08);
+    }
+  }
+
+  playChime(notes, duration = 0.1, delayMultiplier = 0.15) {
+    if (this.muted || !this.ctx) return;
+    const now = this.ctx.currentTime;
+    notes.forEach((freq, index) => {
+      const osc = this.ctx.createOscillator();
+      const gainNode = this.ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + index * delayMultiplier);
+      
+      gainNode.gain.setValueAtTime(0, now + index * delayMultiplier);
+      gainNode.gain.linearRampToValueAtTime(0.06, now + index * delayMultiplier + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + index * delayMultiplier + duration);
+      
+      osc.connect(gainNode);
+      gainNode.connect(this.ctx.destination);
+      
+      osc.start(now + index * delayMultiplier);
+      osc.stop(now + index * delayMultiplier + duration);
+    });
+  }
+
+  playHover() {
+    if (this.muted || !this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gainNode = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(987.77, now); // B5
+    osc.frequency.exponentialRampToValueAtTime(587.33, now + 0.06); // D5
+
+    gainNode.gain.setValueAtTime(0.012, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+
+    osc.connect(gainNode);
+    gainNode.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.06);
+  }
+
+  playClick() {
+    if (this.muted || !this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gainNode = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(440, now);
+    osc.frequency.setValueAtTime(880, now + 0.03);
+
+    gainNode.gain.setValueAtTime(0.04, now);
+    gainNode.gain.linearRampToValueAtTime(0.025, now + 0.03);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+
+    osc.connect(gainNode);
+    gainNode.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.1);
+  }
+
+  playSlider(value, min = 0, max = 100) {
+    if (this.muted || !this.ctx) return;
+    
+    // Throttle slider sound to prevent audio buffer overload
+    const now = Date.now();
+    if (now - this.lastSliderSoundTime < 60) return;
+    this.lastSliderSoundTime = now;
+
+    const audioNow = this.ctx.currentTime;
+    const percent = (value - min) / (max - min);
+    // Gold/Red range: 220Hz (Warm Gold) to 587Hz (Cyber Red)
+    const freq = 220 + percent * 367;
+
+    const osc = this.ctx.createOscillator();
+    const gainNode = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, audioNow);
+
+    gainNode.gain.setValueAtTime(0.015, audioNow);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioNow + 0.1);
+
+    osc.connect(gainNode);
+    gainNode.connect(this.ctx.destination);
+
+    osc.start(audioNow);
+    osc.stop(audioNow + 0.1);
+  }
+}
+const soundEngine = new SoundEngine();
+
+
+// ==========================================
 // 1. THREE.JS 3D PARTICLE MORPHING SYSTEM
 // ==========================================
 
@@ -572,6 +694,8 @@ if (video) {
   });
 }
 
+const hotspots = document.querySelectorAll('.video-hotspot');
+
 function updatePipeline(tabId) {
   const range = videoRanges[tabId];
   if (!range) return;
@@ -594,6 +718,15 @@ function updatePipeline(tabId) {
       video.play().catch(err => console.log("Play failed on range switch:", err));
     }
   }
+
+  // Update active state on hotspots
+  hotspots.forEach((hs) => {
+    if (hs.getAttribute('data-tab') === tabId) {
+      hs.classList.add('active');
+    } else {
+      hs.classList.remove('active');
+    }
+  });
 
   // Sound Engine chimes
   if (tabId === 'layer1') {
@@ -622,6 +755,17 @@ tabButtons.forEach((btn) => {
     });
 
     updatePipeline(targetTab);
+  });
+});
+
+// Click listener routing for video hotspots
+hotspots.forEach((hs) => {
+  hs.addEventListener('click', () => {
+    const targetTab = hs.getAttribute('data-tab');
+    const matchingBtn = document.getElementById(`tab-${targetTab}`);
+    if (matchingBtn) {
+      matchingBtn.click();
+    }
   });
 });
 
@@ -697,124 +841,6 @@ if (pilotForm) {
 // ==========================================
 // 7. INTERACTIVE WEB AUDIO SYNTHESIZER
 // ==========================================
-
-class SoundEngine {
-  constructor() {
-    this.ctx = null;
-    this.muted = true;
-    this.lastSliderSoundTime = 0;
-  }
-
-  init() {
-    if (this.ctx) return;
-    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-
-  setMute(muted) {
-    this.muted = muted;
-    if (!muted) {
-      this.init();
-      // Melodic unmute sound (Gold vibe)
-      this.playChime([261.63, 329.63, 392.00, 523.25], 0.08, 0.12);
-    } else {
-      // Muted descending sweep
-      this.playChime([392.00, 329.63, 261.63], 0.06, 0.08);
-    }
-  }
-
-  playChime(notes, duration = 0.1, delayMultiplier = 0.15) {
-    if (this.muted || !this.ctx) return;
-    const now = this.ctx.currentTime;
-    notes.forEach((freq, index) => {
-      const osc = this.ctx.createOscillator();
-      const gainNode = this.ctx.createGain();
-      
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, now + index * delayMultiplier);
-      
-      gainNode.gain.setValueAtTime(0, now + index * delayMultiplier);
-      gainNode.gain.linearRampToValueAtTime(0.06, now + index * delayMultiplier + 0.02);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + index * delayMultiplier + duration);
-      
-      osc.connect(gainNode);
-      gainNode.connect(this.ctx.destination);
-      
-      osc.start(now + index * delayMultiplier);
-      osc.stop(now + index * delayMultiplier + duration);
-    });
-  }
-
-  playHover() {
-    if (this.muted || !this.ctx) return;
-    const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gainNode = this.ctx.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(987.77, now); // B5
-    osc.frequency.exponentialRampToValueAtTime(587.33, now + 0.06); // D5
-
-    gainNode.gain.setValueAtTime(0.012, now);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
-
-    osc.connect(gainNode);
-    gainNode.connect(this.ctx.destination);
-
-    osc.start(now);
-    osc.stop(now + 0.06);
-  }
-
-  playClick() {
-    if (this.muted || !this.ctx) return;
-    const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gainNode = this.ctx.createGain();
-
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(440, now);
-    osc.frequency.setValueAtTime(880, now + 0.03);
-
-    gainNode.gain.setValueAtTime(0.04, now);
-    gainNode.gain.linearRampToValueAtTime(0.025, now + 0.03);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
-
-    osc.connect(gainNode);
-    gainNode.connect(this.ctx.destination);
-
-    osc.start(now);
-    osc.stop(now + 0.1);
-  }
-
-  playSlider(value, min = 0, max = 100) {
-    if (this.muted || !this.ctx) return;
-    
-    // Throttle slider sound to prevent audio buffer overload
-    const now = Date.now();
-    if (now - this.lastSliderSoundTime < 60) return;
-    this.lastSliderSoundTime = now;
-
-    const audioNow = this.ctx.currentTime;
-    const percent = (value - min) / (max - min);
-    // Gold/Red range: 220Hz (Warm Gold) to 587Hz (Cyber Red)
-    const freq = 220 + percent * 367;
-
-    const osc = this.ctx.createOscillator();
-    const gainNode = this.ctx.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, audioNow);
-
-    gainNode.gain.setValueAtTime(0.015, audioNow);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioNow + 0.1);
-
-    osc.connect(gainNode);
-    gainNode.connect(this.ctx.destination);
-
-    osc.start(audioNow);
-    osc.stop(audioNow + 0.1);
-  }
-}
-const soundEngine = new SoundEngine();
 
 // Sound toggle button setup
 const soundToggleBtn = document.getElementById('sound-toggle-btn');

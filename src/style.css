@@ -806,6 +806,127 @@ nav a:hover {
   color: #fafaf7;
 }
 
+/* Clickable Video Hotspots styles */
+.video-hotspots-container {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.video-hotspot {
+  position: absolute;
+  pointer-events: auto;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  transform: translate(-50%, -50%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+}
+
+/* Glowing targets */
+.video-hotspot::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: rgba(4, 4, 6, 0.6);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.video-hotspot.active::after {
+  width: 24px;
+  height: 24px;
+  border-width: 3px;
+}
+
+.hotspot-layer1.active::after {
+  border-color: var(--accent-cyan); /* Gold */
+  box-shadow: 0 0 15px var(--accent-cyan);
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.hotspot-layer2.active::after {
+  border-color: var(--accent-indigo); /* Crimson */
+  box-shadow: 0 0 15px var(--accent-indigo);
+  background: rgba(255, 13, 63, 0.15);
+}
+
+.hotspot-layer3.active::after {
+  border-color: var(--accent-purple); /* Brighter Gold */
+  box-shadow: 0 0 15px var(--accent-purple);
+  background: rgba(255, 199, 44, 0.15);
+}
+
+.video-hotspot:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+.hotspot-layer1:hover::after { border-color: var(--accent-cyan); box-shadow: 0 0 12px var(--accent-cyan); }
+.hotspot-layer2:hover::after { border-color: var(--accent-indigo); box-shadow: 0 0 12px var(--accent-indigo); }
+.hotspot-layer3:hover::after { border-color: var(--accent-purple); box-shadow: 0 0 12px var(--accent-purple); }
+
+/* Tooltip text */
+.video-hotspot::before {
+  content: attr(data-label);
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  background: rgba(4, 4, 6, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: #fafaf7;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+.video-hotspot:hover::before,
+.video-hotspot.active::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Positions overlaid on the visual pipeline points in mp_.mp4 */
+.hotspot-layer1 {
+  left: 23%;
+  top: 72%;
+  width: 50px;
+  height: 50px;
+}
+
+.hotspot-layer2 {
+  left: 50%;
+  top: 48%;
+  width: 50px;
+  height: 50px;
+}
+
+.hotspot-layer3 {
+  left: 77%;
+  top: 24%;
+  width: 50px;
+  height: 50px;
+}
+
 
 
 /* Matrix Section */
