@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="intervieHire is an AI-powered talent acquisition platform replacing the fragmented hiring stack with screening and vetted human expert interviews." />
+    <title>intervieHire | AI-Screening & Expert Human Interviews</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- Background grid elements -->
+    <div class="bg-grid"></div>
+    <div class="bg-radial"></div>
+    
+    <!-- Glowing decorative orbs -->
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+
+    <!-- Fullscreen 3D Canvas Background -->
+    <div id="canvas-container">
+      <canvas id="canvas-3d"></canvas>
+    </div>
+
+    <!-- Navigation Header -->
+    <header id="nav-header">
+      <div class="nav-container">
+        <a href="#hero" class="logo" id="logo-link">
+          <div class="logo-dot"></div>
+          <span>intervieHire</span>
+        </a>
+        <nav>
+          <ul>
+            <li><a href="#problem">The Problem</a></li>
+            <li><a href="#solution">The Solution</a></li>
+            <li><a href="#matrix">Market Fit</a></li>
+            <li><a href="#calculator">ROI Calculator</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </nav>
+        <div class="nav-actions">
+          <a href="#contact" class="btn btn-secondary" style="padding: 10px 20px; font-size: 0.9rem;">Book a Demo</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+      <div class="hero-content">
+        <div class="badge badge-glow">The Future of HR Tech</div>
+        <h1>Hiring is Blind to <br><span class="gradient-accent">Reliability.</span></h1>
+        <p>We replace your fragmented hiring stack with role-specific AI screening and vetted industry experts. Filter the noise, hire the best.</p>
+        <div class="hero-cta">
+          <a href="#contact" class="btn btn-primary" id="hero-cta-primary">
+            Start Free Pilot
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+          <a href="#solution" class="btn btn-secondary" id="hero-cta-secondary">See How it Works</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="container" id="problem">
+      <div class="section-header">
+        <div class="badge">The Status Quo</div>
+        <h2>The Hiring Process is <span class="gradient-accent">Broken.</span></h2>
+        <p>Startups and enterprises lose valuable resources every day trying to manage disconnected workflows and biased evaluation tools.</p>
+      </div>
+      
+      <div class="problem-grid">
+        <!-- Card 1 -->
+        <div class="glass-card problem-card" id="problem-card-cost">
+          <div class="metric">$100B</div>
+          <h3>Lost Yearly</h3>
+          <p>Wasted globally in slow, biased, or highly inefficient talent acquisition strategies that fail to predict performance.</p>
+        </div>
+        <!-- Card 2 -->
+        <div class="glass-card problem-card" id="problem-card-time">
+          <div class="metric">35%</div>
+          <h3>Manager Time Drained</h3>
+          <p>Managers spend over a third of their work week in screening calls and early-stage interviews, costing thousands per hire.</p>
+        </div>
+        <!-- Card 3 -->
+        <div class="glass-card problem-card" id="problem-card-tools">
+          <div class="metric">6+</div>
+          <h3>Fragmented Tools</h3>
+          <p>Teams run ATS, scheduling, assessments, CRMs, and manual background checks separately, creating operational chaos.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="container" id="solution">
+      <div class="section-header">
+        <div class="badge badge-glow">Our Solution</div>
+        <h2>3 Layers of <span class="gradient-accent">Confidence.</span></h2>
+        <p>A unified, end-to-end service mapping early-stage screening to verified human onboarding.</p>
+      </div>
+
+      <!-- Interactive tabs -->
+      <div class="solution-tabs" id="solution-tabs-container">
+        <button class="tab-btn active" data-tab="layer1" id="tab-layer1">Layer 1: AI Screening</button>
+        <button class="tab-btn" data-tab="layer2" id="tab-layer2">Layer 2: Expert Interviews</button>
+        <button class="tab-btn" data-tab="layer3" id="tab-layer3">Layer 3: Decisive Hiring</button>
+      </div>
+
+      <!-- Interactive Card Stack -->
+      <div class="solution-layers" id="solution-layers-stack">
+        <!-- Layer 1 Card -->
+        <div class="glass-card solution-card active" id="card-layer1">
+          <div class="layer-layout">
+            <div class="layer-info">
+              <span class="badge" style="background: rgba(6, 182, 212, 0.1); border-color: rgba(6, 182, 212, 0.2); color: var(--accent-cyan);">Automated Screening</span>
+              <h3>Sift through the noise instantly.</h3>
+              <p>AI shortlists resumes and deploys tailored, role-specific assessments. Evaluating reasoning, communication, and core skillsets dynamically.</p>
+              <div class="layer-highlights">
+                <div class="highlight-item">
+                  <div class="highlight-icon">✓</div>
+                  <p>Filters out the bottom 70-80% of applicants automatically.</p>
+                </div>
+                <div class="highlight-item">
+                  <div class="highlight-icon">✓</div>
+                  <p>Custom scenario-based technical & communication scoring.</p>
+                </div>
+              </div>
+            </div>
+            <div class="layer-visual">
+              <div class="visual-orb" style="background: var(--accent-cyan);"></div>
+              <div class="visual-grid-nodes">
+                <span style="font-family: var(--font-heading); font-weight: 700; font-size: 1.5rem; letter-spacing: 0.1em; color: var(--accent-cyan); text-shadow: 0 0 10px rgba(6,182,212,0.5);">AI SCANNING</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layer 2 Card -->
+        <div class="glass-card solution-card" id="card-layer2">
+          <div class="layer-layout">
+            <div class="layer-info">
+              <span class="badge" style="background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.2); color: var(--accent-purple);">Expert Network</span>
+              <h3>Vetted Industry Specialists.</h3>
+              <p>Shortlisted candidates are interviewed live by verified, top-tier industry operators (operators, managers, and consultants).</p>
+              <div class="layer-highlights">
+                <div class="highlight-item">
+                  <div class="highlight-icon">✓</div>
+                  <p>24/7 global coverage—hiring never pauses.</p>
+                </div>
+                <div class="highlight-item">
+                  <div class="highlight-icon">✓</div>
+                  <p>Standardized objective rubrics to eliminate manager bias.</p>
+                </div>
+              </div>
+            </div>
+            <div class="layer-visual">
+              <div class="visual-orb" style="background: var(--accent-purple);"></div>
+              <div class="visual-human-badge">
+                <div class="pulsing-dot"></div>
+                <span style="font-size: 0.9rem; font-weight: 600; color: #fff;">1-on-1 Expert Room Live</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layer 3 Card -->
+        <div class="glass-card solution-card" id="card-layer3">
+          <div class="layer-layout">
+            <div class="layer-info">
+              <span class="badge" style="background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.2); color: var(--accent-indigo);">Verified Decisions</span>
+              <h3>Hire with complete confidence.</h3>
+              <p>Receive comprehensive, high-fidelity candidate reports combining AI logs, human expert feedback, and verified background details.</p>
+              <div class="layer-highlights">
+                <div class="highlight-item">
+                  <div class="highlight-icon">✓</div>
+                  <p>Reduces average Time-To-Fill by over 60%.</p>
+                </div>
+                <div class="highlight-item">
+                  <div class="highlight-icon">✓</div>
+                  <p>Zero bias. Zero hassle. Fully-vouched shortlist.</p>
+                </div>
+              </div>
+            </div>
+            <div class="layer-visual">
+              <div class="visual-orb" style="background: var(--accent-indigo); filter: blur(30px); width: 140px; height: 140px;"></div>
+              <div style="text-align: center; z-index: 1;">
+                <h4 style="font-size: 3rem; font-weight: 700; color: #22c55e;">100%</h4>
+                <p style="font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-primary);">Reliability Rating</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Competitive Quadrant Matrix Section -->
+    <section class="container" id="matrix">
+      <div class="matrix-container">
+        <div class="matrix-info">
+          <div class="badge">Market Moat</div>
+          <h2>Redefining the <br><span class="gradient-accent">HR Tech Landscape.</span></h2>
+          <p style="margin-bottom: 25px;">Traditional processes force you to choose between high-automation bots that lack deep vetting, or legacy agencies that don't scale. </p>
+          <p>intervieHire sits in the elite, high-automation, end-to-end integration segment. We leverage technology to amplify human intelligence, rather than replace it.</p>
+        </div>
+        
+        <div class="matrix-grid" id="market-quadrant">
+          <div class="matrix-axis-y">← Intelligence & Automation →</div>
+          <div class="matrix-axis-x">← Integration & Scope →</div>
+          
+          <div style="display: flex; justify-content: space-between; width: 100%;">
+            <span class="matrix-quadrant-label">AI Bots (Narrow)</span>
+            <span class="matrix-quadrant-label" style="text-align: right; color: var(--accent-cyan);">Unified platform</span>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; width: 100%; align-items: flex-end;">
+            <span class="matrix-quadrant-label">Siloed Apps</span>
+            <span class="matrix-quadrant-label" style="text-align: right;">Legacy Recruiting</span>
+          </div>
+
+          <!-- Dynamic Competitors plotted -->
+          <div class="competitor comp-naukri">Naukri RMS</div>
+          <div class="competitor comp-hirevue">HireVue</div>
+          <div class="competitor comp-zeko">Zeko AI</div>
+          <div class="competitor comp-adecco">Adecco</div>
+          <div class="competitor us comp-us">intervieHire</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Calculator Section -->
+    <section class="container" id="calculator">
+      <div class="section-header">
+        <div class="badge badge-glow">Cost Savings</div>
+        <h2>Measure Your <span class="gradient-accent">Savings.</span></h2>
+        <p>Use our interactive estimator to see how much recruiting costs and team hours you save with intervieHire.</p>
+      </div>
+
+      <div class="calculator-layout">
+        <!-- Sliders -->
+        <div class="glass-card slider-container">
+          <div class="slider-group">
+            <div class="slider-header">
+              <label for="hires-slider">Hires Planned Per Year</label>
+              <span class="slider-value" id="val-hires">10</span>
+            </div>
+            <input type="range" id="hires-slider" min="2" max="100" value="10">
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <label for="salary-slider">Average Annual Role Salary ($)</label>
+              <span class="slider-value" id="val-salary">$60,000</span>
+            </div>
+            <input type="range" id="salary-slider" min="20000" max="250000" step="5000" value="60000">
+          </div>
+        </div>
+
+        <!-- Calculated Savings Display -->
+        <div class="calc-results">
+          <div class="result-card highlight">
+            <p>Annual Recruiting Cost Saved</p>
+            <div class="result-number" id="saved-money">$25,000</div>
+          </div>
+          <div class="result-card">
+            <p>Manager Interview Hours Saved</p>
+            <div class="result-number" id="saved-hours">350 hrs</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact & Pitch Section -->
+    <section class="container" id="contact">
+      <div class="contact-layout">
+        <div class="contact-info">
+          <div class="badge">Join the Pilot</div>
+          <h2>Ready to Hire <span class="gradient-accent">Decisively?</span></h2>
+          <p>Get started with a free pilot. Have our industry experts interview your next round of applicants for free and see the feedback depth yourself.</p>
+          
+          <div class="contact-details">
+            <div class="contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              <span>interviehire@gmail.com</span>
+            </div>
+            <div class="contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+              <span>interviehire.com</span>
+            </div>
+            <div class="contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span>Co-Founders: Devasri Bali & Aditya Rana</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card contact-form">
+          <form id="pilot-form">
+            <div class="form-group">
+              <label for="form-name">Full Name</label>
+              <input type="text" id="form-name" placeholder="Devasri Bali" required>
+            </div>
+            <div class="form-group">
+              <label for="form-email">Work Email</label>
+              <input type="email" id="form-email" placeholder="devasri@company.com" required>
+            </div>
+            <div class="form-group">
+              <label for="form-company">Company / Startup</label>
+              <input type="text" id="form-company" placeholder="intervieHire" required>
+            </div>
+            <div class="form-group">
+              <label for="form-notes">Role Details (Optional)</label>
+              <textarea id="form-notes" rows="4" placeholder="Tell us about the roles you are looking to hire for..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: 10px;">Request Pilot & Demo</button>
+            <div id="form-success" style="display: none; color: #22c55e; text-align: center; margin-top: 10px; font-weight: 600;">
+              ✓ Request submitted! Our team will reach out shortly.
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-logo">
+          <div class="logo-dot" style="display: inline-block; margin-right: 6px; vertical-align: middle;"></div>
+          intervieHire
+        </div>
+        <div class="footer-copy">
+          &copy; 2026 intervieHire (BITS Pilani Startup Portfolio). All rights reserved.
+        </div>
+      </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
