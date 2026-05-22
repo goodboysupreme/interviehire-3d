@@ -541,49 +541,71 @@ cards.forEach((card) => {
 const tabButtons = document.querySelectorAll('#solution-tabs-container .tab-btn');
 const layerCards = document.querySelectorAll('#solution-layers-stack .solution-card');
 
+const video = document.getElementById('pipeline-video');
+const statusText = document.getElementById('video-status-text');
+const statusDot = document.querySelector('.video-status-badge .status-dot');
+
+const videoRanges = {
+  layer1: { min: 0.0, max: 4.2, label: "AI Screening & Filtering", color: "#d4af37" },
+  layer2: { min: 4.2, max: 7.2, label: "Expert Human Vetting", color: "#ff0d3f" },
+  layer3: { min: 7.2, max: 10.0, label: "Verified Decisive Hiring", color: "#ffc72c" }
+};
+
+let currentRange = videoRanges.layer1;
+
+if (video) {
+  // Seek to the start of the default range
+  video.currentTime = currentRange.min;
+  
+  // Custom looping constraints
+  video.addEventListener('timeupdate', () => {
+    if (video.currentTime >= currentRange.max) {
+      video.currentTime = currentRange.min;
+    } else if (video.currentTime < currentRange.min) {
+      video.currentTime = currentRange.min;
+    }
+  });
+
+  // Attempt to play
+  video.play().catch(err => {
+    console.log("Autoplay was prevented, will play on user interaction:", err);
+  });
+}
+
 function updatePipeline(tabId) {
-  const laserPath = document.getElementById('pipeline-mask-path');
-  const node1 = document.getElementById('node-step1');
-  const node2 = document.getElementById('node-step2');
-  const node3 = document.getElementById('node-step3');
-  const node4 = document.getElementById('node-step4');
+  const range = videoRanges[tabId];
+  if (!range) return;
 
-  if (!laserPath) return;
+  currentRange = range;
 
+  if (statusText) {
+    statusText.textContent = range.label;
+  }
+
+  if (statusDot) {
+    statusDot.style.backgroundColor = range.color;
+    statusDot.style.boxShadow = `0 0 10px ${range.color}`;
+  }
+
+  if (video) {
+    // If the video current time is outside the target range, seek to the start of it
+    if (video.currentTime < range.min || video.currentTime > range.max) {
+      video.currentTime = range.min;
+      video.play().catch(err => console.log("Play failed on range switch:", err));
+    }
+  }
+
+  // Sound Engine chimes
   if (tabId === 'layer1') {
-    // Animate path drawing to 400 (up to node 2)
-    gsap.to(laserPath, { strokeDashoffset: 400, duration: 1.0, ease: 'power2.out' });
-    
-    if (node1) node1.classList.add('active');
-    if (node2) node2.classList.add('active');
-    if (node3) node3.classList.remove('active');
-    if (node4) node4.classList.remove('active');
-    
     soundEngine.playChime([261.63, 329.63], 0.12, 0.15); // C4 -> E4
   } else if (tabId === 'layer2') {
-    // Animate path drawing to 220 (up to node 3)
-    gsap.to(laserPath, { strokeDashoffset: 220, duration: 1.0, ease: 'power2.out' });
-    
-    if (node1) node1.classList.add('active');
-    if (node2) node2.classList.add('active');
-    if (node3) node3.classList.add('active');
-    if (node4) node4.classList.remove('active');
-    
     soundEngine.playChime([261.63, 329.63, 392.00], 0.12, 0.15); // C4 -> E4 -> G4
   } else if (tabId === 'layer3') {
-    // Animate path drawing to 0 (all the way to node 4)
-    gsap.to(laserPath, { strokeDashoffset: 0, duration: 1.2, ease: 'power2.out' });
-    
-    if (node1) node1.classList.add('active');
-    if (node2) node2.classList.add('active');
-    if (node3) node3.classList.add('active');
-    if (node4) node4.classList.add('active');
-    
     soundEngine.playChime([261.63, 329.63, 392.00, 523.25], 0.15, 0.12); // C4 -> E4 -> G4 -> C5
   }
 }
 
-// Initial active setup (AI screening is node-step1 + node-step2)
+// Initial active setup
 updatePipeline('layer1');
 
 tabButtons.forEach((btn) => {
@@ -602,20 +624,6 @@ tabButtons.forEach((btn) => {
     updatePipeline(targetTab);
   });
 });
-
-// Interactive Nodes click routing
-const nodeStep1 = document.getElementById('node-step1');
-const nodeStep2 = document.getElementById('node-step2');
-const nodeStep3 = document.getElementById('node-step3');
-const nodeStep4 = document.getElementById('node-step4');
-const tabLayer1 = document.getElementById('tab-layer1');
-const tabLayer2 = document.getElementById('tab-layer2');
-const tabLayer3 = document.getElementById('tab-layer3');
-
-if (nodeStep1 && tabLayer1) nodeStep1.addEventListener('click', () => tabLayer1.click());
-if (nodeStep2 && tabLayer1) nodeStep2.addEventListener('click', () => tabLayer1.click());
-if (nodeStep3 && tabLayer2) nodeStep3.addEventListener('click', () => tabLayer2.click());
-if (nodeStep4 && tabLayer3) nodeStep4.addEventListener('click', () => tabLayer3.click());
 
 // ==========================================
 // 5. CALCULATOR

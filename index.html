@@ -219,75 +219,14 @@
         </div>
 
         <div class="solution-right-visual">
-          <div class="pipeline-visualizer">
-            <div class="isometric-grid-container">
-              <div class="isometric-grid">
-                <!-- SVG connecting neon path lines -->
-                <svg class="pipeline-svg" viewBox="0 0 500 350" fill="none">
-                  <defs>
-                    <linearGradient id="laser-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
-                      <stop offset="0%" stop-color="#ffd700" />
-                      <stop offset="50%" stop-color="#ff0d3f" />
-                      <stop offset="100%" stop-color="#ffd700" />
-                    </linearGradient>
-                    
-                    <mask id="active-path-mask">
-                      <path id="pipeline-mask-path" d="M 0,250 L 75,210 L 200,122.5 L 300,227.5 L 425,140 L 500,90" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-dasharray="600" stroke-dashoffset="600" />
-                    </mask>
-                  </defs>
-
-                  <!-- Inactive line path (grey background) -->
-                  <path class="path-bg" d="M 0,250 L 75,210 L 200,122.5 L 300,227.5 L 425,140 L 500,90" stroke="rgba(255,255,255,0.06)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
-                  
-                  <!-- Solid background glow under-layer (masked) -->
-                  <path class="path-active-glow" mask="url(#active-path-mask)" d="M 0,250 L 75,210 L 200,122.5 L 300,227.5 L 425,140 L 500,90" stroke="url(#laser-gradient)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" />
-                  
-                  <!-- Running active laser dash-flow path (masked) -->
-                  <path class="path-flow" mask="url(#active-path-mask)" d="M 0,250 L 75,210 L 200,122.5 L 300,227.5 L 425,140 L 500,90" stroke="url(#laser-gradient)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-
-                <!-- Isometric nodes -->
-                <!-- Node 1: Apply -->
-                <div class="pipeline-node node-1 active" style="left: 75px; top: 210px;" id="node-step1">
-                  <div class="node-glow-ring" style="background: rgba(212, 175, 55, 0.45); box-shadow: 0 0 25px rgba(212, 175, 55, 0.55);"></div>
-                  <div class="node-plate"></div>
-                  <div class="node-slab">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="16" y1="2" x2="16" y2="4"></line><line x1="8" y1="2" x2="8" y2="4"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                  </div>
-                  <div class="node-pill">Apply / Book</div>
-                </div>
-
-                <!-- Node 2: AI Screening -->
-                <div class="pipeline-node node-2" style="left: 200px; top: 122.5px;" id="node-step2">
-                  <div class="node-glow-ring" style="background: rgba(34, 197, 94, 0.45); box-shadow: 0 0 25px rgba(34, 197, 94, 0.55);"></div>
-                  <div class="node-plate"></div>
-                  <div class="node-slab">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                  </div>
-                  <div class="node-pill">AI Screening</div>
-                </div>
-
-                <!-- Node 3: Expert Vetting -->
-                <div class="pipeline-node node-3" style="left: 300px; top: 227.5px;" id="node-step3">
-                  <div class="node-glow-ring" style="background: rgba(59, 130, 246, 0.45); box-shadow: 0 0 25px rgba(59, 130, 246, 0.55);"></div>
-                  <div class="node-plate"></div>
-                  <div class="node-slab">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                  </div>
-                  <div class="node-pill">Expert Vetting</div>
-                </div>
-
-                <!-- Node 4: Hired! -->
-                <div class="pipeline-node node-4" style="left: 425px; top: 140px;" id="node-step4">
-                  <div class="node-glow-ring" style="background: rgba(255, 13, 63, 0.45); box-shadow: 0 0 25px rgba(255, 13, 63, 0.55);"></div>
-                  <div class="node-plate"></div>
-                  <div class="node-slab">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                  </div>
-                  <div class="node-pill">Hired!</div>
-                </div>
-
-              </div>
+          <div class="pipeline-video-container glass-card">
+            <video id="pipeline-video" src="/mp_.mp4" autoplay muted loop playsinline></video>
+            <div class="video-overlay-glow"></div>
+            
+            <!-- Dynamic floating highlights based on active layer -->
+            <div class="video-status-badge">
+              <div class="status-dot"></div>
+              <span id="video-status-text">AI Screening & Filtering</span>
             </div>
           </div>
         </div>
