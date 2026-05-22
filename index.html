@@ -224,19 +224,26 @@
               <div class="isometric-grid">
                 <!-- SVG connecting neon path lines -->
                 <svg class="pipeline-svg" viewBox="0 0 500 350" fill="none">
-                  <!-- Inactive line path (grey background) -->
-                  <path class="path-bg" d="M 0,250 L 75,210 L 200,122.5 L 300,227.5 L 425,140 L 500,90" stroke="rgba(255,255,255,0.06)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
-                  
-                  <!-- Active glowing line path -->
-                  <path class="path-active" id="pipeline-laser-path" d="M 0,250 L 75,210 L 200,122.5 L 300,227.5 L 425,140 L 500,90" stroke="url(#laser-gradient)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
-                  
                   <defs>
                     <linearGradient id="laser-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
                       <stop offset="0%" stop-color="#ffd700" />
                       <stop offset="50%" stop-color="#ff0d3f" />
                       <stop offset="100%" stop-color="#ffd700" />
                     </linearGradient>
+                    
+                    <mask id="active-path-mask">
+                      <path id="pipeline-mask-path" d="M 0,250 L 75,210 L 200,122.5 L 300,227.5 L 425,140 L 500,90" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-dasharray="600" stroke-dashoffset="600" />
+                    </mask>
                   </defs>
+
+                  <!-- Inactive line path (grey background) -->
+                  <path class="path-bg" d="M 0,250 L 75,210 L 200,122.5 L 300,227.5 L 425,140 L 500,90" stroke="rgba(255,255,255,0.06)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+                  
+                  <!-- Solid background glow under-layer (masked) -->
+                  <path class="path-active-glow" mask="url(#active-path-mask)" d="M 0,250 L 75,210 L 200,122.5 L 300,227.5 L 425,140 L 500,90" stroke="url(#laser-gradient)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" />
+                  
+                  <!-- Running active laser dash-flow path (masked) -->
+                  <path class="path-flow" mask="url(#active-path-mask)" d="M 0,250 L 75,210 L 200,122.5 L 300,227.5 L 425,140 L 500,90" stroke="url(#laser-gradient)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
 
                 <!-- Isometric nodes -->

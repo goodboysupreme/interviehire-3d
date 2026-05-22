@@ -542,7 +542,7 @@ const tabButtons = document.querySelectorAll('#solution-tabs-container .tab-btn'
 const layerCards = document.querySelectorAll('#solution-layers-stack .solution-card');
 
 function updatePipeline(tabId) {
-  const laserPath = document.getElementById('pipeline-laser-path');
+  const laserPath = document.getElementById('pipeline-mask-path');
   const node1 = document.getElementById('node-step1');
   const node2 = document.getElementById('node-step2');
   const node3 = document.getElementById('node-step3');

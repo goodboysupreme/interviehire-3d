@@ -783,13 +783,24 @@ nav a:hover {
   stroke-dasharray: 4,4;
 }
 
-.path-active {
+.path-flow {
   stroke-linecap: round;
   stroke-linejoin: round;
+  stroke-dasharray: 12 18;
+  animation: laser-flow 1.0s linear infinite;
   filter: drop-shadow(0 0 8px #ff0d3f) drop-shadow(0 0 3px #ffd700);
-  stroke-dasharray: 600;
-  stroke-dashoffset: 600; /* Animated dynamically in main.js */
-  transition: stroke-dashoffset 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.path-active-glow {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 4px #ff0d3f);
+}
+
+@keyframes laser-flow {
+  to {
+    stroke-dashoffset: -30;
+  }
 }
 
 .pipeline-node {
@@ -1286,19 +1297,9 @@ footer {
   }
 }
 
-/* Custom Cursor */
+/* Custom Cursor Trail */
 .custom-cursor {
-  width: 8px;
-  height: 8px;
-  background-color: var(--accent-cyan);
-  border-radius: 50%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 9999;
-  transition: width 0.2s, height 0.2s, background-color 0.2s;
+  display: none !important; /* Hide tiny dot to avoid cluttering standard cursor */
 }
 
 .cursor-follower {
@@ -1317,24 +1318,12 @@ footer {
 }
 
 /* Hover active state for links/buttons */
-body.cursor-hovering .custom-cursor {
-  width: 14px;
-  height: 14px;
-  background-color: var(--accent-indigo);
-}
-
 body.cursor-hovering .cursor-follower {
   width: 50px;
   height: 50px;
   border-color: rgba(255, 13, 63, 0.75);
   background-color: rgba(255, 13, 63, 0.08);
   box-shadow: 0 0 25px rgba(255, 13, 63, 0.3);
-}
-
-@media (min-width: 769px) {
-  html, body, a, button, input, select, textarea, .btn, .tab-btn {
-    cursor: none !important;
-  }
 }
 
 @media (max-width: 768px) {
