@@ -740,6 +740,8 @@ nav a:hover {
   z-index: 1;
   overflow: visible;
   pointer-events: none;
+  transform: scale(0.92);
+  transform-origin: center center;
 }
 
 /* Vetting Pipeline Video Container styles (Full-bleed Row Background) */
