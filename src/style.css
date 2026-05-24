@@ -764,7 +764,6 @@ nav a:hover {
   height: 100%;
   object-fit: cover; /* Cover the entire screen width & height of the row */
   display: block;
-  mix-blend-mode: screen; /* Blends black background of video with the page */
   -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(0, 0, 0, 1) 30%, rgba(0, 0, 0, 0) 95%);
   mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(0, 0, 0, 1) 30%, rgba(0, 0, 0, 0) 95%);
 }
