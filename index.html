@@ -146,6 +146,98 @@
       </div>
     </section>
 
+    <!-- Transition Morph Section -->
+    <section class="transition-morph-section" id="transition-morph">
+      <div class="morph-container">
+        
+        <!-- Left Text Column -->
+        <div class="morph-text-column">
+          <div class="morph-text-item" id="morph-text-1">Meet your current interviewer.</div>
+          <div class="morph-text-item" id="morph-text-2">Tired. Biased. Unavailable.</div>
+          <div class="morph-text-item" id="morph-text-3">Meet your next one.</div>
+        </div>
+
+        <!-- Center Figures Container -->
+        <div class="morph-visual-container">
+          <!-- Cyber HUD Telemetry Details -->
+          <div class="hud-panel hud-left">
+            <div class="hud-title">SYSTEM DIAGNOSTIC</div>
+            <div class="hud-item">MODE: <span id="hud-val-mode" class="hud-glow-red">TRADITIONAL</span></div>
+            <div class="hud-item">COGNITIVE BIAS: <span id="hud-val-bias" class="hud-glow-red">84.2%</span></div>
+            <div class="hud-item">REASONING LATENCY: <span id="hud-val-latency">420MS</span></div>
+          </div>
+          
+          <div class="hud-panel hud-right">
+            <div class="hud-title">AGENT PARAMETERS</div>
+            <div class="hud-item">OBJECTIVITY: <span id="hud-val-objectivity">N/A</span></div>
+            <div class="hud-item">CONSISTENCY: <span id="hud-val-consistency">LOW</span></div>
+            <div class="hud-item">AVAILABILITY: <span id="hud-val-availability">20%</span></div>
+          </div>
+
+          <!-- SVG with glow filter defs -->
+          <svg style="position: absolute; width: 0; height: 0;">
+            <defs>
+              <filter id="neon-glow-red" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <filter id="neon-glow-gold" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+          </svg>
+
+          <!-- Human figure -->
+          <div class="morph-figure-wrapper human-wrapper" id="morph-human-wrapper">
+            <svg viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg" class="morph-svg" filter="url(#neon-glow-red)">
+              <circle cx="100" cy="60" r="32" stroke="#ff0d3f" stroke-width="1.8"/>
+              <path d="M88 90 L88 108 M112 90 L112 108" stroke="#ff0d3f" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M40 140 C40 120 70 110 100 110 C130 110 160 120 160 140 L160 220 L40 220 Z" stroke="#ff0d3f" stroke-width="1.8" fill="none"/>
+              <path d="M100 110 L88 145 M100 110 L112 145" stroke="#ff0d3f" stroke-width="1" stroke-opacity="0.5"/>
+              <path d="M40 140 L20 185 M160 140 L180 185" stroke="#ff0d3f" stroke-width="1.8" stroke-linecap="round" stroke-opacity="0.6"/>
+            </svg>
+            <div class="morph-scan-line" id="morph-scan-line"></div>
+          </div>
+
+          <!-- AI figure -->
+          <div class="morph-figure-wrapper ai-wrapper" id="morph-ai-wrapper">
+            <svg viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg" class="morph-svg" filter="url(#neon-glow-gold)">
+              <path d="M100 28 L130 45 L130 79 L100 96 L70 79 L70 45 Z" stroke="#d4af37" stroke-width="2"/>
+              <path d="M100 28 L100 96 M70 45 L130 79 M130 45 L70 79" stroke="#d4af37" stroke-width="0.5" stroke-opacity="0.4"/>
+              <rect x="83" y="54" width="8" height="6" rx="1" fill="#d4af37" fill-opacity="0.9"/>
+              <rect x="109" y="54" width="8" height="6" rx="1" fill="#d4af37" fill-opacity="0.9"/>
+              <circle cx="100" cy="62" r="18" stroke="#d4af37" stroke-width="0.5" stroke-opacity="0.25"/>
+              <path d="M88 96 L88 116 M112 96 L112 116" stroke="#d4af37" stroke-width="2"/>
+              <path d="M50 150 L50 116 C50 116 70 110 100 110 C130 110 150 116 150 116 L150 150" stroke="#d4af37" stroke-width="2"/>
+              <rect x="50" y="150" width="100" height="70" rx="4" stroke="#d4af37" stroke-width="2"/>
+              <circle cx="66" cy="168" r="3" fill="#00f2fe" style="filter: drop-shadow(0 0 5px #00f2fe);"/>
+              <circle cx="134" cy="165" r="3" fill="#00f2fe" style="filter: drop-shadow(0 0 5px #00f2fe);"/>
+              <path d="M50 125 L22 160 L22 195" stroke="#d4af37" stroke-width="2" stroke-linecap="round" stroke-opacity="0.7"/>
+              <path d="M150 125 L178 160 L178 195" stroke="#d4af37" stroke-width="2" stroke-linecap="round" stroke-opacity="0.7"/>
+              <ellipse cx="100" cy="62" rx="45" ry="45" stroke="#d4af37" stroke-width="0.3" stroke-opacity="0.15" stroke-dasharray="4 6"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Figure Labels -->
+        <div class="morph-labels-container">
+          <div class="morph-label traditional-label" id="morph-label-traditional">The Traditional Interviewer</div>
+          <div class="morph-label agent-label" id="morph-label-agent">Your intervieHire Agent</div>
+        </div>
+
+        <!-- Scroll hint -->
+        <div class="morph-scroll-hint" id="morph-scroll-hint">SCROLL TO CONVERT</div>
+
+      </div>
+    </section>
+
     <!-- Solution Section -->
     <section class="container" id="solution">
       <div class="section-header" style="text-align: left; max-width: 100%; margin-bottom: 40px;">
@@ -219,15 +311,24 @@
         </div>
 
         <div class="solution-right-visual">
-          <div class="pipeline-video-container glass-card">
+          <div class="pipeline-video-container">
             <video id="pipeline-video" src="/mp_.mp4" autoplay muted loop playsinline></video>
             <div class="video-overlay-glow"></div>
             
             <!-- Hotspots to allow clicking directly on the graphic to select layers -->
             <div class="video-hotspots-container">
-              <button class="video-hotspot hotspot-layer1 active" data-tab="layer1" data-label="Layer 1: AI Screening" aria-label="Select Layer 1: AI Screening"></button>
-              <button class="video-hotspot hotspot-layer2" data-tab="layer2" data-label="Layer 2: Expert Vetting" aria-label="Select Layer 2: Expert Vetting"></button>
-              <button class="video-hotspot hotspot-layer3" data-tab="layer3" data-label="Layer 3: Decisive Hiring" aria-label="Select Layer 3: Decisive Hiring"></button>
+              <button class="video-hotspot hotspot-layer1 active" data-tab="layer1" aria-label="Select Layer 1: AI Screening">
+                <span class="hotspot-dot"></span>
+                <span class="hotspot-label">AI Screening</span>
+              </button>
+              <button class="video-hotspot hotspot-layer2" data-tab="layer2" aria-label="Select Layer 2: Expert Vetting">
+                <span class="hotspot-dot"></span>
+                <span class="hotspot-label">Expert Vetting</span>
+              </button>
+              <button class="video-hotspot hotspot-layer3" data-tab="layer3" aria-label="Select Layer 3: Decisive Hiring">
+                <span class="hotspot-dot"></span>
+                <span class="hotspot-label">Decisive Hiring</span>
+              </button>
             </div>
             
             <!-- Dynamic floating highlights based on active layer -->

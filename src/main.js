@@ -154,7 +154,7 @@ if (canvas && container) {
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  // Glowing particle texture (Gold and Crimson)
+  // Glowing particle texture (Cyan and Indigo)
   function createParticleTexture() {
     const pCanvas = document.createElement('canvas');
     pCanvas.width = 32;
@@ -162,8 +162,8 @@ if (canvas && container) {
     const ctx = pCanvas.getContext('2d');
     const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
     gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-    gradient.addColorStop(0.2, 'rgba(212, 175, 55, 0.85)'); // Gold center
-    gradient.addColorStop(0.5, 'rgba(255, 13, 63, 0.35)'); // Red ring
+    gradient.addColorStop(0.2, 'rgba(0, 242, 254, 0.85)'); // Pleasing cyan center
+    gradient.addColorStop(0.5, 'rgba(99, 102, 241, 0.35)'); // Pleasing indigo ring
     gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 32, 32);
@@ -175,12 +175,12 @@ if (canvas && container) {
   const numPoints = 600;
   const phi = Math.PI * (3 - Math.sqrt(5)); // Golden angle
 
-  // Base colors mapped to Gold and Crimson theme
-  const colorCyan = new THREE.Color('#ffc72c'); // Bright Gold
-  const colorIndigo = new THREE.Color('#ff0d3f'); // Crimson Cyber Red
-  const colorPurple = new THREE.Color('#d4af37'); // Metallic Gold
-  const colorPink = new THREE.Color('#8b0000'); // Deep Red
-  const colorGray = new THREE.Color('#2a2a2a'); // Dark Charcoal
+  // Base colors mapped to pleasing cyan, blue, indigo, and violet
+  const colorCyan = new THREE.Color('#00f2fe'); // Electric Cyan
+  const colorIndigo = new THREE.Color('#4facfe'); // Sky Blue
+  const colorPurple = new THREE.Color('#6366f1'); // Pleasing Indigo
+  const colorPink = new THREE.Color('#a855f7'); // Soft Purple
+  const colorGray = new THREE.Color('#1e293b'); // Dark Slate/Gray
 
   // Morph Target Arrays
   const spherePositions = new Float32Array(numPoints * 3);
@@ -350,7 +350,7 @@ if (canvas && container) {
   lineGeometry.setIndex(lineIndices);
 
   const lineMaterial = new THREE.LineBasicMaterial({
-    color: 0xd4af37, // Metallic Gold
+    color: 0x00f2fe, // Cyan/blue connecting lines
     transparent: true,
     opacity: 0.12,
     blending: THREE.AdditiveBlending
@@ -904,4 +904,144 @@ interactiveElements.forEach((el) => {
     soundEngine.playClick();
   });
 });
+
+// ==========================================
+// 9. SCROLL-DRIVEN TRANSITION MORPH TRIGGER
+// ==========================================
+if (document.querySelector('.transition-morph-section')) {
+  // Set initial properties via GSAP to prevent flash
+  gsap.set('#morph-text-1', { opacity: 1, scale: 1 });
+  gsap.set('#morph-text-2', { opacity: 0, scale: 0.9 });
+  gsap.set('#morph-text-3', { opacity: 0, scale: 0.9 });
+  gsap.set('#morph-human-wrapper', { opacity: 1, zIndex: 2 });
+  gsap.set('#morph-ai-wrapper', { opacity: 0, zIndex: 1 });
+  gsap.set('#morph-scan-line', { opacity: 0, top: '-10%' });
+  gsap.set('#morph-label-traditional', { opacity: 1 });
+  gsap.set('#morph-label-agent', { opacity: 0 });
+  gsap.set('#morph-scroll-hint', { opacity: 0.5 });
+  
+  // HUD Initial Positions
+  gsap.set('.hud-left', { x: 0, opacity: 0.5 });
+  gsap.set('.hud-right', { x: 0, opacity: 0.5 });
+
+  // Web Audio frequency sweep function linked to scanning
+  const playScanSweep = (freqProgress) => {
+    if (soundEngine.muted || !soundEngine.ctx) return;
+    const now = soundEngine.ctx.currentTime;
+    const osc = soundEngine.ctx.createOscillator();
+    const gainNode = soundEngine.ctx.createGain();
+    
+    osc.type = 'sine';
+    // Frequency sweeps from 180Hz to 680Hz based on scroll progress
+    const currentFreq = 180 + freqProgress * 500;
+    osc.frequency.setValueAtTime(currentFreq, now);
+
+    gainNode.gain.setValueAtTime(0.008, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+
+    osc.connect(gainNode);
+    gainNode.connect(soundEngine.ctx.destination);
+    
+    osc.start(now);
+    osc.stop(now + 0.05);
+  };
+
+  const morphTL = gsap.timeline({
+    scrollTrigger: {
+      trigger: '.transition-morph-section',
+      start: 'top top',
+      end: '+=250%', // Pin for 2.5 viewports of scrolling
+      scrub: 1.0,    // Eased scrub
+      pin: true,     // GSAP Pinning handles stickiness
+      pinSpacing: true,
+      onUpdate: (self) => {
+        // Trigger scanning sweeps based on scan timeline progress (between 0.35 and 0.7)
+        if (self.progress > 0.35 && self.progress < 0.7) {
+          const scanP = (self.progress - 0.35) / 0.35;
+          playScanSweep(scanP);
+        }
+
+        // Dynamically update HUD text parameters based on progress
+        const biasElement = document.getElementById('hud-val-bias');
+        const objectivityElement = document.getElementById('hud-val-objectivity');
+        const consistencyElement = document.getElementById('hud-val-consistency');
+        const availabilityElement = document.getElementById('hud-val-availability');
+        const modeElement = document.getElementById('hud-val-mode');
+
+        if (self.progress < 0.45) {
+          if (biasElement) biasElement.textContent = "84.2%";
+          if (objectivityElement) objectivityElement.textContent = "N/A";
+          if (modeElement) {
+            modeElement.textContent = "TRADITIONAL";
+            modeElement.className = "hud-glow-red";
+          }
+        } else if (self.progress >= 0.45 && self.progress < 0.7) {
+          const biasDec = Math.max(0, Math.round(84.2 - (self.progress - 0.45) / 0.25 * 84.2));
+          if (biasElement) biasElement.textContent = `${biasDec}%`;
+          if (objectivityElement) objectivityElement.textContent = "CALCULATING...";
+        } else {
+          if (biasElement) {
+            biasElement.textContent = "0.0%";
+            biasElement.className = "hud-glow-gold";
+          }
+          if (objectivityElement) {
+            objectivityElement.textContent = "100%";
+            objectivityElement.className = "hud-glow-gold";
+          }
+          if (consistencyElement) consistencyElement.textContent = "MAXIMUM";
+          if (availabilityElement) availabilityElement.textContent = "24/7/365";
+          if (modeElement) {
+            modeElement.textContent = "intervieHire AGENT";
+            modeElement.className = "hud-glow-gold";
+          }
+        }
+      }
+    }
+  });
+
+  morphTL
+    // 1. Text 1 fades out, HUD nodes reveal
+    .to('#morph-scroll-hint', { opacity: 0, duration: 0.1 }, 0)
+    .to('.hud-left', { x: 120, opacity: 1, duration: 0.2 }, 0)
+    .to('.hud-right', { x: -120, opacity: 1, duration: 0.2 }, 0)
+    .to('#morph-text-1', { opacity: 0, scale: 0.95, duration: 0.15 }, 0.1)
+    
+    // 2. Text 2 fades in
+    .to('#morph-text-2', { opacity: 1, scale: 1, duration: 0.2 }, 0.25)
+    
+    // 3. Scan line sweep and cross-fade figures
+    .to('#morph-scan-line', { opacity: 1, duration: 0.05 }, 0.35)
+    .to('#morph-scan-line', { top: '110%', duration: 0.35 }, 0.35)
+    .to('#morph-scan-line', { opacity: 0, duration: 0.05 }, 0.7)
+    
+    .to('#morph-human-wrapper', { opacity: 0, duration: 0.2 }, 0.4)
+    .to('#morph-ai-wrapper', { opacity: 1, duration: 0.2 }, 0.4)
+    .to('#morph-label-traditional', { opacity: 0, duration: 0.2 }, 0.4)
+    .to('#morph-label-agent', { opacity: 1, duration: 0.2 }, 0.4)
+    
+    // 4. Text 2 fades out, Text 3 fades in
+    .to('#morph-text-2', { opacity: 0, scale: 0.95, duration: 0.15 }, 0.55)
+    .to('#morph-text-3', { opacity: 1, scale: 1, duration: 0.2 }, 0.7)
+    
+    // 5. HUD elements fly away and fade
+    .to('.hud-left', { x: 0, opacity: 0.3, duration: 0.2 }, 0.8)
+    .to('.hud-right', { x: 0, opacity: 0.3, duration: 0.2 }, 0.8);
+
+  // Manage pulsing class trigger on AI wrapper based on scroll progress
+  ScrollTrigger.create({
+    trigger: '.transition-morph-section',
+    start: 'top top',
+    end: 'bottom bottom',
+    onUpdate: (self) => {
+      const aiWrap = document.getElementById('morph-ai-wrapper');
+      if (aiWrap) {
+        if (self.progress > 0.6) {
+          aiWrap.classList.add('pulsing');
+        } else {
+          aiWrap.classList.remove('pulsing');
+        }
+      }
+    }
+  });
+}
 
