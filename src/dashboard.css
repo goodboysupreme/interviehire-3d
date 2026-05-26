@@ -2898,3 +2898,181 @@ body.light-theme .jd-badge-tag { background: rgba(143,111,45,0.08); border-color
   font-family: var(--font-mono);
 }
 
+
+/* ============================================================
+   iOS-STYLE CRYSTAL LIQUID GLASS TABS & ANIMATIONS OVERRIDES
+   ============================================================ */
+
+/* Frost iOS Track containers */
+.sidebar-nav ul,
+.filter-options,
+.table-tabs,
+.report-tabs,
+.jd-tabs {
+  position: relative !important;
+  display: flex !important;
+  padding: 4px !important;
+  border-radius: 12px !important;
+  background: rgba(12, 12, 12, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4), 0 4px 30px rgba(0, 0, 0, 0.2) !important;
+  z-index: 1 !important;
+}
+
+/* Vertical list override for sidebar navigation */
+.sidebar-nav ul {
+  flex-direction: column !important;
+  background: rgba(10, 10, 10, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.03) !important;
+  padding: 6px !important;
+  gap: 4px !important;
+  border-radius: 14px !important;
+}
+
+/* Light Theme overrides for tracks */
+body.light-theme .sidebar-nav ul,
+body.light-theme .filter-options,
+body.light-theme .table-tabs,
+body.light-theme .report-tabs,
+body.light-theme .jd-tabs {
+  background: rgba(240, 238, 230, 0.65) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Relative positioning for child tab items to sit above the sliding pill */
+.nav-item,
+.filter-tab,
+.table-tab-btn,
+.report-tab-btn,
+.jd-tab {
+  position: relative !important;
+  z-index: 2 !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  transition: color 0.25s ease !important;
+}
+
+/* Reset active tab borders and backgrounds - they will use the sliding pill instead */
+.nav-item.active,
+.filter-tab.active,
+.table-tab-btn.active,
+.report-tab-btn.active,
+.jd-tab.active {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Micro interaction: slight scale down when clicking tabs for tactile feedback */
+.nav-item:active,
+.filter-tab:active,
+.table-tab-btn:active,
+.report-tab-btn:active,
+.jd-tab:active {
+  transform: scale(0.97);
+  transition: transform 0.08s ease-out !important;
+}
+
+/* Hover style for non-active tabs */
+.nav-item:not(.active):hover,
+.filter-tab:not(.active):hover,
+.table-tab-btn:not(.active):hover,
+.report-tab-btn:not(.active):hover,
+.jd-tab:not(.active):hover {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+body.light-theme .nav-item:not(.active):hover,
+body.light-theme .filter-tab:not(.active):hover,
+body.light-theme .table-tab-btn:not(.active):hover,
+body.light-theme .report-tab-btn:not(.active):hover,
+body.light-theme .jd-tab:not(.active):hover {
+  background: rgba(0, 0, 0, 0.025) !important;
+}
+
+/* Crystal Glass Sliding Pill */
+.sliding-pill {
+  position: absolute !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  top: 4px;
+  left: 0;
+  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+              width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.25s ease !important;
+  opacity: 0;
+  
+  /* Dark Mode glassmorphism style */
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(10px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(140%) !important;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.25), 
+    inset 0 1px 1px rgba(255, 255, 255, 0.08),
+    0 0 8px rgba(201, 168, 76, 0.08) !important;
+}
+
+/* Light Theme glass style */
+body.light-theme .sliding-pill {
+  background: rgba(255, 255, 255, 0.72) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.06), 
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    0 0 6px rgba(143, 111, 45, 0.05) !important;
+}
+
+/* Premium Drawer Glass Styles */
+.slide-drawer {
+  background: rgba(15, 15, 15, 0.65) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  box-shadow: -15px 0 45px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.light-theme .slide-drawer {
+  background: rgba(255, 255, 255, 0.72) !important;
+  border-left: 1px solid rgba(0, 0, 0, 0.06) !important;
+  box-shadow: -15px 0 45px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Premium Modal Animations (Spotlight Box and overlay) */
+@keyframes overlayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes spotlightEntry {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translate3d(0, -10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+}
+
+.spotlight-overlay.active {
+  animation: overlayFade 0.25s ease forwards !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  display: flex !important;
+}
+
+.spotlight-overlay.active .spotlight-box {
+  animation: spotlightEntry 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.drawer-overlay.active {
+  animation: overlayFade 0.25s ease forwards !important;
+}
+
+
