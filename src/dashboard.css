@@ -2424,6 +2424,364 @@ body.light-theme .theme-icon-sun {
   line-height: 1.4;
 }
 
+/* ============================================================
+   JOB DETAIL VIEW
+   ============================================================ */
+
+/* Sub-nav bar (tabs + actions) */
+.jd-subnav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding-bottom: 0;
+  margin-bottom: 28px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.jd-tabs {
+  display: flex;
+  gap: 0;
+}
+
+.jd-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 12px 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+  margin-bottom: -1px;
+}
+.jd-tab svg { stroke: var(--color-text-faint); transition: var(--transition-fast); }
+.jd-tab:hover { color: var(--color-text-primary); }
+.jd-tab:hover svg { stroke: var(--color-text-primary); }
+.jd-tab.active {
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-text-primary);
+}
+.jd-tab.active svg { stroke: var(--color-text-primary); }
+
+.jd-count-pill {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  padding: 1px 7px;
+  color: var(--color-text-primary);
+}
+
+/* Action buttons row */
+.jd-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+}
+.jd-search-wrap {
+  position: relative;
+  width: 180px;
+}
+.jd-search-wrap svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  stroke: var(--color-text-muted);
+  pointer-events: none;
+}
+.jd-search-wrap input {
+  width: 100%;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-card-border);
+  border-radius: 6px;
+  padding: 7px 10px 7px 28px;
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+}
+.jd-search-wrap input:focus { outline: none; border-color: var(--color-gold); }
+
+.btn-jd-ghost {
+  background: transparent;
+  border: 1px solid var(--color-card-border);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 7px 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+.btn-jd-ghost:hover { border-color: var(--color-gold); background: var(--color-gold-dim); }
+.btn-jd-ghost svg { stroke: var(--color-text-muted); }
+
+.btn-jd-primary {
+  background: #5b5ef6;
+  color: #fff;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+.btn-jd-primary:hover { filter: brightness(1.12); transform: translateY(-1px); }
+
+/* Pane show/hide */
+.jd-panes { width: 100%; }
+.jd-pane { display: none; }
+.jd-pane.active { display: block; }
+
+/* Overview two-column grid */
+.jd-overview-grid {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Panel shared header */
+.jd-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.jd-card-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-text-primary);
+}
+
+/* Funnel card */
+.jd-funnel-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 520px;
+}
+.jd-funnel-body {
+  display: flex;
+  gap: 0;
+  flex: 1;
+  min-height: 380px;
+}
+.jd-funnel-stages {
+  width: 155px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-right: 12px;
+}
+.jd-stage-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.jds-count {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+.jds-label {
+  font-size: 0.78rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+.jds-conv {
+  font-size: 0.72rem;
+  color: #5b5ef6;
+  font-weight: 500;
+}
+.jd-funnel-chart-wrap {
+  flex: 1;
+  min-height: 360px;
+  position: relative;
+}
+#jd-funnel-svg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+
+/* Funnel legend */
+.jd-funnel-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.jd-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+.jd-ldot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Right panels */
+.jd-right-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Funnel Insights card */
+.jd-insights-card {
+  padding: 20px;
+}
+.jd-badge-tag {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(201,168,76,0.1);
+  border: 1px solid rgba(201,168,76,0.2);
+  color: var(--color-gold);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+.jd-insights-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 80px;
+}
+.jd-insight-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+.jd-insight-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.jd-insight-item.good .jd-insight-dot  { background: var(--color-success); }
+.jd-insight-item.warn .jd-insight-dot  { background: var(--color-warning); }
+.jd-insight-item.info .jd-insight-dot  { background: #6366f1; }
+.jd-insight-item.good { color: var(--color-text-primary); }
+
+/* Score Distribution card */
+.jd-score-card { padding: 20px; }
+.jd-score-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.jd-score-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.jd-score-select {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-card-border);
+  color: var(--color-text-primary);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.jd-score-select:focus { outline: none; border-color: var(--color-gold); }
+.jd-score-chart-wrap {
+  width: 100%;
+  height: 200px;
+}
+#jd-score-svg { width: 100%; height: 100%; }
+.jd-score-legend {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+/* Empty state panes */
+.jd-empty-pane {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 80px 40px;
+  text-align: center;
+  color: var(--color-text-faint);
+  font-size: 0.88rem;
+}
+
+/* Job card clickable cursor */
+.job-card { cursor: pointer; }
+.job-card:hover .job-card-footer .card-responses-cta {
+  color: var(--color-gold);
+}
+.card-responses-cta {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: var(--transition-fast);
+}
+
+/* Breadcrumb link (clickable Jobs in breadcrumb) */
+.breadcrumb-link {
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+.breadcrumb-link:hover { color: var(--color-gold); }
+
+/* Light theme overrides for job detail */
+body.light-theme .jd-tab { color: #71717a; }
+body.light-theme .jd-tab.active { color: #0C0A09; border-bottom-color: #0C0A09; }
+body.light-theme .jd-tab:hover { color: #0C0A09; }
+body.light-theme .jd-count-pill { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.08); }
+body.light-theme .jd-subnav { border-bottom-color: rgba(0,0,0,0.06); }
+body.light-theme .jd-funnel-legend { border-top-color: rgba(0,0,0,0.05); }
+body.light-theme .jd-score-legend { border-top-color: rgba(0,0,0,0.05); }
+body.light-theme .jd-badge-tag { background: rgba(143,111,45,0.08); border-color: rgba(143,111,45,0.2); }
+
 /* CMD+K Spotlight Modal */
 .spotlight-overlay {
   position: fixed;

@@ -71,6 +71,7 @@ const soundEngine = new SoundEngine();
 const AppState = {
   activeTab: 'jobs',
   activeSubtab: '',
+  activeJobId: null,
   jobsFilter: 'all',
   teamFilter: 'all',
   tableSearch: '',
@@ -270,14 +271,19 @@ function renderJobCards() {
       <div class="job-card-footer">
         <div class="author-info">
           <div class="author-tag">${job.createdBy.charAt(0)}</div>
-          <span class="author-meta">${job.createdBy} (me) // <a href="#" class="author-link-doc">Job Description</a></span>
+          <span class="author-meta">${job.createdBy} (me) // <a href="#" class="author-link-doc" onclick="event.stopPropagation()">Job Description</a></span>
         </div>
-        <div class="link-action-dropdown">
-          <span>Interview Links</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </div>
+        <span class="card-responses-cta">
+          View Responses
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </span>
       </div>
     `;
+
+    card.addEventListener('click', () => {
+      navigateToJobDetail(job.id);
+    });
+
     container.appendChild(card);
   });
 }
@@ -1198,6 +1204,266 @@ function openCandidateReport(candidateId) {
   soundEngine.playChime([392.00, 523.25, 659.25], 0.15, 0.08);
 }
 
+// ==========================================
+// JOB DETAIL VIEW
+// ==========================================
+
+function navigateToJobDetail(jobId) {
+  const job = AppState.jobs.find(j => j.id === jobId);
+  if (!job) return;
+
+  AppState.activeJobId = jobId;
+  AppState.activeTab = 'job-detail';
+
+  // Sidebar: keep Jobs highlighted as parent
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+    item.classList.toggle('active', item.getAttribute('data-tab') === 'jobs');
+  });
+  document.querySelectorAll('.sub-nav li').forEach(li => li.classList.remove('active-sub'));
+
+  // Breadcrumb — "Jobs" clickable link
+  const breadcrumb = document.getElementById('breadcrumb-title');
+  const shortName = job.cardName.length > 30 ? job.cardName.slice(0, 30) + '…' : job.cardName;
+  breadcrumb.innerHTML = `<span class="breadcrumb-link" id="bc-jobs-link">Jobs</span>
+    <span class="breadcrumb-separator">/</span> ${shortName}
+    <span class="breadcrumb-separator">/</span> Responses`;
+  document.getElementById('bc-jobs-link').addEventListener('click', () => navigateToTab('jobs'));
+
+  // Header
+  document.getElementById('header-main-title').textContent = job.cardName;
+  document.getElementById('header-sub-text').textContent =
+    `${job.pipeline.total} total candidate${job.pipeline.total !== 1 ? 's' : ''} · ${job.roleName}`;
+  document.getElementById('header-action-btn').style.display = 'none';
+
+  // Show view
+  document.querySelectorAll('.dashboard-view').forEach(v => v.classList.remove('active-view'));
+  document.getElementById('view-job-detail').classList.add('active-view');
+
+  // Sub-tab counts
+  document.getElementById('jd-count-screening').textContent = job.pipeline.screening;
+  const funcLabel = job.pipeline.screening > 0
+    ? `${job.pipeline.functional} of ${job.pipeline.screening}`
+    : job.pipeline.functional;
+  document.getElementById('jd-count-functional').textContent = funcLabel;
+
+  // Reset to Overview tab
+  document.querySelectorAll('.jd-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.jd-tab[data-jd-tab="overview"]').classList.add('active');
+  document.querySelectorAll('.jd-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('jd-pane-overview').classList.add('active');
+
+  const jobCandidates = AppState.candidates.filter(
+    c => c.jobApplied === job.roleName || c.jobApplied === job.cardName
+  );
+
+  renderFunnelStages(job);
+  renderFunnelInsights(job);
+
+  // SVG needs layout to be painted first
+  requestAnimationFrame(() => {
+    drawFunnelSVG(job, jobCandidates);
+    drawScoreDistributionSVG(job, jobCandidates);
+  });
+
+  soundEngine.playChime([440.00, 523.25, 659.25], 0.12, 0.08);
+}
+
+function renderFunnelStages(job) {
+  const container = document.getElementById('jd-funnel-stages');
+  if (!container) return;
+
+  const total = Math.max(job.pipeline.total, 1);
+  const completed = job.pipeline.functional > 0 ? 1 : 0;
+
+  const stages = [
+    { count: job.pipeline.total, label: 'Total Candidates', conv: null },
+    { count: job.pipeline.resume,     label: 'Resume Analysis',      conv: Math.round((job.pipeline.resume / total) * 100) },
+    { count: job.pipeline.screening,  label: 'Recruiter Screening',  conv: Math.round((job.pipeline.screening / total) * 100) },
+    { count: job.pipeline.functional, label: 'Functional Interview', conv: Math.round((job.pipeline.functional / total) * 100) },
+    { count: completed,               label: 'Completed',            conv: Math.round((completed / total) * 100) },
+    { count: completed,               label: 'Qualified',            conv: Math.round((completed / total) * 100) },
+  ];
+
+  container.innerHTML = stages.map(s => `
+    <div class="jd-stage-item">
+      <div class="jds-count">${s.count}</div>
+      <div class="jds-label">${s.label}</div>
+      ${s.conv !== null ? `<div class="jds-conv">${s.conv}% conversion</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderFunnelInsights(job) {
+  const container = document.getElementById('jd-insights-body');
+  if (!container) return;
+
+  const total = job.pipeline.total;
+  const screening = job.pipeline.screening;
+  const functional = job.pipeline.functional;
+  const insights = [];
+
+  if (total === 0) {
+    insights.push({ type: 'info', text: 'No candidates yet. Share interview links to start receiving applications.' });
+  } else {
+    const screeningPct = Math.round((screening / total) * 100);
+    if (job.pipeline.resume === 0) {
+      insights.push({ type: 'warn', text: 'Resume Analysis stage has 0 candidates — consider enabling resume screening in job settings.' });
+    }
+    if (screeningPct >= 50) {
+      insights.push({ type: 'good', text: `Strong ${screeningPct}% conversion to Recruiter Screening — pipeline quality is high.` });
+    }
+    if (functional > 0) {
+      insights.push({ type: 'good', text: `${functional} candidate${functional > 1 ? 's' : ''} reached Functional Interview and ${functional === 1 ? 'is' : 'are'} ready for expert vetting.` });
+    } else if (screening > 0) {
+      insights.push({ type: 'info', text: 'No candidates have advanced to Functional Interview yet. Recruiter screening is in progress.' });
+    }
+  }
+
+  if (insights.length === 0) {
+    insights.push({ type: 'info', text: 'Funnel data looks healthy. Continue monitoring candidate progress.' });
+  }
+
+  container.innerHTML = insights.map(ins => `
+    <div class="jd-insight-item ${ins.type}">
+      <span class="jd-insight-dot"></span>
+      <p>${ins.text}</p>
+    </div>
+  `).join('');
+}
+
+function drawFunnelSVG(job, candidates) {
+  const svgEl = document.getElementById('jd-funnel-svg');
+  if (!svgEl) return;
+
+  const W = 460, H = 400;
+  const cx = W / 2;
+  const maxHW = 148;
+  const padT = 10, padB = 10;
+
+  const total = Math.max(job.pipeline.total, 1);
+  const completed = job.pipeline.functional > 0 ? 1 : 0;
+
+  const stageCounts = [
+    job.pipeline.total,
+    job.pipeline.resume || 0,
+    job.pipeline.screening || 0,
+    job.pipeline.functional || 0,
+    completed,
+    completed,
+  ];
+  const n = stageCounts.length;
+  const ys = stageCounts.map((_, i) => padT + (i / (n - 1)) * (H - padT - padB));
+
+  const hws = stageCounts.map((c, i) => {
+    if (i === 0) return maxHW;
+    if (c === 0) return 3;
+    return Math.max((c / total) * maxHW, 9);
+  });
+
+  // Pink (Scheduled) fraction — proportional to screening candidates
+  const pinkFrac = Math.max(Math.min(job.pipeline.screening / total, 0.85), 0.15) || 0.6;
+
+  const pts = stageCounts.map((_, i) => ({
+    y: ys[i],
+    lx: cx - hws[i],
+    rx: cx + hws[i],
+    mx: cx - hws[i] + (2 * hws[i] * pinkFrac),
+  }));
+
+  const pinkSegs = [], greenSegs = [];
+  for (let i = 0; i < n - 1; i++) {
+    const p = pts[i], q = pts[i + 1];
+    const midY = (p.y + q.y) / 2;
+
+    pinkSegs.push(
+      `M ${p.lx} ${p.y} L ${p.mx} ${p.y}` +
+      ` C ${p.mx} ${midY} ${q.mx} ${midY} ${q.mx} ${q.y}` +
+      ` L ${q.lx} ${q.y}` +
+      ` C ${q.lx} ${midY} ${p.lx} ${midY} ${p.lx} ${p.y} Z`
+    );
+    greenSegs.push(
+      `M ${p.mx} ${p.y} L ${p.rx} ${p.y}` +
+      ` C ${p.rx} ${midY} ${q.rx} ${midY} ${q.rx} ${q.y}` +
+      ` L ${q.mx} ${q.y}` +
+      ` C ${q.mx} ${midY} ${p.mx} ${midY} ${p.mx} ${p.y} Z`
+    );
+  }
+
+  const dividers = pts.slice(1, -1).map(p =>
+    `<line x1="${p.lx - 14}" y1="${p.y}" x2="${p.rx + 14}" y2="${p.y}"
+      stroke="rgba(255,255,255,0.065)" stroke-width="1" stroke-dasharray="4 3"/>`
+  ).join('');
+
+  svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svgEl.innerHTML = `
+    <defs>
+      <linearGradient id="jd-gp" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#f472b6" stop-opacity="0.95"/>
+        <stop offset="100%" stop-color="#9d174d" stop-opacity="0.7"/>
+      </linearGradient>
+      <linearGradient id="jd-gg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#34d399" stop-opacity="0.95"/>
+        <stop offset="100%" stop-color="#064e3b" stop-opacity="0.7"/>
+      </linearGradient>
+    </defs>
+    ${dividers}
+    ${pinkSegs.map(d => `<path d="${d}" fill="url(#jd-gp)"/>`).join('')}
+    ${greenSegs.map(d => `<path d="${d}" fill="url(#jd-gg)"/>`).join('')}
+  `;
+}
+
+function drawScoreDistributionSVG(job, candidates) {
+  const svgEl = document.getElementById('jd-score-svg');
+  if (!svgEl) return;
+
+  const buckets = ['0-20', '20-40', '40-60', '60-80', '80-100'];
+  const counts = [0, 0, 0, 0, 0];
+
+  candidates.forEach(c => {
+    const s = parseFloat(c.score);
+    if (s < 20) counts[0]++;
+    else if (s < 40) counts[1]++;
+    else if (s < 60) counts[2]++;
+    else if (s < 80) counts[3]++;
+    else counts[4]++;
+  });
+
+  const totalC = Math.max(candidates.length, 1);
+  const percs = counts.map(c => (c / totalC) * 100);
+
+  const W = 380, H = 195;
+  const padL = 42, padR = 12, padT = 18, padB = 36;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const barW = (chartW / buckets.length) * 0.52;
+  const gap = chartW / buckets.length;
+
+  const yTicks = [0, 25, 50, 75, 100];
+  const yLines = yTicks.map(v => {
+    const y = padT + chartH - (v / 100) * chartH;
+    return `
+      <line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}"
+        stroke="rgba(255,255,255,0.045)" stroke-width="1"/>
+      <text x="${padL - 6}" y="${y + 3.5}" text-anchor="end"
+        fill="rgba(255,255,255,0.3)" font-size="9" font-family="sans-serif">${v}%</text>`;
+  }).join('');
+
+  const bars = percs.map((p, i) => {
+    const barH = Math.max((p / 100) * chartH, p > 0 ? 2 : 0);
+    const x = padL + i * gap + (gap - barW) / 2;
+    const y = padT + chartH - barH;
+    return `
+      <rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="#6366f1" rx="3" opacity="0.9"/>
+      ${p > 0 ? `<text x="${x + barW / 2}" y="${y - 4}" text-anchor="middle"
+        fill="rgba(255,255,255,0.65)" font-size="9.5" font-family="sans-serif">${Math.round(p)}%</text>` : ''}
+      <text x="${x + barW / 2}" y="${H - padB + 14}" text-anchor="middle"
+        fill="rgba(255,255,255,0.35)" font-size="9" font-family="sans-serif">${buckets[i]}</text>`;
+  }).join('');
+
+  svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svgEl.innerHTML = yLines + bars;
+}
+
 // Spotlight shortcuts CMD+K modal logic
 let selectedCommandIndex = 0;
 const SpotlightCommands = [
@@ -1813,6 +2079,36 @@ document.addEventListener('DOMContentLoaded', () => {
           soundEngine.playChime([523.25, 392.00, 261.63], 0.12, 0.1);
         }
       }
+    });
+  }
+
+  // JD sub-tab switching
+  document.querySelectorAll('.jd-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabId = tab.getAttribute('data-jd-tab');
+      document.querySelectorAll('.jd-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.jd-pane').forEach(p => p.classList.remove('active'));
+      const pane = document.getElementById(`jd-pane-${tabId}`);
+      if (pane) pane.classList.add('active');
+      soundEngine.playClick();
+    });
+  });
+
+  // JD score type dropdown re-renders chart
+  const jdScoreType = document.getElementById('jd-score-type');
+  if (jdScoreType) {
+    jdScoreType.addEventListener('change', () => {
+      if (AppState.activeJobId) {
+        const job = AppState.jobs.find(j => j.id === AppState.activeJobId);
+        if (job) {
+          const jobCandidates = AppState.candidates.filter(
+            c => c.jobApplied === job.roleName || c.jobApplied === job.cardName
+          );
+          drawScoreDistributionSVG(job, jobCandidates);
+        }
+      }
+      soundEngine.playClick();
     });
   }
 
