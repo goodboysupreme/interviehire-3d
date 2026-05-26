@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="intervieHire Client Portal & Administration Dashboard" />
+    <title>intervieHire | Admin Dashboard</title>
+    <script type="module" crossorigin src="./assets/dashboard-Cr-xNK7q.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-Dezn_h7o.js">
+    <link rel="stylesheet" crossorigin href="./assets/dashboard-BH8Vqsj9.css">
+  </head>
+  <body>
+    <!-- Background grid elements -->
+    <div class="bg-grid"></div>
+    <div class="bg-radial"></div>
+
+    <!-- Dashboard App Grid -->
+    <div class="dashboard-app">
+      
+      <!-- Left Sidebar Navigation -->
+      <aside class="sidebar">
+        <!-- Logo -->
+        <a href="/" class="logo-area">
+          <img src="./Logo.png" alt="intervieHire Logo" class="logo-img" />
+          <span class="logo-text">intervie<span class="logo-highlight">Hire</span></span>
+        </a>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+          <ul>
+            <li class="nav-item active" data-tab="jobs">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+              </svg>
+              <span>Jobs</span>
+            </li>
+            <li class="nav-item" data-tab="analytics">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <span>Usage Overview</span>
+            </li>
+            <li class="nav-item" data-tab="swarm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="2" y1="20" x2="22" y2="20"></line>
+                <line x1="5" y1="17" x2="19" y2="17"></line>
+                <circle cx="12" cy="10" r="2"></circle>
+              </svg>
+              <span>AI Swarm</span>
+            </li>
+            <li class="nav-item" data-tab="team">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span>Team Access</span>
+            </li>
+            <li class="nav-item" data-tab="career">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <span>Career Page</span>
+            </li>
+            <li class="nav-item has-sub" data-tab="settings">
+              <div class="nav-item-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                <span>Settings</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+              <ul class="sub-nav">
+                <li data-subtab="settings-password">Change Password</li>
+                <li data-subtab="settings-cookies">Cookie Settings</li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+          <!-- Free Trial Plan Card -->
+          <div class="card-plan">
+            <div class="plan-header">
+              <span class="plan-badge">Free Trial</span>
+              <span class="plan-alert">Plan expired</span>
+            </div>
+            <button class="btn-upgrade">Upgrade Plan</button>
+          </div>
+          
+          <!-- User Profile -->
+          <div class="user-profile">
+            <div class="user-avatar">D</div>
+            <div class="user-info">
+              <div class="user-name">Devasri</div>
+              <div class="user-role">Org. Admin</div>
+            </div>
+            <button class="btn-logout" aria-label="Logout">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Dashboard Container -->
+      <main class="main-content">
+        
+        <!-- Header Bar -->
+        <header class="dashboard-header">
+          <div class="header-left">
+            <div class="breadcrumbs">
+              <span class="breadcrumb-item">Client Portal</span>
+              <span class="breadcrumb-separator">/</span>
+              <span class="breadcrumb-item active" id="breadcrumb-title">Jobs</span>
+            </div>
+            <h1 class="header-heading" id="header-main-title">Good morning, Devasri 🌤️</h1>
+            <p class="header-subheading" id="header-sub-text">A squad of AI agents working for you</p>
+          </div>
+          
+          <div class="header-right">
+            <!-- Search field -->
+            <div class="search-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="global-search" placeholder="Search jobs, candidates..." />
+            </div>
+
+            <!-- Theme Toggle Button -->
+            <button class="btn-theme-toggle" id="btn-theme-toggle" aria-label="Toggle Theme">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon-sun"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            </button>
+            <!-- Contextual action button -->
+            <button class="btn-action" id="header-action-btn">
+              <span class="btn-icon">+</span>
+              <span id="header-action-btn-text">New Job</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- View Body Content -->
+        <div class="dashboard-view-body">
+          
+          <!-- ===================================== -->
+          <!-- JOBS LIST VIEW (TAB 1) -->
+          <!-- ===================================== -->
+          <section class="dashboard-view active-view" id="view-jobs">
+            <!-- Filtering Sub-bar -->
+            <div class="view-filter-bar">
+              <div class="filter-options">
+                <button class="filter-tab active" data-filter="all">All (<span class="count-all">2</span>)</button>
+                <button class="filter-tab" data-filter="published">Published (<span class="count-published">2</span>)</button>
+                <button class="filter-tab" data-filter="draft">Draft (<span class="count-draft">0</span>)</button>
+                <button class="filter-tab" data-filter="archived">Archived (<span class="count-archived">0</span>)</button>
+              </div>
+
+              <!-- Layout view selectors -->
+              <div class="layout-toggle-group">
+                <button class="layout-toggle-btn active" id="btn-view-cards" title="Cards View">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                </button>
+                <button class="layout-toggle-btn" id="btn-view-board" title="Pipeline Kanban Board">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                </button>
+              </div>
+
+              <div class="filter-meta">
+                <span class="meta-label">Created by:</span>
+                <select class="meta-select" id="jobs-creator-select">
+                  <option value="all">All</option>
+                  <option value="me">Devasri</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Jobs Cards Grid -->
+            <div class="jobs-cards-grid" id="jobs-list-container">
+              <!-- Dynamically populated or static baseline cards -->
+              <!-- Will be loaded via JS for complete control -->
+            </div>
+
+            <!-- Kanban board wrapper -->
+            <div class="kanban-board-container" id="jobs-board-container" style="display: none;">
+              <div class="kanban-column" data-stage="Resume">
+                <h3 class="kanban-col-title">Resume Analysis (<span class="col-count" id="board-count-resume">0</span>)</h3>
+                <div class="kanban-cards-list" id="col-resume"></div>
+              </div>
+              <div class="kanban-column" data-stage="Screening">
+                <h3 class="kanban-col-title">Recruiter Screening (<span class="col-count" id="board-count-screening">2</span>)</h3>
+                <div class="kanban-cards-list" id="col-screening"></div>
+              </div>
+              <div class="kanban-column" data-stage="Functional">
+                <h3 class="kanban-col-title">Functional Interview (<span class="col-count" id="board-count-functional">2</span>)</h3>
+                <div class="kanban-cards-list" id="col-functional"></div>
+              </div>
+              <div class="kanban-column" data-stage="Hired">
+                <h3 class="kanban-col-title">Hired (<span class="col-count" id="board-count-hired">0</span>)</h3>
+                <div class="kanban-cards-list" id="col-hired"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===================================== -->
+          <!-- ANALYTICS VIEW (TAB 2) -->
+          <!-- ===================================== -->
+          <section class="dashboard-view" id="view-analytics">
+            <!-- Metrics Row -->
+            <div class="metrics-grid">
+              <!-- Metric 1: Total Applicants -->
+              <div class="card-metric">
+                <div class="metric-header">
+                  <div class="metric-icon-wrap icon-purple">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                  </div>
+                  <span class="metric-title">Total Applicants</span>
+                  <span class="metric-val" id="stat-total-applicants">4</span>
+                </div>
+                <div class="metric-pills">
+                  <div class="m-pill">Career Page <span class="v">0</span></div>
+                  <div class="m-pill">Bulk Upload <span class="v">0</span></div>
+                  <div class="m-pill">Scheduled <span class="v">3</span></div>
+                  <div class="m-pill">Direct Link <span class="v">1</span></div>
+                </div>
+              </div>
+
+              <!-- Metric 2: Resume Analysis -->
+              <div class="card-metric">
+                <div class="metric-header">
+                  <div class="metric-icon-wrap icon-orange">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                  </div>
+                  <span class="metric-title">Resume Analysis</span>
+                  <span class="metric-val" id="stat-resume-analysis">0</span>
+                </div>
+                <div class="metric-pills">
+                  <div class="m-pill">Analysed <span class="v">0</span></div>
+                  <div class="m-pill">Shortlisted <span class="v">0</span></div>
+                  <div class="m-pill">Waitlisted <span class="v">0</span></div>
+                </div>
+              </div>
+
+              <!-- Metric 3: Recruiter Screening -->
+              <div class="card-metric">
+                <div class="metric-header">
+                  <div class="metric-icon-wrap icon-blue">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                  </div>
+                  <span class="metric-title">Recruiter Screening</span>
+                  <span class="metric-val" id="stat-recruiter-screening">3</span>
+                </div>
+                <div class="metric-pills">
+                  <div class="m-pill">Attempted <span class="v">2</span></div>
+                  <div class="m-pill">Scheduled <span class="v">1</span></div>
+                  <div class="m-pill">Shortlisted <span class="v">0</span></div>
+                  <div class="m-pill">Waitlisted <span class="v">0</span></div>
+                </div>
+              </div>
+
+              <!-- Metric 4: Functional Interview -->
+              <div class="card-metric">
+                <div class="metric-header">
+                  <div class="metric-icon-wrap icon-green">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                  </div>
+                  <span class="metric-title">Functional Interview</span>
+                  <span class="metric-val" id="stat-functional-interview">2</span>
+                </div>
+                <div class="metric-pills">
+                  <div class="m-pill">Attempted <span class="v">1</span></div>
+                  <div class="m-pill">Scheduled <span class="v">1</span></div>
+                  <div class="m-pill">Shortlisted <span class="v">0</span></div>
+                  <div class="m-pill">Waitlisted <span class="v">0</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Table View Section -->
+            <div class="table-card card-glass">
+              <div class="table-tabs">
+                <button class="table-tab-btn active" data-table="jobs-data">Jobs data</button>
+                <button class="table-tab-btn" data-table="candidates-data">Candidate data <span class="badge-new">New</span></button>
+              </div>
+
+              <!-- Table Control Bar -->
+              <div class="table-controls">
+                <div class="ctrl-left">
+                  <div class="search-mini">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="table-search" placeholder="Search table..." />
+                  </div>
+                  <button class="btn-ctrl-filter">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                    Filter
+                  </button>
+                </div>
+                <div class="ctrl-right">
+                  <button class="btn-ctrl-action" id="btn-columns-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                    Columns
+                  </button>
+                  <button class="btn-ctrl-action" id="btn-export-jobs">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Export to Excel
+                  </button>
+                </div>
+              </div>
+
+              <!-- Table Data Viewport -->
+              <div class="table-responsive">
+                <table class="data-table" id="analytics-jobs-table">
+                  <thead>
+                    <tr>
+                      <th data-sort="id">Job ID <span class="arrow">↕</span></th>
+                      <th data-sort="role">Role Name <span class="arrow">↕</span></th>
+                      <th data-sort="card">Card Name <span class="arrow">↕</span></th>
+                      <th>Custom Job ID</th>
+                      <th>Experience Band</th>
+                      <th>Tags</th>
+                      <th>Job Created By</th>
+                      <th>Collaborators</th>
+                      <th>Recruiters</th>
+                    </tr>
+                  </thead>
+                  <tbody id="analytics-table-body">
+                    <!-- Loaded dynamically via JS -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Table Footer Pagination -->
+              <div class="table-footer">
+                <span class="showing-txt" id="analytics-table-showing">Showing 1-2 of 2</span>
+                <div class="pagination-wrap">
+                  <span class="rows-select-wrap">
+                    Rows per page:
+                    <select class="rows-select" id="analytics-table-limit">
+                      <option value="10">10</option>
+                      <option value="20">20</option>
+                      <option value="50">50</option>
+                    </select>
+                  </span>
+                  <div class="pagination-pages">
+                    <button class="btn-pag prev" disabled>Previous</button>
+                    <span class="page-num">Page 1 of 1</span>
+                    <button class="btn-pag next" disabled>Next</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===================================== -->
+          <!-- TEAM ACCESS VIEW (TAB 3) -->
+          <!-- ===================================== -->
+          <section class="dashboard-view" id="view-team">
+            <!-- Team filtering filters -->
+            <div class="view-filter-bar" style="margin-bottom: 20px;">
+              <div class="filter-options" id="team-status-tabs">
+                <button class="filter-tab active" data-team-filter="all">Team TOTAL (<span class="team-count-all">1</span>)</button>
+                <button class="filter-tab" data-team-filter="active">Active (<span class="team-count-active">1</span>)</button>
+                <button class="filter-tab" data-team-filter="invited">Invited (<span class="team-count-invited">0</span>)</button>
+                <button class="filter-tab" data-team-filter="inactive">Inactive (<span class="team-count-inactive">0</span>)</button>
+              </div>
+            </div>
+
+            <!-- Team Access Table -->
+            <div class="table-card card-glass">
+              <div class="table-controls">
+                <div class="ctrl-left">
+                  <div class="search-mini">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="team-search" placeholder="Search by name or email..." />
+                  </div>
+                  <select class="meta-select-styled" id="team-role-filter">
+                    <option value="all">All Usertypes</option>
+                    <option value="Org. Admin">Org. Admin</option>
+                    <option value="Recruiter">Recruiter</option>
+                    <option value="Interviewer">Interviewer</option>
+                  </select>
+                </div>
+                <div class="ctrl-right">
+                  <button class="btn-ctrl-action" id="btn-columns-team">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                    Columns
+                  </button>
+                  <button class="btn-ctrl-action" id="btn-export-team">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Export
+                  </button>
+                </div>
+              </div>
+
+              <!-- Team table viewport -->
+              <div class="table-responsive">
+                <table class="data-table" id="team-members-table">
+                  <thead>
+                    <tr>
+                      <th>Team Member</th>
+                      <th>Designation</th>
+                      <th>Usertype</th>
+                      <th>Registered On</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="team-table-body">
+                    <!-- Dynamically populated via JS -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Team Table Footer -->
+              <div class="table-footer">
+                <span class="showing-txt" id="team-table-showing">Showing 1-1 of 1</span>
+                <div class="pagination-wrap">
+                  <span class="rows-select-wrap">
+                    Rows per page:
+                    <select class="rows-select" id="team-table-limit">
+                      <option value="20">20</option>
+                      <option value="50">50</option>
+                    </select>
+                  </span>
+                  <div class="pagination-pages">
+                    <button class="btn-pag prev" disabled>Previous</button>
+              </div>
+            </section>
+
+            <!-- ===================================== -->
+            <!-- AI SWARM VIEW (TAB 2.5) -->
+            <!-- ===================================== -->
+            <section class="dashboard-view" id="view-swarm">
+              <div class="swarm-layout">
+                <!-- Agents Cards Grid -->
+                <div class="agents-status-grid">
+                  <!-- Agent Aria -->
+                  <div class="card-glass agent-card" id="agent-aria">
+                    <div class="agent-avatar-status">
+                      <div class="agent-pic">AR</div>
+                      <span class="pulse-dot green"></span>
+                    </div>
+                    <div class="agent-meta">
+                      <h3 class="agent-name">Aria</h3>
+                      <p class="agent-role-lbl">Resume Analyst Agent</p>
+                      <p class="agent-status-msg" id="aria-status">Monitoring candidate submissions...</p>
+                    </div>
+                  </div>
+                  <!-- Agent Kaelen -->
+                  <div class="card-glass agent-card" id="agent-kaelen">
+                    <div class="agent-avatar-status">
+                      <div class="agent-pic">KL</div>
+                      <span class="pulse-dot green"></span>
+                    </div>
+                    <div class="agent-meta">
+                      <h3 class="agent-name">Kaelen</h3>
+                      <p class="agent-role-lbl">Technical Vetting Specialist</p>
+                      <p class="agent-status-msg" id="kaelen-status">Generating code challenge rubrics...</p>
+                    </div>
+                  </div>
+                  <!-- Agent Lyra -->
+                  <div class="card-glass agent-card" id="agent-lyra">
+                    <div class="agent-avatar-status">
+                      <div class="agent-pic">LY</div>
+                      <span class="pulse-dot orange"></span>
+                    </div>
+                    <div class="agent-meta">
+                      <h3 class="agent-name">Lyra</h3>
+                      <p class="agent-role-lbl">HR Communications Bot</p>
+                      <p class="agent-status-msg" id="lyra-status">Idle. Waiting for candidate triggers...</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Terminal console logs -->
+                <div class="card-glass terminal-box">
+                  <div class="terminal-header">
+                    <div class="terminal-dots">
+                      <span class="dot red"></span>
+                      <span class="dot yellow"></span>
+                      <span class="dot green"></span>
+                    </div>
+                    <span class="terminal-title">A.I. Swarm Ticker Activity Feed</span>
+                  </div>
+                  <div class="terminal-body" id="swarm-terminal-body">
+                    <div class="term-log"><code>[10:42:01] Aria:</code> System diagnostics initiated. Swarm link online.</div>
+                    <div class="term-log"><code>[10:42:15] Lyra:</code> Syncing candidate databases with email queue...</div>
+                    <div class="term-log font-gold"><code>[10:43:02] Kaelen:</code> Dispatched coding test to Candidate CAN-8234-EA1.</div>
+                  </div>
+                  <div class="terminal-input-wrap">
+                    <span class="terminal-prompt">&gt;</span>
+                    <input type="text" id="swarm-prompter" placeholder="Ask the AI Swarm to do something... (e.g. 'Aria, search for Go devs')" />
+                    <button id="btn-swarm-prompt" class="btn-term-send">Send</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ===================================== -->
+            <!-- CAREER PAGE VIEW (TAB 4) -->
+          <!-- ===================================== -->
+          <section class="dashboard-view" id="view-career">
+            <div class="config-grid">
+              <div class="card-glass panel-setting">
+                <h3 class="panel-title">Career Page Settings</h3>
+                <p class="panel-desc">Configure your public career subdomain page and listing styling rules.</p>
+                
+                <form class="settings-form" id="career-settings-form">
+                  <div class="form-group">
+                    <label for="career-subdomain">Company Subdomain</label>
+                    <div class="input-prefix-wrap">
+                      <span class="prefix">interviehire.com/careers/</span>
+                      <input type="text" id="career-subdomain" value="devasri-tech" required />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="career-theme">Portal Theme Mode</label>
+                    <select id="career-theme">
+                      <option value="dark">Dark Slate Brand Theme (Default)</option>
+                      <option value="light">Crisp Editorial Light Theme</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="career-intro">Hero Headline Introduction</label>
+                    <input type="text" id="career-intro" value="Build the future of technology with us." />
+                  </div>
+                  <button type="submit" class="btn-submit">Save Configurations</button>
+                </form>
+              </div>
+
+              <div class="card-glass panel-preview">
+                <h3 class="panel-title">Live Subdomain Status</h3>
+                <div class="status-indicator-box">
+                  <span class="pulsing-dot green"></span>
+                  <div class="status-text">
+                    <div class="status-title">Live & Active</div>
+                    <a href="https://interviehire.com/careers/devasri-tech" target="_blank" class="status-link">interviehire.com/careers/devasri-tech ↗</a>
+                  </div>
+                </div>
+                <div class="meta-metric-box">
+                  <div class="sub-metric">
+                    <span class="lbl">Subdomain Visits</span>
+                    <span class="val">142</span>
+                  </div>
+                  <div class="sub-metric">
+                    <span class="lbl">Apply Rate</span>
+                    <span class="val">12.4%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===================================== -->
+          <!-- SETTINGS VIEWS (SUBTABS) -->
+          <!-- ===================================== -->
+          <section class="dashboard-view" id="view-settings-password">
+            <div class="card-glass panel-setting max-w-md">
+              <h3 class="panel-title">Change Password</h3>
+              <p class="panel-desc">Update your client portal access security parameters.</p>
+              
+              <form class="settings-form" id="password-form">
+                <div class="form-group">
+                  <label for="old-pass">Current Password</label>
+                  <input type="password" id="old-pass" required />
+                </div>
+                <div class="form-group">
+                  <label for="new-pass">New Password</label>
+                  <input type="password" id="new-pass" required />
+                </div>
+                <div class="form-group">
+                  <label for="confirm-pass">Confirm New Password</label>
+                  <input type="password" id="confirm-pass" required />
+                </div>
+                <button type="submit" class="btn-submit">Change Password</button>
+                <div id="pass-success" class="alert-success-inline"></div>
+              </form>
+            </div>
+          </section>
+
+          <section class="dashboard-view" id="view-settings-cookies">
+            <div class="card-glass panel-setting max-w-md">
+              <h3 class="panel-title">Cookie Settings</h3>
+              <p class="panel-desc">Configure dashboard cookie performance track levels.</p>
+              
+              <form class="settings-form" id="cookies-form">
+                <div class="checkbox-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="cookie-essential" checked disabled />
+                    <span class="checkmark-wrap"></span>
+                    <span class="lbl-wrap">
+                      <strong class="title">Essential Cookies</strong>
+                      <span class="desc">Required for admin session tokens. Cannot be turned off.</span>
+                    </span>
+                  </label>
+                </div>
+                <div class="checkbox-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="cookie-analytics" checked />
+                    <span class="checkmark-wrap"></span>
+                    <span class="lbl-wrap">
+                      <strong class="title">Analytics Tracking</strong>
+                      <span class="desc">Enables usage dashboard data metrics reporting.</span>
+                    </span>
+                  </label>
+                </div>
+                <button type="submit" class="btn-submit">Save Cookie Policies</button>
+                <div id="cookies-success" class="alert-success-inline"></div>
+              </form>
+            </div>
+          </section>
+
+          <!-- ===================================== -->
+          <!-- JOB DETAIL VIEW -->
+          <!-- ===================================== -->
+          <section class="dashboard-view" id="view-job-detail">
+
+            <!-- Sub-nav: tabs + action bar -->
+            <div class="jd-subnav">
+              <div class="jd-tabs">
+                <button class="jd-tab active" data-jd-tab="overview">Overview</button>
+                <button class="jd-tab" data-jd-tab="resume">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                  Resume Analysis
+                </button>
+                <button class="jd-tab" data-jd-tab="screening">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                  Recruiter Screening <span class="jd-count-pill" id="jd-count-screening">0</span>
+                </button>
+                <button class="jd-tab" data-jd-tab="functional">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                  Functional Interview <span class="jd-count-pill" id="jd-count-functional">0</span>
+                </button>
+              </div>
+              <div class="jd-actions">
+                <div class="jd-search-wrap">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  <input type="text" id="jd-candidate-search" placeholder="Search candidate" />
+                </div>
+                <button class="btn-jd-ghost">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                  Add Collaborator
+                </button>
+                <button class="btn-jd-primary">+ Add Applicants</button>
+                <button class="btn-jd-ghost">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  Date Range
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Tab panes -->
+            <div class="jd-panes">
+
+              <!-- Overview pane -->
+              <div class="jd-pane active" id="jd-pane-overview">
+                <div class="jd-overview-grid">
+
+                  <!-- Left: Candidate Funnel -->
+                  <div class="card-glass jd-funnel-card">
+                    <div class="jd-panel-header">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                      <h3 class="jd-card-title">Candidate Funnel</h3>
+                    </div>
+                    <div class="jd-funnel-body">
+                      <div class="jd-funnel-stages" id="jd-funnel-stages"></div>
+                      <div class="jd-funnel-chart-wrap">
+                        <svg id="jd-funnel-svg" preserveAspectRatio="xMidYMid meet"></svg>
+                      </div>
+                    </div>
+                    <div class="jd-funnel-legend">
+                      <div class="jd-legend-item"><span class="jd-ldot" style="background:#6366f1"></span>Career Page</div>
+                      <div class="jd-legend-item"><span class="jd-ldot" style="background:#06b6d4"></span>ATS</div>
+                      <div class="jd-legend-item"><span class="jd-ldot" style="background:#f59e0b"></span>Bulk Upload</div>
+                      <div class="jd-legend-item"><span class="jd-ldot" style="background:#ec4899"></span>Scheduled</div>
+                      <div class="jd-legend-item"><span class="jd-ldot" style="background:#10b981"></span>Direct Link</div>
+                    </div>
+                  </div>
+
+                  <!-- Right: Insights + Score Distribution -->
+                  <div class="jd-right-panels">
+                    <div class="card-glass jd-insights-card">
+                      <div class="jd-panel-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        <h3 class="jd-card-title">Funnel Insights</h3>
+                        <span class="jd-badge-tag">Recommendations</span>
+                      </div>
+                      <div class="jd-insights-body" id="jd-insights-body"></div>
+                    </div>
+
+                    <div class="card-glass jd-score-card">
+                      <div class="jd-score-header">
+                        <div class="jd-score-title-row">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                          <h3 class="jd-card-title">Score Distribution</h3>
+                        </div>
+                        <select class="jd-score-select" id="jd-score-type">
+                          <option value="interview">Interview Score</option>
+                          <option value="resume">Resume Score</option>
+                        </select>
+                      </div>
+                      <div class="jd-score-chart-wrap">
+                        <svg id="jd-score-svg" preserveAspectRatio="xMidYMid meet"></svg>
+                      </div>
+                      <div class="jd-score-legend">
+                        <span class="jd-legend-item"><span class="jd-ldot" style="background:#6366f1; border-radius:2px;"></span>Percentage</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div><!-- /overview -->
+
+              <!-- Placeholder panes -->
+              <div class="jd-pane" id="jd-pane-resume">
+                <div class="jd-empty-pane">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                  <p>Resume Analysis — No data available yet for this stage</p>
+                </div>
+              </div>
+              <div class="jd-pane" id="jd-pane-screening">
+                <div class="jd-empty-pane">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                  <p>Recruiter Screening — Candidate interview results appear here</p>
+                </div>
+              </div>
+              <div class="jd-pane" id="jd-pane-functional">
+                <div class="jd-empty-pane">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                  <p>Functional Interview — Expert-vetted results appear here</p>
+                </div>
+              </div>
+
+            </div><!-- /jd-panes -->
+
+          </section><!-- /view-job-detail -->
+
+        </div>
+      </main>
+
+      <!-- ===================================== -->
+      <!-- SLIDE-OUT DRAWERS (FORM SECTIONS) -->
+      <!-- ===================================== -->
+      <div class="drawer-overlay" id="drawer-backdrop"></div>
+
+      <!-- Drawer: Job Creator -->
+      <div class="slide-drawer" id="drawer-job">
+        <div class="drawer-header">
+          <h2 class="drawer-title">Create New Job</h2>
+          <button class="btn-close-drawer" id="btn-close-drawer-job" aria-label="Close panel">×</button>
+        </div>
+        <div class="drawer-body">
+          <form id="form-create-job">
+            <div class="form-group">
+              <label for="job-title-input">Job Card Title</label>
+              <input type="text" id="job-title-input" placeholder="e.g. Senior Backend Engineer" required />
+            </div>
+            <div class="form-group">
+              <label for="job-role-input">Role Type Name</label>
+              <input type="text" id="job-role-input" placeholder="e.g. Go Backend Developer" required />
+            </div>
+            <div class="form-group">
+              <label for="job-experience-input">Experience Band</label>
+              <select id="job-experience-input">
+                <option value="Upto 2 Years">Upto 2 Years</option>
+                <option value="1-4 Years">1-4 Years</option>
+                <option value="3-6 Years">3-6 Years</option>
+                <option value="5+ Years">5+ Years</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="job-custom-id">Custom Job ID (Optional)</label>
+              <input type="text" id="job-custom-id" placeholder="e.g. AKRO62EF45E26E54" />
+            </div>
+            <div class="form-group">
+              <label for="job-creator-input">Created By</label>
+              <input type="text" id="job-creator-input" value="Devasri" readonly />
+            </div>
+            <div class="form-group">
+              <label>Initial Pipeline Statuses</label>
+              <div class="pipeline-checkbox-list">
+                <label class="pipeline-check-item">
+                  <input type="checkbox" id="chk-resume" checked />
+                  <span>Resume Analysis</span>
+                </label>
+                <label class="pipeline-check-item">
+                  <input type="checkbox" id="chk-screening" checked />
+                  <span>Recruiter Screening</span>
+                </label>
+                <label class="pipeline-check-item">
+                  <input type="checkbox" id="chk-functional" checked />
+                  <span>Functional Interview</span>
+                </label>
+              </div>
+            </div>
+            <button type="submit" class="btn-drawer-submit">Create Job Card</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Drawer: Member Inviter -->
+      <div class="slide-drawer" id="drawer-member">
+        <div class="drawer-header">
+          <h2 class="drawer-title">Invite Member</h2>
+          <button class="btn-close-drawer" id="btn-close-drawer-member" aria-label="Close panel">×</button>
+        </div>
+        <div class="drawer-body">
+          <form id="form-invite-member">
+            <div class="form-group">
+              <label for="member-name-input">Full Name</label>
+              <input type="text" id="member-name-input" placeholder="e.g. Aditya Rana" required />
+            </div>
+            <div class="form-group">
+              <label for="member-email-input">Work Email</label>
+              <input type="email" id="member-email-input" placeholder="e.g. aditya@interviehire.com" required />
+            </div>
+            <div class="form-group">
+              <label for="member-designation-input">Designation</label>
+              <input type="text" id="member-designation-input" placeholder="e.g. Technical Director" required />
+            </div>
+            <div class="form-group">
+              <label for="member-role-input">Usertype Role</label>
+              <select id="member-role-input">
+                <option value="Org. Admin">Org. Admin</option>
+                <option value="Recruiter">Recruiter (Screening)</option>
+                <option value="Interviewer">Interviewer (Expert Vetting)</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-drawer-submit">Send Email Invitation</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Drawer: Candidate Report -->
+      <div class="slide-drawer" id="drawer-report" style="width: 520px; right: -540px;">
+        <div class="drawer-header">
+          <h2 class="drawer-title">Vetting Report</h2>
+          <button class="btn-close-drawer" id="btn-close-drawer-report" aria-label="Close panel">×</button>
+        </div>
+        <div class="drawer-body" style="padding: 0;">
+          <div class="candidate-profile-summary">
+            <div class="cand-avatar-large" id="report-avatar">AR</div>
+            <div class="cand-info-large">
+              <h3 class="cand-name-large" id="report-name">Aditya Rana</h3>
+              <p class="cand-email-large" id="report-email">aditya@interviehire.com</p>
+              <p class="cand-job-applied" id="report-job">Full Stack Developer</p>
+            </div>
+            <div class="cand-score-large" id="report-score">94%</div>
+          </div>
+
+          <!-- Tabs for Rubrics / Code review -->
+          <div class="report-tabs">
+            <button class="report-tab-btn active" data-report-tab="rubric">Evaluation Rubrics</button>
+            <button class="report-tab-btn" data-report-tab="code">Expert Code Review</button>
+          </div>
+
+          <div class="report-content-body">
+            <!-- Rubric content -->
+            <div class="report-tab-content active" id="rep-tab-rubric">
+              <div class="rubric-list">
+                <div class="rubric-item">
+                  <div class="rubric-meta">
+                    <span>Coding Proficiency</span>
+                    <strong class="val">9.2 / 10</strong>
+                  </div>
+                  <div class="bar-outer"><div class="bar-inner" style="width: 92%;"></div></div>
+                </div>
+                <div class="rubric-item">
+                  <div class="rubric-meta">
+                    <span>System Design</span>
+                    <strong class="val">8.8 / 10</strong>
+                  </div>
+                  <div class="bar-outer"><div class="bar-inner" style="width: 88%;"></div></div>
+                </div>
+                <div class="rubric-item">
+                  <div class="rubric-meta">
+                    <span>Communication</span>
+                    <strong class="val">9.5 / 10</strong>
+                  </div>
+                  <div class="bar-outer"><div class="bar-inner" style="width: 95%;"></div></div>
+                </div>
+                <div class="rubric-item">
+                  <div class="rubric-meta">
+                    <span>Problem Solving</span>
+                    <strong class="val">9.0 / 10</strong>
+                  </div>
+                  <div class="bar-outer"><div class="bar-inner" style="width: 90%;"></div></div>
+                </div>
+              </div>
+
+              <!-- Waveform snippet -->
+              <div class="waveform-box">
+                <h4 class="waveform-title">Expert Human Interview Snippet</h4>
+                <div class="waveform-controls">
+                  <button class="btn-play-waveform" id="btn-play-wave" aria-label="Play Interview Snippet">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="play-svg"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pause-svg" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                  </button>
+                  <div class="waveform-viz" id="waveform-viz-bars">
+                    <!-- Dynamic wave bars -->
+                  </div>
+                  <span class="waveform-time" id="waveform-timer">0:00 / 0:12</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Code review content -->
+            <div class="report-tab-content" id="rep-tab-code">
+              <div class="code-editor-header">
+                <span class="file-name">App.jsx (React)</span>
+              </div>
+              <div class="code-editor-body">
+                <pre class="code-view-container"><code><span class="keyword">import</span> { useState, useEffect } <span class="keyword">from</span> <span class="string">'react'</span>;
+
+<span class="keyword">export default function</span> <span class="func">UserList</span>() {
+  <span class="keyword">const</span> [users, setUsers] = useState([]);
+  <span class="keyword">const</span> [loading, setLoading] = useState(<span class="keyword">true</span>);
+
+  useEffect(() =&gt; {
+    <span class="keyword">const</span> controller = <span class="keyword">new</span> <span class="class-name">AbortController</span>();
+    <span class="func">fetchUsers</span>(controller.signal);
+    <span class="keyword">return</span> () =&gt; controller.abort();
+  }, []);</code></pre>
+                
+                <!-- Comment by human reviewer -->
+                <div class="code-review-comment">
+                  <div class="comment-author">
+                    <span class="author-tag">SJ</span>
+                    <div class="author-meta">
+                      <span class="author-name">Sarah J.</span>
+                      <span class="author-desc">Sr. Frontend Engineer // Reviewer</span>
+                    </div>
+                  </div>
+                  <p class="comment-body">Excellent cleanup hook. Aditya handles asynchronous API mounts using the correct React AbortController pattern. Prevents race conditions and memory leaks.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CMD+K Spotlight Command Bar -->
+      <div class="spotlight-overlay" id="spotlight-modal">
+        <div class="spotlight-box card-glass">
+          <div class="spotlight-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="spotlight-input" placeholder="Type a command or search... (esc to close)" />
+          </div>
+          <div class="spotlight-results" id="spotlight-results-list">
+            <!-- Dynamically populated commands / shortcuts -->
+          </div>
+          <div class="spotlight-footer">
+            <span>Use ↑↓ to navigate, <kbd>Enter</kbd> to execute, <kbd>Esc</kbd> to exit</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Scripts -->
+  </body>
+</html>
