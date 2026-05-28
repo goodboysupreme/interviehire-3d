@@ -4584,46 +4584,29 @@ function loadStateFromLocalStorage() {
 }
 
 async function callDeepSeekAPI(messages, jsonMode = false) {
-  const apiKey = "sk-01d66ee7a6904e928b56e8ec481bb1ec";
-  const endpoint = "https://api.deepseek.com/v1/chat/completions";
-  
-  const payload = {
-    model: "deepseek-chat",
-    messages: messages,
-    temperature: 0.7,
-    max_tokens: 3000
-  };
-  
-  if (jsonMode) {
-    payload.response_format = { type: "json_object" };
-  }
-  
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 35000);
-  
+
   try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
-      },
-      body: JSON.stringify(payload),
+    const response = await fetch('/api/deepseek', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages, jsonMode }),
       signal: controller.signal
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       const errText = await response.text();
       throw new Error(`API response error (${response.status}): ${errText}`);
     }
-    
+
     const data = await response.json();
     return data.choices[0].message.content;
   } catch (error) {
     clearTimeout(timeoutId);
-    console.error("DeepSeek API call failed:", error);
+    console.error('DeepSeek API call failed:', error);
     throw error;
   }
 }
