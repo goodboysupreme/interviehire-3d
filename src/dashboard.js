@@ -1712,7 +1712,7 @@ function renderFunnelStages(job) {
     <div class="jd-stage-item">
       <div class="jds-count">${s.count}</div>
       <div class="jds-label">${s.label}</div>
-      ${s.conv !== null ? `<div class="jds-conv">${s.conv}% conversion</div>` : ''}
+      ${s.conv !== null ? `<div class="jds-conv">${s.conv}%</div>` : ''}
     </div>
   `).join('');
 }
