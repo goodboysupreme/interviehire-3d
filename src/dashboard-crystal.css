@@ -1719,12 +1719,15 @@ body.light-theme .theme-icon-sun { display: block; }
    ============================================================ */
 .sourcing-tabs-row { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
 
-/* 4-column grid for sourcing method cards */
+/* Sourcing method cards — flex so visible cards always fill the row */
 #sourcing-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   gap: 12px;
   margin-bottom: 24px;
+}
+#sourcing-cards-grid .sourcing-tab-card {
+  flex: 1;
+  min-width: 0;
 }
 
 .sourcing-tab-card {

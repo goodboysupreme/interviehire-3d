@@ -3400,7 +3400,9 @@ function switchSourcingTab(tab) {
   const panels = document.querySelectorAll('.sourcing-panel');
   panels.forEach(panel => {
     const panelId = panel.id;
-    panel.classList.toggle('active', panelId === `panel-src-${tab}`);
+    const isActive = panelId === `panel-src-${tab}`;
+    panel.classList.toggle('active', isActive);
+    panel.style.display = isActive ? 'block' : 'none';
   });
 
   setTimeout(updateAllSlidingPills, 50);
