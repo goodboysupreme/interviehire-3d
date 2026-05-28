@@ -701,17 +701,32 @@ body.light-theme .theme-icon-sun { display: block; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Filter bar */
+/* Filter bar — single static row, never changes height */
 .view-filter-bar {
   display: flex;
   align-items: center;
   gap: 12px;
+  height: 56px;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
   border-bottom: 1px solid var(--glass-border);
-  padding-bottom: 16px;
   margin-bottom: 28px;
+  overflow: hidden;
 }
-.filter-options { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
+.filter-options {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: nowrap;
+  align-items: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.filter-options::-webkit-scrollbar { display: none; }
 .filter-tab {
+  flex-shrink: 0;
+  white-space: nowrap;
   background: transparent;
   border: 1px solid transparent;
   color: var(--color-text-muted);
@@ -730,7 +745,8 @@ body.light-theme .theme-icon-sun { display: block; }
   color: var(--color-gold);
   box-shadow: 0 2px 8px rgba(0, 219, 233,0.1);
 }
-.filter-meta { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; }
+.filter-meta { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; flex-shrink: 0; }
+.layout-toggle-group { display: flex; gap: 4px; flex-shrink: 0; }
 .meta-label { color: var(--color-text-muted); }
 .meta-select {
   background: var(--glass-bg);
@@ -1444,7 +1460,9 @@ body.light-theme .theme-icon-sun { display: block; }
 .jd-tabs {
   display: flex;
   align-items: stretch;
-  gap: 0;
+  flex-wrap: nowrap;
+  height: 44px;
+  flex-shrink: 0;
   overflow-x: auto;
   scrollbar-width: none;
   border-bottom: 1px solid var(--glass-border);
@@ -1462,7 +1480,7 @@ body.light-theme .theme-icon-sun { display: block; }
   font-family: var(--font-body);
   font-weight: 500;
   font-size: 0.84rem;
-  padding: 10px 14px 11px;
+  padding: 0 14px;
   margin-bottom: -1px;
   cursor: pointer;
   transition: var(--spring-fast);
@@ -2192,7 +2210,7 @@ body.light-theme .theme-icon-sun { display: block; }
 /* ============================================================
    LAYOUT TOGGLES & MISC
    ============================================================ */
-.layout-toggle-group { display: flex; gap: 4px; }
+.layout-toggle-group { display: flex; gap: 4px; flex-shrink: 0; }
 .layout-toggle-btn {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
