@@ -704,13 +704,13 @@ body.light-theme .theme-icon-sun { display: block; }
 /* Filter bar */
 .view-filter-bar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   border-bottom: 1px solid var(--glass-border);
   padding-bottom: 16px;
   margin-bottom: 28px;
 }
-.filter-options { display: flex; gap: 6px; }
+.filter-options { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
 .filter-tab {
   background: transparent;
   border: 1px solid transparent;
@@ -1443,6 +1443,7 @@ body.light-theme .theme-icon-sun { display: block; }
 }
 .jd-tabs {
   display: flex;
+  align-items: stretch;
   gap: 0;
   overflow-x: auto;
   scrollbar-width: none;
