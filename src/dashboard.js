@@ -214,6 +214,24 @@ const AppState = {
       status: 'Resume',
       score: '—',
       registeredOn: '28 May 2026, 09:00 AM'
+    },
+    {
+      id: 'CAN-5501-RA2',
+      name: 'Priya Sharma',
+      email: 'priya.sharma@bd.in',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '28 May 2026, 10:30 AM'
+    },
+    {
+      id: 'CAN-5502-RA3',
+      name: 'Arjun Verma',
+      email: 'arjun.v@proposals.co',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '28 May 2026, 11:15 AM'
     }
   ],
 
