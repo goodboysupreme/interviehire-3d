@@ -295,38 +295,48 @@ function renderJobCards() {
     const card = document.createElement('div');
     card.className = 'job-card';
     
+    // Build safe defaults for all fields
+    const createdBy = job.createdBy || 'Devasri';
+    const experienceBand = job.experienceBand || 'Upto 2 Years';
+    const created = job.created || 'Recently';
+    const pipeline = job.pipeline || { total: 0, resume: 0, screening: 0, functional: 0 };
+    const cardName = job.cardName || job.roleName || 'Untitled Job';
+    const roleName = job.roleName || 'Untitled Role';
+    const status = job.status || 'published';
+    const jobId = job.id || 'unknown';
+
     // Build pipeline values
-    const resumeVal = job.pipeline.resume === 0 || job.pipeline.resume === null ? '-' : job.pipeline.resume;
-    const screeningVal = job.pipeline.screening === 0 || job.pipeline.screening === null ? '-' : job.pipeline.screening;
-    const functionalVal = job.pipeline.functional === 0 || job.pipeline.functional === null ? '-' : job.pipeline.functional;
+    const resumeVal = pipeline.resume === 0 || pipeline.resume === null ? '-' : pipeline.resume;
+    const screeningVal = pipeline.screening === 0 || pipeline.screening === null ? '-' : pipeline.screening;
+    const functionalVal = pipeline.functional === 0 || pipeline.functional === null ? '-' : pipeline.functional;
 
     card.innerHTML = `
       <div class="job-card-header">
         <div class="job-card-title-area">
-          <h3 class="job-title">${job.cardName}</h3>
-          <span class="job-meta-pill">Role: ${job.roleName}</span>
+          <h3 class="job-title">${cardName}</h3>
+          <span class="job-meta-pill">Role: ${roleName}</span>
         </div>
-        <span class="status-badge ${job.status}">
+        <span class="status-badge ${status}">
           <span class="status-badge-dot"></span>
-          ${job.status.charAt(0).toUpperCase() + job.status.slice(1)}
+          ${status.charAt(0).toUpperCase() + status.slice(1)}
         </span>
       </div>
       
       <div class="job-card-details">
         <div class="detail-item">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-          <span>Created: ${job.created}</span>
+          <span>Created: ${created}</span>
         </div>
         <div class="detail-item">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-          <span>Experience: ${job.experienceBand}</span>
+          <span>Experience: ${experienceBand}</span>
         </div>
       </div>
 
       <div class="pipeline-flow">
         <div class="pipeline-step step-total">
           <span class="step-label">Total</span>
-          <span class="step-val">${job.pipeline.total}</span>
+          <span class="step-val">${pipeline.total}</span>
         </div>
         <span class="pipeline-arrow">→</span>
         <div class="pipeline-step step-resume">
@@ -347,8 +357,8 @@ function renderJobCards() {
 
       <div class="job-card-footer">
         <div class="author-info">
-          <div class="author-tag">${job.createdBy.charAt(0)}</div>
-          <span class="author-meta">${job.createdBy} (me) // <a href="#" class="author-link-doc" onclick="event.stopPropagation(); openJobDescriptionDrawer('${job.id}')">Job Description</a></span>
+          <div class="author-tag">${createdBy.charAt(0)}</div>
+          <span class="author-meta">${createdBy} (me) // <a href="#" class="author-link-doc" onclick="event.stopPropagation(); openJobDescriptionDrawer('${jobId}')">Job Description</a></span>
         </div>
         <span class="card-responses-cta">
           View Responses
@@ -358,7 +368,7 @@ function renderJobCards() {
     `;
 
     card.addEventListener('click', () => {
-      navigateToJobDetail(job.id);
+      navigateToJobDetail(jobId);
     });
 
     container.appendChild(card);
@@ -3881,21 +3891,111 @@ function saveStateToLocalStorage() {
 
 function loadStateFromLocalStorage() {
   const saved = localStorage.getItem('interviehire_jobs_state');
-  if (saved) {
-    try {
-      const parsedJobs = JSON.parse(saved);
-      parsedJobs.forEach(pj => {
-        const existing = AppState.jobs.find(j => j.id === pj.id);
-        if (existing) {
-          existing.description = pj.description;
-          existing.questions = pj.questions;
-        } else {
-          AppState.jobs.push(pj);
-        }
-      });
-    } catch (e) {
-      console.error("Error loading jobs from localStorage", e);
+  if (!saved) {
+    saveStateToLocalStorage();
+    return;
+  }
+  
+  try {
+    const parsedJobs = JSON.parse(saved);
+    if (!Array.isArray(parsedJobs) || parsedJobs.length === 0) {
+      saveStateToLocalStorage();
+      return;
     }
+    
+    // Replace AppState.jobs with parsed jobs from localStorage, ensuring all properties are defined with fallbacks
+    AppState.jobs = parsedJobs.map(pj => {
+      // Find hardcoded defaults for pipeline or questions if missing
+      const hardcodedDefault = pj.id === 'AKRO62EF45E26EA1' ? {
+        description: "We are seeking a detail-oriented Government Tender & Proposal Executive to manage and lead the preparation, review, and submission of bids, tenders, and proposals for public sector opportunities. Key duties include analyzing RFP guidelines, checking compliance matrices, and writing clear technical and operational responses.",
+        experienceBand: "Upto 2 Years",
+        roleName: "Government Tender & Proposal Executive",
+        cardName: "Government Tender & Proposal Executive..",
+        createdBy: "Devasri",
+        pipeline: { total: 3, resume: 0, screening: 2, functional: 1 },
+        questions: [
+          {
+            id: 'q-prop-1',
+            type: 'technical',
+            question: "Explain the process of drafting a government RFP response. What are the key compliance elements you verify before submission?",
+            difficulty: 'intermediate',
+            rubric: "Identifies compliance checklists, standard submission formats, and verification protocols.",
+            follow_ups: ["How do you handle late updates to tender guidelines?", "What tools do you use for tracking deadline milestones?"]
+          },
+          {
+            id: 'q-prop-2',
+            type: 'behavioral',
+            question: "Describe a time when you had to meet an extremely tight deadline for a critical proposal. How did you organize your tasks?",
+            difficulty: 'beginner',
+            rubric: "Mentions prioritization, time management, keeping key stakeholders aligned, and maintaining accuracy under pressure.",
+            follow_ups: ["Did you make any errors in that rush?", "What would you do differently next time?"]
+          },
+          {
+            id: 'q-prop-3',
+            type: 'situational',
+            question: "A key subject matter expert (SME) fails to deliver their input 2 hours before a tender submission deadline. How do you handle this?",
+            difficulty: 'advanced',
+            rubric: "Proposes logical mitigation strategies like escalation plans, using boilerplate content, or direct intervention to secure crucial technical details.",
+            follow_ups: ["How do you prevent this issue in advance?", "How do you communicate the emergency to leadership?"]
+          }
+        ]
+      } : pj.id === 'AKRO62EF45E26DF5' ? {
+        description: "We are hiring a Full Stack Developer to design, build, and support high-performance web applications. You will work with React on the frontend, Node.js and Express on the backend, and PostgreSQL for storage. Responsibilities include building responsive dashboards, optimizing latency, and ensuring data consistency across endpoints.",
+        experienceBand: "1-4 Years",
+        roleName: "Full Stack Developer",
+        cardName: "Full Stack Developer Hiring - Demo",
+        createdBy: "Devasri",
+        pipeline: { total: 1, resume: 0, screening: 0, functional: 1 },
+        questions: [
+          {
+            id: 'q-dev-1',
+            type: 'technical',
+            question: "Describe the differences between optimistic UI updates and pessimistic UI updates. When would you use each?",
+            difficulty: 'intermediate',
+            rubric: "Explains user experience vs data consistency, error handling, and rollback logic in state managers.",
+            follow_ups: ["How do you handle temporary network failures?", "Can you describe a scenario where optimistic updates fail badly?"]
+          },
+          {
+            id: 'q-dev-2',
+            type: 'behavioral',
+            question: "Tell me about a time you had a technical disagreement with a team lead or colleague. How was it resolved?",
+            difficulty: 'beginner',
+            rubric: "Highlights constructive communication, presenting data-backed arguments, testing hypotheses, and committing to the final team decision.",
+            follow_ups: ["What did you learn from their perspective?", "Did it affect your working relationship afterwards?"]
+          },
+          {
+            id: 'q-dev-3',
+            type: 'situational',
+            question: "We are experiencing a sudden spike in database read latency during peak hours. Walk me through your debugging steps.",
+            difficulty: 'advanced',
+            rubric: "Mentions slow query logs, connection pools, indexing, caching layers (Redis), replica scaling, and server utilization checks.",
+            follow_ups: ["How would you explain the downtime to a non-technical manager?", "What long-term safeguards would you set up?"]
+          }
+        ]
+      } : null;
+
+      const fallbackPipeline = hardcodedDefault ? hardcodedDefault.pipeline : { total: 0, resume: 0, screening: 0, functional: 0 };
+      const fallbackDesc = hardcodedDefault ? hardcodedDefault.description : "No job description provided.";
+      const fallbackQuestions = hardcodedDefault ? hardcodedDefault.questions : [];
+      
+      return {
+        id: pj.id || generateJobId(),
+        roleName: pj.roleName || (hardcodedDefault ? hardcodedDefault.roleName : 'Untitled Role'),
+        cardName: pj.cardName || pj.roleName || (hardcodedDefault ? hardcodedDefault.cardName : 'Untitled Job'),
+        created: pj.created || 'Recently',
+        status: pj.status || 'published',
+        customJobId: pj.customJobId || '-',
+        experienceBand: pj.experienceBand || (hardcodedDefault ? hardcodedDefault.experienceBand : 'Upto 2 Years'),
+        createdBy: pj.createdBy || (hardcodedDefault ? hardcodedDefault.createdBy : 'Devasri'),
+        description: pj.description || fallbackDesc,
+        questions: pj.questions || fallbackQuestions,
+        pipeline: pj.pipeline || fallbackPipeline
+      };
+    });
+  } catch (e) {
+    console.error("Error loading jobs from localStorage", e);
+    // If corrupt, save fresh hardcoded defaults
+    saveStateToLocalStorage();
   }
 }
 
