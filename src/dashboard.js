@@ -902,6 +902,11 @@ function closeDrawers() {
     reportDrawer.classList.remove('active');
     reportDrawer.style.right = '-540px';
   }
+
+  const agentDrawer = document.getElementById('drawer-agent-config');
+  if (agentDrawer) {
+    agentDrawer.classList.remove('active');
+  }
   
   resetWaveformAudio();
   soundEngine.playClick();
@@ -1760,6 +1765,18 @@ document.addEventListener('keydown', (e) => {
 // COMPONENT MOUNT BINDINGS
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
+
+  // Sidebar Collapse Toggle
+  const toggleSidebarBtn = document.getElementById('btn-toggle-sidebar');
+  if (toggleSidebarBtn) {
+    toggleSidebarBtn.addEventListener('click', () => {
+      const appContainer = document.querySelector('.dashboard-app');
+      if (appContainer) {
+        appContainer.classList.toggle('sidebar-collapsed');
+        soundEngine.playClick();
+      }
+    });
+  }
 
   // Recalculate job pipelines based on initial state
   recalculateJobPipelines();

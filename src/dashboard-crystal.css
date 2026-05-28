@@ -259,6 +259,7 @@ body { position: relative; color: var(--color-text-primary); }
   grid-template-columns: 260px 1fr;
   min-height: 100vh;
   width: 100%;
+  transition: grid-template-columns 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ============================================================
@@ -279,11 +280,47 @@ body { position: relative; color: var(--color-text-primary); }
   padding: 24px 16px;
   overflow-y: auto;
   animation: sidebar-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1), padding 0.45s cubic-bezier(0.16, 1, 0.3, 1), background 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes sidebar-in {
   from { opacity: 0; transform: translateX(-20px); }
   to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Sidebar Header & Toggle */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 35px;
+  width: 100%;
+  transition: var(--spring-fast);
+}
+
+.sidebar-toggle {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--color-text-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--spring-snappy);
+}
+
+.sidebar-toggle:hover {
+  background: var(--glass-bg-hover);
+  color: var(--color-text-primary);
+  border-color: var(--glass-border-gold);
+  transform: scale(1.05);
+}
+
+.sidebar-toggle svg {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Logo */
@@ -296,7 +333,6 @@ body { position: relative; color: var(--color-text-primary); }
   font-weight: 800;
   font-size: 1.35rem;
   color: var(--color-text-primary);
-  margin-bottom: 35px;
   padding-left: 8px;
   transition: var(--spring-fast);
 }
@@ -304,6 +340,60 @@ body { position: relative; color: var(--color-text-primary); }
 .logo-img { width: 24px; height: 24px; object-fit: contain; }
 .logo-highlight {
   color: var(--color-indigo);
+}
+
+/* Collapsed Sidebar State */
+.dashboard-app.sidebar-collapsed {
+  grid-template-columns: 80px 1fr;
+}
+
+.dashboard-app.sidebar-collapsed .sidebar {
+  padding: 24px 10px;
+  align-items: center;
+}
+
+.dashboard-app.sidebar-collapsed .sidebar-header {
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.dashboard-app.sidebar-collapsed .sidebar-toggle svg {
+  transform: rotate(180deg);
+}
+
+.dashboard-app.sidebar-collapsed .logo-text,
+.dashboard-app.sidebar-collapsed .nav-item span,
+.dashboard-app.sidebar-collapsed .chevron-icon,
+.dashboard-app.sidebar-collapsed .sub-nav,
+.dashboard-app.sidebar-collapsed .card-plan,
+.dashboard-app.sidebar-collapsed .user-info,
+.dashboard-app.sidebar-collapsed .btn-logout {
+  display: none !important;
+}
+
+.dashboard-app.sidebar-collapsed .logo-area {
+  padding-left: 0;
+  justify-content: center;
+}
+
+.dashboard-app.sidebar-collapsed .nav-item {
+  padding: 12px;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto;
+}
+
+.dashboard-app.sidebar-collapsed .nav-item.active::before {
+  left: -10px;
+}
+
+.dashboard-app.sidebar-collapsed .user-profile {
+  justify-content: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--glass-border);
+  width: 100%;
 }
 
 /* Nav */
