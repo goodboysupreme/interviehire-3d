@@ -1667,10 +1667,7 @@ function navigateToJobDetail(jobId) {
 
   // Sub-tab counts
   document.getElementById('jd-count-screening').textContent = job.pipeline.screening;
-  const funcLabel = job.pipeline.screening > 0
-    ? `${job.pipeline.functional} of ${job.pipeline.screening}`
-    : job.pipeline.functional;
-  document.getElementById('jd-count-functional').textContent = funcLabel;
+  document.getElementById('jd-count-functional').textContent = job.pipeline.functional;
 
   // Reset to Overview tab
   document.querySelectorAll('.jd-tab').forEach(t => t.classList.remove('active'));

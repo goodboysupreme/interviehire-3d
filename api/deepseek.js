@@ -3,6 +3,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  if (!process.env.DEEPSEEK_API_KEY) {
+    return res.status(500).json({ error: 'DEEPSEEK_API_KEY environment variable is not set on the server.' });
+  }
+
   const { messages, jsonMode } = req.body;
 
   if (!messages || !Array.isArray(messages)) {
