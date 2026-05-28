@@ -1125,8 +1125,12 @@
               <label for="drawer-jd-text">Edit detailed requirements and skills for this role:</label>
               <textarea id="drawer-jd-text" style="flex-grow: 1; min-height: 250px; max-height: 450px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; padding: 12px; color: var(--color-text-primary); font-family: var(--font-body); font-size: 0.88rem; line-height: 1.5; outline: none;"></textarea>
             </div>
-            <div style="margin-top: 20px;">
+            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
               <button class="btn-drawer-submit" id="btn-save-drawer-jd">Save Description</button>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-enhance-drawer-jd" style="flex:1; padding: 9px 12px; background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.3); border-radius: 8px; color: var(--color-gold); font-size: 0.82rem; font-family: var(--font-body); cursor: pointer; transition: var(--spring-fast);">✨ Enhance with AI</button>
+                <button id="btn-generate-from-drawer-jd" style="flex:1; padding: 9px 12px; background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.3); border-radius: 8px; color: var(--color-indigo, #6366f1); font-size: 0.82rem; font-family: var(--font-body); cursor: pointer; transition: var(--spring-fast);">📋 Generate Questions</button>
+              </div>
             </div>
           </div>
         </div>

@@ -1925,6 +1925,74 @@ document.addEventListener('DOMContentLoaded', () => {
     closeDrawers();
   });
 
+  // JD Drawer: Enhance description with DeepSeek
+  const btnEnhanceDrawerJd = document.getElementById('btn-enhance-drawer-jd');
+  if (btnEnhanceDrawerJd) {
+    btnEnhanceDrawerJd.addEventListener('click', async () => {
+      const drawer = document.getElementById('drawer-view-jd');
+      const textarea = document.getElementById('drawer-jd-text');
+      const currentText = textarea ? textarea.value.trim() : '';
+      if (!currentText) {
+        showPremiumToast("Please enter a job description first.", "error");
+        return;
+      }
+
+      const originalLabel = btnEnhanceDrawerJd.textContent;
+      btnEnhanceDrawerJd.disabled = true;
+      btnEnhanceDrawerJd.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin-mini 0.6s linear infinite;margin-right:5px;vertical-align:middle;"></span> Enhancing...`;
+
+      soundEngine.playChime([392, 440], 0.08, 0.1);
+
+      const systemPrompt = `You are a senior talent acquisition specialist. Rewrite the given job description to be clearer, more compelling, and professional. Keep all the original requirements but improve the structure, language, and readability. Return ONLY the improved job description text — no commentary, no JSON, no markdown headers.`;
+
+      try {
+        const improved = await callDeepSeekAPI([
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Improve this job description:\n\n${currentText}` }
+        ]);
+        if (textarea) textarea.value = improved.trim();
+        soundEngine.playChime([523.25, 659.25], 0.12, 0.08);
+        showPremiumToast("Job description enhanced successfully.", "success");
+      } catch (err) {
+        console.error("JD enhancement failed:", err);
+        showPremiumToast("Enhancement failed. Check API status.", "error");
+      } finally {
+        btnEnhanceDrawerJd.disabled = false;
+        btnEnhanceDrawerJd.textContent = originalLabel;
+      }
+    });
+  }
+
+  // JD Drawer: Save + navigate to Questions tab and trigger generation
+  const btnGenerateFromDrawer = document.getElementById('btn-generate-from-drawer-jd');
+  if (btnGenerateFromDrawer) {
+    btnGenerateFromDrawer.addEventListener('click', () => {
+      const drawer = document.getElementById('drawer-view-jd');
+      const jobId = drawer.getAttribute('data-current-job-id');
+      const descriptionText = document.getElementById('drawer-jd-text').value.trim();
+      if (!jobId || !descriptionText) {
+        showPremiumToast("Add a job description before generating questions.", "error");
+        return;
+      }
+      const job = AppState.jobs.find(j => j.id === jobId);
+      if (job) {
+        job.description = descriptionText;
+        saveStateToLocalStorage();
+      }
+      closeDrawers();
+      navigateToJobDetail(jobId);
+      // Switch to Questions tab after navigation paint
+      requestAnimationFrame(() => {
+        const questionsTab = document.querySelector('.jd-tab[data-jd-tab="questions"]');
+        if (questionsTab) questionsTab.click();
+        // Pre-fill the description textarea in the Questions pane
+        const rawDesc = document.getElementById('jd-raw-description');
+        if (rawDesc) rawDesc.value = descriptionText;
+        soundEngine.playChime([329.63, 392, 523.25], 0.12, 0.1);
+      });
+    });
+  }
+
   window.openJobDescriptionDrawer = (jobId) => openDrawer('view-jd', jobId);
   
   const closeReportBtn = document.getElementById('btn-close-drawer-report');
@@ -2032,7 +2100,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // H. Forms submit action handlers
-  // 1. Create Job Card Submission  const createJobForm = document.getElementById('form-create-job');
+  // 1. Create Job Card Submission
+  const createJobForm = document.getElementById('form-create-job');
   if (createJobForm) {
     createJobForm.addEventListener('submit', (e) => {
       e.preventDefault();
