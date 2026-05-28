@@ -663,6 +663,10 @@
                   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
                   Functional Interview <span class="jd-count-pill" id="jd-count-functional">0</span>
                 </button>
+                <button class="jd-tab" data-jd-tab="questions">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line><circle cx="12" cy="12" r="10"></circle></svg>
+                  Questions Generator
+                </button>
               </div>
               <div class="jd-actions">
                 <div class="jd-search-wrap">
@@ -753,6 +757,68 @@
               </div>
               <div class="jd-pane" id="jd-pane-functional">
                 <div class="jd-stage-candidates-list" id="list-stage-functional"></div>
+              </div>
+
+              <!-- Questions Generator Pane -->
+              <div class="jd-pane" id="jd-pane-questions">
+                <div class="jd-questions-layout">
+                  <!-- Left: Job Description Source Panel -->
+                  <div class="card-glass jd-questions-input-card">
+                    <div class="jd-panel-header">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-indigo)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                      <h3 class="jd-card-title">Job Description</h3>
+                    </div>
+                    <div class="jd-questions-input-body">
+                      <textarea id="jd-raw-description" placeholder="Paste the job description or role requirements here..."></textarea>
+                      <div class="jd-generator-actions">
+                        <button class="btn-jd-primary" id="btn-generate-questions" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                          <span class="btn-text">✨ Generate Questions Set</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right: Questions List & Custom Adder -->
+                  <div class="jd-questions-list-section">
+                    <div class="jd-questions-header">
+                      <div class="jd-questions-title-wrap">
+                        <h3 class="jd-section-title">Interview Rubric & Questions</h3>
+                        <p class="jd-section-subtitle">Structured evaluation criteria powered by DeepSeek-V3</p>
+                      </div>
+                      <span class="questions-count-badge" id="questions-count-badge">0 questions</span>
+                    </div>
+
+                    <!-- Staging area for newly generated questions before importing -->
+                    <div class="card-glass jd-staging-area" id="jd-staging-area" style="display: none;">
+                      <div class="staging-header">
+                        <span class="staging-title">📋 Review Generated Questions</span>
+                        <div class="staging-actions">
+                          <button class="btn-jd-ghost btn-sm" id="btn-staging-replace">Replace List</button>
+                          <button class="btn-jd-primary btn-sm" id="btn-staging-append">Append List</button>
+                          <button class="btn-close-staging" id="btn-close-staging">&times;</button>
+                        </div>
+                      </div>
+                      <div class="staging-list" id="staging-questions-list"></div>
+                    </div>
+
+                    <!-- Main list of questions -->
+                    <div class="jd-questions-list" id="list-questions">
+                      <!-- Filled by JS -->
+                    </div>
+
+                    <!-- Add Custom Question Card -->
+                    <div class="card-glass jd-add-question-card">
+                      <h4 class="jd-add-title">Add Custom Question</h4>
+                      <div class="jd-add-row">
+                        <textarea id="input-custom-question" placeholder="Draft a raw interview question... (e.g. Tell me about your experience scaling Postgres database tables.)"></textarea>
+                        <div class="jd-add-actions">
+                          <button class="btn-jd-ghost" id="btn-add-question-raw">+ Add As-Is</button>
+                          <button class="btn-jd-primary" id="btn-enhance-custom">✨ Enhance with AI</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
             </div><!-- /jd-panes -->
@@ -1022,6 +1088,10 @@
               <input type="text" id="job-creator-input" value="Devasri" readonly />
             </div>
             <div class="form-group">
+              <label for="job-description-input">Job Description</label>
+              <textarea id="job-description-input" placeholder="Enter detailed job description, responsibilities, and required skills..." rows="4"></textarea>
+            </div>
+            <div class="form-group">
               <label>Initial Pipeline Statuses</label>
               <div class="pipeline-checkbox-list">
                 <label class="pipeline-check-item">
@@ -1040,6 +1110,25 @@
             </div>
             <button type="submit" class="btn-drawer-submit">Create Job Card</button>
           </form>
+        </div>
+      </div>
+
+      <!-- Drawer: Job Description View/Edit -->
+      <div class="slide-drawer" id="drawer-view-jd">
+        <div class="drawer-header">
+          <h2 class="drawer-title">Job Description</h2>
+          <button class="btn-close-drawer" id="btn-close-drawer-view-jd" aria-label="Close panel">×</button>
+        </div>
+        <div class="drawer-body">
+          <div class="jd-viewer-container" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="form-group" style="flex-grow: 1; display: flex; flex-direction: column;">
+              <label for="drawer-jd-text">Edit detailed requirements and skills for this role:</label>
+              <textarea id="drawer-jd-text" style="flex-grow: 1; min-height: 250px; max-height: 450px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; padding: 12px; color: var(--color-text-primary); font-family: var(--font-body); font-size: 0.88rem; line-height: 1.5; outline: none;"></textarea>
+            </div>
+            <div style="margin-top: 20px;">
+              <button class="btn-drawer-submit" id="btn-save-drawer-jd">Save Description</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1220,6 +1309,42 @@ export default function <span class="func">UserList</span>() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal: AI Question Enhancer -->
+      <div class="modal-overlay" id="enhance-modal" style="display: none;">
+        <div class="modal-card card-glass">
+          <div class="modal-header">
+            <h3 class="modal-title">✨ AI Question Enhancer</h3>
+            <button class="btn-close-modal" id="btn-close-enhance-modal" aria-label="Close modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="comparison-grid">
+              <div class="comp-col">
+                <label class="comp-label">Original Draft</label>
+                <div class="comp-box-original" id="modal-original-text"></div>
+              </div>
+              <div class="comp-col">
+                <label class="comp-label">Enhanced Question Text</label>
+                <textarea id="modal-enhanced-text" class="input-glass" style="height: 120px; width: 100%; border-radius: 8px; border: 1px solid var(--glass-border); padding: 10px; color: var(--color-text-primary); background: rgba(0,0,0,0.2); font-family: var(--font-body);"></textarea>
+              </div>
+            </div>
+            <div class="form-group-modal" style="margin-top: 16px;">
+              <label class="comp-label">Suggested Evaluation Rubric</label>
+              <textarea id="modal-rubric-text" class="input-glass" style="height: 80px; width: 100%; border-radius: 8px; border: 1px solid var(--glass-border); padding: 10px; color: var(--color-text-primary); background: rgba(0,0,0,0.2); font-family: var(--font-body);"></textarea>
+            </div>
+            <div class="form-group-modal" style="margin-top: 16px;">
+              <label class="comp-label">Suggested Follow-Up Questions</label>
+              <div class="follow-ups-list" id="modal-follow-ups" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                <!-- Dynamically populated list of inputs -->
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+            <button class="btn-jd-ghost" id="btn-cancel-enhance">Discard</button>
+            <button class="btn-jd-primary" id="btn-accept-enhance">Accept & Add to Rubric</button>
           </div>
         </div>
       </div>

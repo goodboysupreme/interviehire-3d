@@ -90,12 +90,39 @@ const AppState = {
       customJobId: '-',
       experienceBand: 'Upto 2 Years',
       createdBy: 'Devasri',
+      description: "We are seeking a detail-oriented Government Tender & Proposal Executive to manage and lead the preparation, review, and submission of bids, tenders, and proposals for public sector opportunities. Key duties include analyzing RFP guidelines, checking compliance matrices, and writing clear technical and operational responses.",
       pipeline: {
         total: 3,
         resume: 0,
         screening: 2,
         functional: 1
-      }
+      },
+      questions: [
+        {
+          id: 'q-prop-1',
+          type: 'technical',
+          question: "Explain the process of drafting a government RFP response. What are the key compliance elements you verify before submission?",
+          difficulty: 'intermediate',
+          rubric: "Identifies compliance checklists, standard submission formats, and verification protocols.",
+          follow_ups: ["How do you handle late updates to tender guidelines?", "What tools do you use for tracking deadline milestones?"]
+        },
+        {
+          id: 'q-prop-2',
+          type: 'behavioral',
+          question: "Describe a time when you had to meet an extremely tight deadline for a critical proposal. How did you organize your tasks?",
+          difficulty: 'beginner',
+          rubric: "Mentions prioritization, time management, keeping key stakeholders aligned, and maintaining accuracy under pressure.",
+          follow_ups: ["Did you make any errors in that rush?", "What would you do differently next time?"]
+        },
+        {
+          id: 'q-prop-3',
+          type: 'situational',
+          question: "A key subject matter expert (SME) fails to deliver their input 2 hours before a tender submission deadline. How do you handle this?",
+          difficulty: 'advanced',
+          rubric: "Proposes logical mitigation strategies like escalation plans, using boilerplate content, or direct intervention to secure crucial technical details.",
+          follow_ups: ["How do you prevent this issue in advance?", "How do you communicate the emergency to leadership?"]
+        }
+      ]
     },
     {
       id: 'AKRO62EF45E26DF5',
@@ -106,12 +133,39 @@ const AppState = {
       customJobId: '-',
       experienceBand: '1-4 Years',
       createdBy: 'Devasri',
+      description: "We are hiring a Full Stack Developer to design, build, and support high-performance web applications. You will work with React on the frontend, Node.js and Express on the backend, and PostgreSQL for storage. Responsibilities include building responsive dashboards, optimizing latency, and ensuring data consistency across endpoints.",
       pipeline: {
         total: 1,
         resume: 0,
         screening: 0,
         functional: 1
-      }
+      },
+      questions: [
+        {
+          id: 'q-dev-1',
+          type: 'technical',
+          question: "Describe the differences between optimistic UI updates and pessimistic UI updates. When would you use each?",
+          difficulty: 'intermediate',
+          rubric: "Explains user experience vs data consistency, error handling, and rollback logic in state managers.",
+          follow_ups: ["How do you handle temporary network failures?", "Can you describe a scenario where optimistic updates fail badly?"]
+        },
+        {
+          id: 'q-dev-2',
+          type: 'behavioral',
+          question: "Tell me about a time you had a technical disagreement with a team lead or colleague. How was it resolved?",
+          difficulty: 'beginner',
+          rubric: "Highlights constructive communication, presenting data-backed arguments, testing hypotheses, and committing to the final team decision.",
+          follow_ups: ["What did you learn from their perspective?", "Did it affect your working relationship afterwards?"]
+        },
+        {
+          id: 'q-dev-3',
+          type: 'situational',
+          question: "We are experiencing a sudden spike in database read latency during peak hours. Walk me through your debugging steps.",
+          difficulty: 'advanced',
+          rubric: "Mentions slow query logs, connection pools, indexing, caching layers (Redis), replica scaling, and server utilization checks.",
+          follow_ups: ["How would you explain the downtime to a non-technical manager?", "What long-term safeguards would you set up?"]
+        }
+      ]
     }
   ],
   
@@ -294,7 +348,7 @@ function renderJobCards() {
       <div class="job-card-footer">
         <div class="author-info">
           <div class="author-tag">${job.createdBy.charAt(0)}</div>
-          <span class="author-meta">${job.createdBy} (me) // <a href="#" class="author-link-doc" onclick="event.stopPropagation()">Job Description</a></span>
+          <span class="author-meta">${job.createdBy} (me) // <a href="#" class="author-link-doc" onclick="event.stopPropagation(); openJobDescriptionDrawer('${job.id}')">Job Description</a></span>
         </div>
         <span class="card-responses-cta">
           View Responses
@@ -879,7 +933,7 @@ function navigateToSubtab(subtabId) {
 // ==========================================
 // DRAWERS SHOW / HIDE CONTROL
 // ==========================================
-function openDrawer(drawerType) {
+function openDrawer(drawerType, jobId = null) {
   const overlay = document.getElementById('drawer-backdrop');
   overlay.classList.add('active');
 
@@ -889,6 +943,16 @@ function openDrawer(drawerType) {
     document.getElementById('drawer-job').classList.add('active');
   } else if (drawerType === 'member') {
     document.getElementById('drawer-member').classList.add('active');
+  } else if (drawerType === 'view-jd') {
+    const drawer = document.getElementById('drawer-view-jd');
+    drawer.classList.add('active');
+    if (jobId) {
+      const job = AppState.jobs.find(j => j.id === jobId);
+      if (job) {
+        document.getElementById('drawer-jd-text').value = job.description || "";
+        drawer.setAttribute('data-current-job-id', jobId);
+      }
+    }
   }
 }
 
@@ -896,6 +960,11 @@ function closeDrawers() {
   document.getElementById('drawer-backdrop').classList.remove('active');
   document.getElementById('drawer-job').classList.remove('active');
   document.getElementById('drawer-member').classList.remove('active');
+  
+  const jdDrawer = document.getElementById('drawer-view-jd');
+  if (jdDrawer) {
+    jdDrawer.classList.remove('active');
+  }
   
   const reportDrawer = document.getElementById('drawer-report');
   if (reportDrawer) {
@@ -1765,6 +1834,8 @@ document.addEventListener('keydown', (e) => {
 // COMPONENT MOUNT BINDINGS
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
+  // Load state from localStorage on startup
+  loadStateFromLocalStorage();
 
   // Sidebar Collapse Toggle
   const toggleSidebarBtn = document.getElementById('btn-toggle-sidebar');
@@ -1821,6 +1892,30 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('drawer-backdrop').addEventListener('click', closeDrawers);
   document.getElementById('btn-close-drawer-job').addEventListener('click', closeDrawers);
   document.getElementById('btn-close-drawer-member').addEventListener('click', closeDrawers);
+  document.getElementById('btn-close-drawer-view-jd').addEventListener('click', closeDrawers);
+  
+  document.getElementById('btn-save-drawer-jd').addEventListener('click', () => {
+    const drawer = document.getElementById('drawer-view-jd');
+    const jobId = drawer.getAttribute('data-current-job-id');
+    const descriptionText = document.getElementById('drawer-jd-text').value.trim();
+    if (jobId) {
+      const job = AppState.jobs.find(j => j.id === jobId);
+      if (job) {
+        job.description = descriptionText;
+        showPremiumToast("Job description updated successfully.", "success");
+        saveStateToLocalStorage();
+        if (AppState.activeJobId === jobId) {
+          const jdRawDescTextarea = document.getElementById('jd-raw-description');
+          if (jdRawDescTextarea) {
+            jdRawDescTextarea.value = descriptionText;
+          }
+        }
+      }
+    }
+    closeDrawers();
+  });
+
+  window.openJobDescriptionDrawer = (jobId) => openDrawer('view-jd', jobId);
   
   const closeReportBtn = document.getElementById('btn-close-drawer-report');
   if (closeReportBtn) {
@@ -1927,102 +2022,106 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // H. Forms submit action handlers
-  // 1. Create Job Card Submission
-  const createJobForm = document.getElementById('form-create-job');
-  createJobForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const cardName = document.getElementById('job-title-input').value;
-    const roleName = document.getElementById('job-role-input').value;
-    const expBand = document.getElementById('job-experience-input').value;
-    let customId = document.getElementById('job-custom-id').value;
-    
-    if (!customId || customId.trim() === '') {
-      customId = '-';
-    }
-
-    // Pipeline stages counts
-    const addResume = document.getElementById('chk-resume').checked;
-    const addScreening = document.getElementById('chk-screening').checked;
-    const addFunctional = document.getElementById('chk-functional').checked;
-
-    let totalApplicants = 0;
-    let resumeVal = 0;
-    let screeningVal = 0;
-    let functionalVal = 0;
-
-    // Simulate mock applicant distribution and push records
-    const firstNames = ['Lucas', 'Sofia', 'Marcus', 'Chloe', 'Daniel', 'Amina'];
-    const lastNames = ['Chen', 'Silva', 'Taylor', 'Nakamura', 'Oki', 'Ali'];
-    
-    const createMockCandidate = (status) => {
-      const name = `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
-      const email = `${name.toLowerCase().replace(' ', '.')}@recruit.io`;
-      const id = `CAN-${Math.floor(Math.random() * 8999 + 1000)}-${customId !== '-' ? customId.slice(-3) : generateJobId().slice(-3)}`;
-      const scoreVal = Math.floor(Math.random() * 15 + 80) + '%';
+  // 1. Create Job Card Submission  const createJobForm = document.getElementById('form-create-job');
+  if (createJobForm) {
+    createJobForm.addEventListener('submit', (e) => {
+      e.preventDefault();
       
-      AppState.candidates.push({
-        id,
-        name,
-        email,
-        jobApplied: roleName,
-        status,
-        score: scoreVal,
-        registeredOn: new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) + ', 10:00 AM'
-      });
-    };
-
-    if (addResume) {
-      createMockCandidate('Resume');
-      resumeVal++;
-      totalApplicants++;
-    }
-    if (addScreening) {
-      createMockCandidate('Screening');
-      createMockCandidate('Screening');
-      screeningVal += 2;
-      totalApplicants += 2;
-    }
-    if (addFunctional) {
-      createMockCandidate('Functional');
-      functionalVal++;
-      totalApplicants++;
-    }
-
-    const newJob = {
-      id: generateJobId(),
-      roleName: roleName,
-      cardName: cardName,
-      created: new Date().toLocaleString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
-      status: 'published',
-      customJobId: customId,
-      experienceBand: expBand,
-      createdBy: 'Devasri',
-      pipeline: {
-        total: totalApplicants,
-        resume: resumeVal,
-        screening: screeningVal,
-        functional: functionalVal
+      const cardName = document.getElementById('job-title-input').value;
+      const roleName = document.getElementById('job-role-input').value;
+      const expBand = document.getElementById('job-experience-input').value;
+      let customId = document.getElementById('job-custom-id').value;
+      const description = document.getElementById('job-description-input').value.trim();
+      
+      if (!customId || customId.trim() === '') {
+        customId = '-';
       }
-    };
 
-    AppState.jobs.push(newJob);
+      // Pipeline stages counts
+      const addResume = document.getElementById('chk-resume').checked;
+      const addScreening = document.getElementById('chk-screening').checked;
+      const addFunctional = document.getElementById('chk-functional').checked;
 
-    // Refresh display
-    const isBoard = document.getElementById('btn-view-board').classList.contains('active');
-    if (isBoard) {
-      renderKanbanBoard();
-    } else {
-      renderJobCards();
-    }
-    updateSummaryMetrics();
-    renderAnalyticsTable();
-    
-    // Close Drawer panel
-    closeDrawers();
-    createJobForm.reset();
-    soundEngine.playChime([261.63, 392.00, 523.25], 0.2, 0.08); // Melodic confirmation chime
-  });
+      let totalApplicants = 0;
+      let resumeVal = 0;
+      let screeningVal = 0;
+      let functionalVal = 0;
+
+      // Simulate mock applicant distribution and push records
+      const firstNames = ['Lucas', 'Sofia', 'Marcus', 'Chloe', 'Daniel', 'Amina'];
+      const lastNames = ['Chen', 'Silva', 'Taylor', 'Nakamura', 'Oki', 'Ali'];
+      
+      const createMockCandidate = (status) => {
+        const name = `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
+        const email = `${name.toLowerCase().replace(' ', '.')}@recruit.io`;
+        const id = `CAN-${Math.floor(Math.random() * 8999 + 1000)}-${customId !== '-' ? customId.slice(-3) : generateJobId().slice(-3)}`;
+        const scoreVal = Math.floor(Math.random() * 15 + 80) + '%';
+        
+        AppState.candidates.push({
+          id,
+          name,
+          email,
+          jobApplied: roleName,
+          status,
+          score: scoreVal,
+          registeredOn: new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) + ', 10:00 AM'
+        });
+      };
+
+      if (addResume) {
+        createMockCandidate('Resume');
+        resumeVal++;
+        totalApplicants++;
+      }
+      if (addScreening) {
+        createMockCandidate('Screening');
+        createMockCandidate('Screening');
+        screeningVal += 2;
+        totalApplicants += 2;
+      }
+      if (addFunctional) {
+        createMockCandidate('Functional');
+        functionalVal++;
+        totalApplicants++;
+      }
+
+      const newJob = {
+        id: generateJobId(),
+        roleName: roleName,
+        cardName: cardName,
+        created: new Date().toLocaleString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
+        status: 'published',
+        customJobId: customId,
+        experienceBand: expBand,
+        createdBy: 'Devasri',
+        description: description || "No job description provided.",
+        questions: [],
+        pipeline: {
+          total: totalApplicants,
+          resume: resumeVal,
+          screening: screeningVal,
+          functional: functionalVal
+        }
+      };
+
+      AppState.jobs.push(newJob);
+
+      // Refresh display
+      const isBoard = document.getElementById('btn-view-board').classList.contains('active');
+      if (isBoard) {
+        renderKanbanBoard();
+      } else {
+        renderJobCards();
+      }
+      updateSummaryMetrics();
+      renderAnalyticsTable();
+      
+      // Close Drawer panel
+      closeDrawers();
+      createJobForm.reset();
+      soundEngine.playChime([261.63, 392.00, 523.25], 0.2, 0.08); // Melodic confirmation chime
+    });
+  }
 
   // 2. Invite Team Member Submission
   const inviteMemberForm = document.getElementById('form-invite-member');
@@ -3645,6 +3744,7 @@ function renderJobDetailPanes(job) {
       });
     });
   }
+  renderQuestionsPane(job);
 }
 
 function updateCandidateStatus(candId, newStatus) {
@@ -3764,18 +3864,567 @@ function toggleCardPlayer(id) {
       const activeIndex = Math.floor(progress * bars.length);
       
       bars.forEach((bar, idx) => {
-        if (idx === activeIndex || (idx < activeIndex && Math.random() > 0.4)) {
-          const h = Math.floor(Math.random() * 70 + 20);
-          bar.style.height = `${h}%`;
-        }
-        if (idx <= activeIndex) {
-          bar.classList.add('played');
-        } else {
-          bar.classList.remove('played');
-        }
       });
     }, 100);
   }
+}
+
+// ============================================================
+// DEEPSEEK QUESTIONS GENERATOR & LOCAL STORAGE PERSISTENCE
+// ============================================================
+
+let currentStagedQuestions = [];
+
+function saveStateToLocalStorage() {
+  localStorage.setItem('interviehire_jobs_state', JSON.stringify(AppState.jobs));
+}
+
+function loadStateFromLocalStorage() {
+  const saved = localStorage.getItem('interviehire_jobs_state');
+  if (saved) {
+    try {
+      const parsedJobs = JSON.parse(saved);
+      parsedJobs.forEach(pj => {
+        const existing = AppState.jobs.find(j => j.id === pj.id);
+        if (existing) {
+          existing.description = pj.description;
+          existing.questions = pj.questions;
+        } else {
+          AppState.jobs.push(pj);
+        }
+      });
+    } catch (e) {
+      console.error("Error loading jobs from localStorage", e);
+    }
+  }
+}
+
+async function callDeepSeekAPI(messages, jsonMode = false) {
+  const apiKey = "sk-01d66ee7a6904e928b56e8ec481bb1ec";
+  const endpoint = "https://api.deepseek.com/v1/chat/completions";
+  
+  const payload = {
+    model: "deepseek-chat",
+    messages: messages,
+    temperature: 0.7,
+    max_tokens: 3000
+  };
+  
+  if (jsonMode) {
+    payload.response_format = { type: "json_object" };
+  }
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 35000);
+  
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`API response error (${response.status}): ${errText}`);
+    }
+    
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error("DeepSeek API call failed:", error);
+    throw error;
+  }
+}
+
+function sanitizeJSONResponse(text) {
+  let cleaned = text.trim();
+  if (cleaned.startsWith("```json")) {
+    cleaned = cleaned.substring(7);
+  } else if (cleaned.startsWith("```")) {
+    cleaned = cleaned.substring(3);
+  }
+  if (cleaned.endsWith("```")) {
+    cleaned = cleaned.substring(0, cleaned.length - 3);
+  }
+  return cleaned.trim();
+}
+
+// Render the Questions Pane for a specific job
+function renderQuestionsPane(job) {
+  const listQuestions = document.getElementById('list-questions');
+  if (!listQuestions) return;
+
+  const rawDesc = document.getElementById('jd-raw-description');
+  if (rawDesc) {
+    rawDesc.value = job.description || "";
+  }
+
+  const countBadge = document.getElementById('questions-count-badge');
+  const questionsCount = job.questions ? job.questions.length : 0;
+  if (countBadge) {
+    countBadge.textContent = `${questionsCount} question${questionsCount !== 1 ? 's' : ''}`;
+  }
+
+  if (rawDesc && !rawDesc.dataset.boundChange) {
+    rawDesc.dataset.boundChange = "true";
+    rawDesc.addEventListener('input', () => {
+      job.description = rawDesc.value.trim();
+      saveStateToLocalStorage();
+    });
+  }
+
+  if (!job.questions || job.questions.length === 0) {
+    listQuestions.innerHTML = `
+      <div class="jd-empty-pane" style="text-align: center; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity: 0.85;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p style="color: var(--color-text-muted); font-size: 0.9rem;">No interview questions defined yet.</p>
+        <p style="color: var(--color-text-faint); font-size: 0.8rem; max-width: 320px; margin-top: -6px;">Enter a job description on the left and click "Generate Questions Set" to auto-design a premium interview rubric.</p>
+      </div>
+    `;
+  } else {
+    listQuestions.innerHTML = job.questions.map((q, qIndex) => `
+      <div class="card-glass jd-question-card" data-q-id="${q.id}" style="margin-bottom: 16px; padding: 16px; border-radius: 12px; border: 1px solid var(--glass-border); transition: var(--spring-fast);">
+        <div class="q-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 12px;">
+          <span class="q-type-badge ${q.type || 'technical'}" style="padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;">${q.type || 'technical'}</span>
+          <select class="q-difficulty-select" data-field="difficulty" style="background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); color: var(--color-text-primary); border-radius: 6px; padding: 2px 6px; font-size: 0.78rem; font-family: var(--font-body); outline: none;">
+            <option value="beginner" ${q.difficulty === 'beginner' ? 'selected' : ''}>Beginner</option>
+            <option value="intermediate" ${q.difficulty === 'intermediate' ? 'selected' : ''}>Intermediate</option>
+            <option value="advanced" ${q.difficulty === 'advanced' ? 'selected' : ''}>Advanced</option>
+          </select>
+        </div>
+        <div class="q-card-body" style="display: flex; flex-direction: column; gap: 12px;">
+          <textarea class="q-question-text" data-field="question" placeholder="Enter question wording..." style="width: 100%; min-height: 50px; background: rgba(0,0,0,0.15); border: 1px solid var(--glass-border); border-radius: 8px; padding: 8px; color: var(--color-text-primary); font-family: var(--font-body); font-size: 0.88rem; line-height: 1.4; resize: vertical; outline: none;"></textarea>
+          
+          <div class="q-rubric-box" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 10px;">
+            <span class="q-rubric-label" style="font-size: 0.78rem; font-weight: 600; color: var(--color-gold); display: block; margin-bottom: 4px;">Evaluation Rubric:</span>
+            <textarea class="q-rubric-text" data-field="rubric" placeholder="What does a good answer sound like?..." style="width: 100%; min-height: 40px; background: transparent; border: none; color: var(--color-text-muted); font-family: var(--font-body); font-size: 0.82rem; line-height: 1.4; resize: vertical; outline: none; padding: 0;"></textarea>
+          </div>
+
+          ${q.follow_ups && q.follow_ups.length > 0 ? `
+            <div class="q-followups-box">
+              <span class="q-followups-label" style="font-size: 0.78rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 6px;">Suggested Follow-Ups:</span>
+              <ul class="q-followups-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+                ${q.follow_ups.map((f, idx) => `
+                  <li style="display: flex; align-items: center; gap: 6px;">
+                    <span style="color: var(--color-text-faint); font-size: 0.8rem;">•</span>
+                    <input type="text" class="q-followup-input" data-idx="${idx}" value="${f}" style="flex-grow: 1; background: transparent; border: none; border-bottom: 1px dashed rgba(255,255,255,0.1); color: var(--color-text-muted); font-size: 0.82rem; outline: none; padding: 2px 0;" />
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          ` : ''}
+        </div>
+        <div class="q-card-actions" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px;">
+          <button class="btn-q-delete btn-jd-ghost btn-sm" data-idx="${qIndex}" style="padding: 4px 8px; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #ef4444;" title="Delete this question">Delete</button>
+          <button class="btn-q-enhance btn-jd-primary btn-sm" data-idx="${qIndex}" style="padding: 4px 8px; font-size: 0.75rem;" title="Enhance with AI">✨ Enhance</button>
+          <button class="btn-q-save btn-jd-ghost btn-sm" data-idx="${qIndex}" style="padding: 4px 8px; font-size: 0.75rem; color: var(--color-gold); border-color: var(--glass-border-gold);" title="Save changes">Save</button>
+        </div>
+      </div>
+    `).join('');
+
+    job.questions.forEach((q, idx) => {
+      const card = listQuestions.children[idx];
+      if (card) {
+        const textareaQ = card.querySelector('.q-question-text');
+        if (textareaQ) textareaQ.value = q.question;
+        
+        const textareaR = card.querySelector('.q-rubric-text');
+        if (textareaR) textareaR.value = q.rubric || '';
+      }
+    });
+
+    listQuestions.querySelectorAll('.btn-q-delete').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-idx'));
+        job.questions.splice(idx, 1);
+        saveStateToLocalStorage();
+        renderQuestionsPane(job);
+        showPremiumToast("Question deleted.", "success");
+        soundEngine.playClick();
+      });
+    });
+
+    listQuestions.querySelectorAll('.btn-q-save').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-idx'));
+        const card = btn.closest('.jd-question-card');
+        
+        const questionText = card.querySelector('.q-question-text').value.trim();
+        const rubricText = card.querySelector('.q-rubric-text').value.trim();
+        const difficulty = card.querySelector('.q-difficulty-select').value;
+        
+        const followUps = [];
+        card.querySelectorAll('.q-followup-input').forEach(inp => {
+          if (inp.value.trim() !== '') {
+            followUps.push(inp.value.trim());
+          }
+        });
+        
+        job.questions[idx].question = questionText;
+        job.questions[idx].rubric = rubricText;
+        job.questions[idx].difficulty = difficulty;
+        job.questions[idx].follow_ups = followUps;
+        
+        saveStateToLocalStorage();
+        showPremiumToast("Question changes saved.", "success");
+        soundEngine.playChime([392, 523.25], 0.12, 0.1);
+      });
+    });
+
+    listQuestions.querySelectorAll('.btn-q-enhance').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-idx'));
+        const q = job.questions[idx];
+        
+        openEnhanceModal(q.question, (enhancedData) => {
+          job.questions[idx].question = enhancedData.question;
+          job.questions[idx].rubric = enhancedData.rubric;
+          job.questions[idx].follow_ups = enhancedData.follow_ups;
+          saveStateToLocalStorage();
+          renderQuestionsPane(job);
+          showPremiumToast("Question enhanced successfully.", "success");
+        });
+      });
+    });
+  }
+
+  const btnGen = document.getElementById('btn-generate-questions');
+  if (btnGen) {
+    const newBtnGen = btnGen.cloneNode(true);
+    btnGen.parentNode.replaceChild(newBtnGen, btnGen);
+    
+    newBtnGen.addEventListener('click', async () => {
+      const desc = rawDesc ? rawDesc.value.trim() : "";
+      if (!desc) {
+        showPremiumToast("Please enter a job description to generate questions.", "error");
+        return;
+      }
+
+      newBtnGen.disabled = true;
+      const textSpan = newBtnGen.querySelector('.btn-text');
+      const loaderSpan = document.createElement('span');
+      loaderSpan.innerHTML = `<div class="spinner-mini" style="display:inline-block; width:12px; height:12px; border:2px solid rgba(255,255,255,0.3); border-top-color:#ffffff; border-radius:50%; animation:spin-mini 0.6s linear infinite; margin-right:6px; vertical-align:middle;"></div> Generating...`;
+      
+      const originalText = textSpan.textContent;
+      textSpan.style.display = 'none';
+      newBtnGen.appendChild(loaderSpan);
+      
+      soundEngine.playChime([392, 440], 0.1, 0.1);
+
+      const systemPrompt = `You are a senior hiring manager and domain expert.
+Your task is to generate a set of 3 to 5 high-quality interview questions based on the given job description.
+
+Requirements:
+- Include different types of questions: technical, behavioral, and situational.
+- For each question, provide:
+  1. "type": either "technical", "behavioral", or "situational".
+  2. "question": a clear, direct, and professional question.
+  3. "difficulty": either "beginner", "intermediate", or "advanced".
+  4. "rubric": a brief evaluation rubric (what a good answer should include).
+  5. "follow_ups": a list of 2 suggested follow-up questions.
+- Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdown or add explanations.`;
+
+      try {
+        const responseText = await callDeepSeekAPI([
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Generate questions for this job description:\n\n${desc}` }
+        ], true);
+
+        const cleanText = sanitizeJSONResponse(responseText);
+        const parsed = JSON.parse(cleanText);
+        
+        if (parsed && parsed.questions) {
+          currentStagedQuestions = parsed.questions.map((q, idx) => ({
+            id: `q-gen-${Date.now()}-${idx}`,
+            type: q.type || 'technical',
+            question: q.question,
+            difficulty: q.difficulty || 'intermediate',
+            rubric: q.rubric || '',
+            follow_ups: q.follow_ups || []
+          }));
+          
+          showStagingArea(job);
+        } else {
+          throw new Error("Invalid response format. Missing 'questions' array.");
+        }
+      } catch (err) {
+        console.error("Failed to generate questions:", err);
+        showPremiumToast("Failed to generate questions. Please verify your prompt or API status.", "error");
+      } finally {
+        newBtnGen.disabled = false;
+        loaderSpan.remove();
+        textSpan.style.display = 'inline-block';
+      }
+    });
+  }
+
+  const btnAddRaw = document.getElementById('btn-add-question-raw');
+  const btnEnhanceCustom = document.getElementById('btn-enhance-custom');
+  const inputCustom = document.getElementById('input-custom-question');
+  
+  if (btnAddRaw && btnEnhanceCustom && inputCustom) {
+    const newBtnAddRaw = btnAddRaw.cloneNode(true);
+    btnAddRaw.parentNode.replaceChild(newBtnAddRaw, btnAddRaw);
+    
+    const newBtnEnhanceCustom = btnEnhanceCustom.cloneNode(true);
+    btnEnhanceCustom.parentNode.replaceChild(newBtnEnhanceCustom, btnEnhanceCustom);
+
+    newBtnAddRaw.addEventListener('click', () => {
+      const txt = inputCustom.value.trim();
+      if (!txt) {
+        showPremiumToast("Please enter a question draft.", "error");
+        return;
+      }
+      
+      const newQ = {
+        id: `q-custom-${Date.now()}`,
+        type: 'technical',
+        question: txt,
+        difficulty: 'intermediate',
+        rubric: 'Evaluated based on communication clarity and core competency.',
+        follow_ups: []
+      };
+      
+      if (!job.questions) job.questions = [];
+      job.questions.push(newQ);
+      saveStateToLocalStorage();
+      renderQuestionsPane(job);
+      
+      inputCustom.value = "";
+      showPremiumToast("Question added as-is.", "success");
+      soundEngine.playChime([329.63, 523.25], 0.12, 0.08);
+    });
+
+    newBtnEnhanceCustom.addEventListener('click', async () => {
+      const txt = inputCustom.value.trim();
+      if (!txt) {
+        showPremiumToast("Please enter a question draft.", "error");
+        return;
+      }
+      
+      newBtnEnhanceCustom.disabled = true;
+      const originalText = newBtnEnhanceCustom.textContent;
+      newBtnEnhanceCustom.innerHTML = `<div class="spinner-mini" style="display:inline-block; width:10px; height:10px; border:2px solid rgba(255,255,255,0.3); border-top-color:#ffffff; border-radius:50%; animation:spin-mini 0.6s linear infinite; margin-right:4px;"></div> Enhancing...`;
+
+      soundEngine.playChime([392, 440], 0.08, 0.08);
+
+      const systemPrompt = `You are an expert in designing interview questions.
+Given a draft interview question, enhance it to be more precise, professional, and effective.
+
+Return a JSON object with:
+- "enhanced_question": an improved, clearer version.
+- "rubric": a short guide on what to look for in the candidate's answer.
+- "follow_ups": a list of 2 suggested follow-up questions.
+Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdown or add explanations.`;
+
+      try {
+        const responseText = await callDeepSeekAPI([
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Enhance this interview question:\n${txt}` }
+        ], true);
+
+        const cleanText = sanitizeJSONResponse(responseText);
+        const parsed = JSON.parse(cleanText);
+        
+        if (parsed) {
+          openEnhanceModal(txt, (enhancedData) => {
+            const newQ = {
+              id: `q-custom-enhanced-${Date.now()}`,
+              type: 'technical',
+              question: enhancedData.question,
+              difficulty: 'intermediate',
+              rubric: enhancedData.rubric,
+              follow_ups: enhancedData.follow_ups
+            };
+            
+            if (!job.questions) job.questions = [];
+            job.questions.push(newQ);
+            saveStateToLocalStorage();
+            renderQuestionsPane(job);
+            
+            inputCustom.value = "";
+            showPremiumToast("Enhanced question added.", "success");
+          }, parsed);
+        }
+      } catch (err) {
+        console.error("Enhancement failed:", err);
+        showPremiumToast("Failed to enhance question. Please verify your prompt or API status.", "error");
+      } finally {
+        newBtnEnhanceCustom.disabled = false;
+        newBtnEnhanceCustom.textContent = originalText;
+      }
+    });
+  }
+}
+
+function showStagingArea(job) {
+  const stagingArea = document.getElementById('jd-staging-area');
+  const stagingList = document.getElementById('staging-questions-list');
+  if (!stagingArea || !stagingList) return;
+  
+  stagingArea.style.display = 'block';
+  
+  stagingList.innerHTML = currentStagedQuestions.map((q, idx) => `
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 10px; margin-bottom: 8px; position: relative;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--color-indigo);">${q.type}</span>
+        <button class="btn-staging-discard-item" data-idx="${idx}" style="background:none; border:none; color:#ef4444; font-size:0.9rem; cursor:pointer; padding:0 4px;">&times;</button>
+      </div>
+      <div style="font-size:0.82rem; color:var(--color-text-primary); line-height:1.4;">${q.question}</div>
+      <div style="font-size:0.76rem; color:var(--color-text-muted); margin-top:4px; font-style:italic;">Rubric: ${q.rubric}</div>
+    </div>
+  `).join('');
+
+  stagingList.querySelectorAll('.btn-staging-discard-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.getAttribute('data-idx'));
+      currentStagedQuestions.splice(idx, 1);
+      if (currentStagedQuestions.length === 0) {
+        stagingArea.style.display = 'none';
+      } else {
+        showStagingArea(job);
+      }
+    });
+  });
+
+  const btnReplace = document.getElementById('btn-staging-replace');
+  const newBtnReplace = btnReplace.cloneNode(true);
+  btnReplace.parentNode.replaceChild(newBtnReplace, btnReplace);
+  
+  newBtnReplace.addEventListener('click', () => {
+    job.questions = [...currentStagedQuestions];
+    saveStateToLocalStorage();
+    stagingArea.style.display = 'none';
+    renderQuestionsPane(job);
+    showPremiumToast("Interview questions replaced with generated set.", "success");
+    soundEngine.playChime([261.63, 392, 523.25], 0.2, 0.08);
+  });
+
+  const btnAppend = document.getElementById('btn-staging-append');
+  const newBtnAppend = btnAppend.cloneNode(true);
+  btnAppend.parentNode.replaceChild(newBtnAppend, btnAppend);
+  
+  newBtnAppend.addEventListener('click', () => {
+    if (!job.questions) job.questions = [];
+    job.questions = job.questions.concat(currentStagedQuestions);
+    saveStateToLocalStorage();
+    stagingArea.style.display = 'none';
+    renderQuestionsPane(job);
+    showPremiumToast("Generated questions appended to list.", "success");
+    soundEngine.playChime([261.63, 329.63, 392, 523.25], 0.2, 0.08);
+  });
+
+  const btnCloseStaging = document.getElementById('btn-close-staging');
+  const newBtnCloseStaging = btnCloseStaging.cloneNode(true);
+  btnCloseStaging.parentNode.replaceChild(newBtnCloseStaging, btnCloseStaging);
+  
+  newBtnCloseStaging.addEventListener('click', () => {
+    stagingArea.style.display = 'none';
+    soundEngine.playClick();
+  });
+}
+
+function openEnhanceModal(originalQuestion, onAcceptCallback, precalculatedData = null) {
+  const modal = document.getElementById('enhance-modal');
+  if (!modal) return;
+  
+  modal.style.display = 'flex';
+  
+  document.getElementById('modal-original-text').textContent = originalQuestion;
+  const enhancedTextarea = document.getElementById('modal-enhanced-text');
+  const rubricTextarea = document.getElementById('modal-rubric-text');
+  const followUpsContainer = document.getElementById('modal-follow-ups');
+  
+  if (precalculatedData) {
+    enhancedTextarea.value = precalculatedData.enhanced_question || originalQuestion;
+    rubricTextarea.value = precalculatedData.rubric || "";
+    
+    const followUps = precalculatedData.follow_ups || [];
+    followUpsContainer.innerHTML = followUps.map((f, idx) => `
+      <input type="text" class="modal-followup-input" data-idx="${idx}" value="${f}" style="width: 100%; border-radius: 6px; border: 1px solid var(--glass-border); padding: 8px; color: var(--color-text-primary); background: rgba(0,0,0,0.25); font-family: var(--font-body); font-size: 0.8rem; outline: none;" />
+    `).join('');
+  } else {
+    enhancedTextarea.value = "Loading enhancement...";
+    rubricTextarea.value = "Loading rubric...";
+    followUpsContainer.innerHTML = `<span style="color:var(--color-text-faint); font-size:0.8rem;">Fetching suggestions...</span>`;
+    
+    const systemPrompt = `You are an expert in designing interview questions.
+Given a draft interview question, enhance it to be more precise, professional, and effective.
+
+Return a JSON object with:
+- "enhanced_question": an improved, clearer version.
+- "rubric": a short guide on what to look for in the candidate's answer.
+- "follow_ups": a list of 2 suggested follow-up questions.
+Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdown or add explanations.`;
+
+    callDeepSeekAPI([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: `Enhance this interview question:\n${originalQuestion}` }
+    ], true).then(responseText => {
+      const cleanText = sanitizeJSONResponse(responseText);
+      const parsed = JSON.parse(cleanText);
+      if (parsed) {
+        enhancedTextarea.value = parsed.enhanced_question || originalQuestion;
+        rubricTextarea.value = parsed.rubric || "";
+        const followUps = parsed.follow_ups || [];
+        followUpsContainer.innerHTML = followUps.map((f, idx) => `
+          <input type="text" class="modal-followup-input" data-idx="${idx}" value="${f}" style="width: 100%; border-radius: 6px; border: 1px solid var(--glass-border); padding: 8px; color: var(--color-text-primary); background: rgba(0,0,0,0.25); font-family: var(--font-body); font-size: 0.8rem; outline: none;" />
+        `).join('');
+      }
+    }).catch(err => {
+      console.error("Enhancement fetch failed:", err);
+      enhancedTextarea.value = originalQuestion;
+      rubricTextarea.value = "Failed to load rubric suggestion.";
+      followUpsContainer.innerHTML = `<span style="color:#ef4444; font-size:0.8rem;">Failed to fetch suggestions.</span>`;
+    });
+  }
+
+  const closeModal = () => {
+    modal.style.display = 'none';
+    soundEngine.playClick();
+  };
+  
+  const btnClose = document.getElementById('btn-close-enhance-modal');
+  const newBtnClose = btnClose.cloneNode(true);
+  btnClose.parentNode.replaceChild(newBtnClose, btnClose);
+  newBtnClose.addEventListener('click', closeModal);
+  
+  const btnCancel = document.getElementById('btn-cancel-enhance');
+  const newBtnCancel = btnCancel.cloneNode(true);
+  btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
+  newBtnCancel.addEventListener('click', closeModal);
+
+  const btnAccept = document.getElementById('btn-accept-enhance');
+  const newBtnAccept = btnAccept.cloneNode(true);
+  btnAccept.parentNode.replaceChild(newBtnAccept, btnAccept);
+  
+  newBtnAccept.addEventListener('click', () => {
+    const questionText = enhancedTextarea.value.trim();
+    const rubricText = rubricTextarea.value.trim();
+    const followUps = [];
+    followUpsContainer.querySelectorAll('.modal-followup-input').forEach(inp => {
+      if (inp.value.trim() !== "") {
+        followUps.push(inp.value.trim());
+      }
+    });
+    
+    onAcceptCallback({
+      question: questionText,
+      rubric: rubricText,
+      follow_ups: followUps
+    });
+    
+    modal.style.display = 'none';
+    soundEngine.playChime([329.63, 392, 523.25], 0.15, 0.1);
+  });
 }
 
 

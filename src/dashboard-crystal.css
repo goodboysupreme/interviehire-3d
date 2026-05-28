@@ -2554,3 +2554,367 @@ body.light-theme .btn-stage-advance:hover {
   color: #ffffff !important;
 }
 
+/* ============================================================
+   QUESTIONS GENERATOR TAB STYLING
+   ============================================================ */
+
+.jd-questions-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-top: 15px;
+}
+
+.jd-questions-input-card {
+  position: sticky;
+  top: 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.jd-questions-input-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+#jd-raw-description {
+  width: 100%;
+  height: 280px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  resize: vertical;
+  outline: none;
+  transition: var(--spring-fast);
+}
+
+#jd-raw-description:focus {
+  border-color: var(--glass-border-gold);
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.12);
+}
+
+.jd-questions-list-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.jd-questions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 10px;
+}
+
+.jd-questions-title-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.jd-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.jd-section-subtitle {
+  font-size: 0.76rem;
+  color: var(--color-text-muted);
+  margin: 2px 0 0 0;
+}
+
+.questions-count-badge {
+  background: var(--color-indigo-dim);
+  border: 1px solid var(--color-indigo-glow);
+  color: var(--color-indigo-light);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Staging Area styling */
+.jd-staging-area {
+  background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.05) 0%, transparent 60%);
+  border: 1px solid rgba(99, 102, 241, 0.16);
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  animation: fadeIn 0.3s ease;
+}
+
+.staging-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.staging-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-indigo-light);
+  letter-spacing: 0.5px;
+}
+
+.staging-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.staging-actions .btn-sm {
+  padding: 3px 8px;
+  font-size: 0.72rem;
+}
+
+.btn-close-staging {
+  background: none;
+  border: none;
+  color: var(--color-text-faint);
+  font-size: 1.15rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.staging-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Question card badges */
+.q-type-badge {
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+}
+
+.q-type-badge.technical {
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  color: #38bdf8;
+}
+
+.q-type-badge.behavioral {
+  background: rgba(168, 85, 247, 0.08);
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  color: #a855f7;
+}
+
+.q-type-badge.situational {
+  background: rgba(52, 211, 153, 0.08);
+  border: 1px solid rgba(52, 211, 153, 0.22);
+  color: #34d399;
+}
+
+.q-type-badge.general {
+  background: rgba(156, 163, 175, 0.08);
+  border: 1px solid rgba(156, 163, 175, 0.22);
+  color: #9ca3af;
+}
+
+/* Add custom card styling */
+.jd-add-question-card {
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px dashed var(--glass-border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 10px;
+}
+
+.jd-add-title {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 10px 0;
+}
+
+.jd-add-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#input-custom-question {
+  width: 100%;
+  height: 54px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  resize: vertical;
+  outline: none;
+  transition: var(--spring-fast);
+}
+
+#input-custom-question:focus {
+  border-color: var(--glass-border-gold);
+}
+
+.jd-add-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Modal Overlay styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(4, 5, 10, 0.65);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  z-index: 1200;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeInModal 0.22s ease-out;
+}
+
+.modal-card {
+  width: 620px;
+  max-width: 90vw;
+  background: rgba(20, 22, 35, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+
+.modal-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.btn-close-modal {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 1.35rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.comp-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.comp-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.comp-box-original {
+  background: rgba(239, 68, 68, 0.03);
+  border: 1px dashed rgba(239, 68, 68, 0.18);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+/* Light Theme Overrides */
+body.light-theme .jd-questions-input-card {
+  background: rgba(255, 255, 255, 0.65);
+}
+
+body.light-theme #jd-raw-description,
+body.light-theme #input-custom-question {
+  background: rgba(0, 0, 0, 0.03);
+  color: #0a0b14;
+}
+
+body.light-theme .jd-staging-area {
+  background: rgba(99, 102, 241, 0.04);
+  border-color: rgba(99, 102, 241, 0.18);
+}
+
+body.light-theme .modal-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12);
+}
+
+body.light-theme .comp-box-original {
+  background: rgba(220, 38, 38, 0.03);
+  border-color: rgba(220, 38, 38, 0.12);
+  color: #4b5068;
+}
+
+/* Keyframe animations */
+@keyframes fadeInModal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes spin-mini {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 900px) {
+  .jd-questions-layout {
+    grid-template-columns: 1fr;
+  }
+  .jd-questions-input-card {
+    position: static;
+  }
+}
+
