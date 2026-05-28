@@ -253,7 +253,7 @@ const AppState = {
       model: 'gpt-4o',
       temperature: 0.2,
       threshold: 80,
-      prompt: 'You are Aria, the Resume Analyst Agent. Your job is to extract candidate experience, skills, and check eligibility for public tenders. Screen out any profiles below the match score threshold.'
+      prompt: 'You are Lina, the Resume Analyst Agent. Your job is to extract candidate experience, skills, and check eligibility for public tenders. Screen out any profiles below the match score threshold.'
     },
     kaelen: {
       model: 'claude-3-5-sonnet',
@@ -966,10 +966,10 @@ function navigateToAriaChat() {
   document.querySelectorAll('.dashboard-view').forEach(v => v.classList.remove('active-view'));
 
   const breadcrumb = document.getElementById('breadcrumb-title');
-  breadcrumb.innerHTML = `<span class="breadcrumb-link" id="bc-jobs-link-aria">Jobs</span> <span class="breadcrumb-separator">/</span> <span class="breadcrumb-link" id="bc-cj-link-aria">Create Job</span> <span class="breadcrumb-separator">/</span> Aria`;
+  breadcrumb.innerHTML = `<span class="breadcrumb-link" id="bc-jobs-link-aria">Jobs</span> <span class="breadcrumb-separator">/</span> <span class="breadcrumb-link" id="bc-cj-link-aria">Create Job</span> <span class="breadcrumb-separator">/</span> Lina`;
   document.getElementById('bc-jobs-link-aria').addEventListener('click', () => navigateToTab('jobs'));
   document.getElementById('bc-cj-link-aria').addEventListener('click', navigateToCreateJob);
-  document.getElementById('header-main-title').textContent = 'Aria Requisition';
+  document.getElementById('header-main-title').textContent = 'Lina Requisition';
   document.getElementById('header-sub-text').textContent = 'Creating a new job through AI conversation';
   document.getElementById('header-action-btn').style.display = 'none';
   document.getElementById('view-aria-chat').classList.add('active-view');
@@ -983,8 +983,8 @@ function navigateToAriaChat() {
   const sendBtn = document.getElementById('btn-aria-send');
   if (sendBtn) sendBtn.disabled = false;
 
-  // Aria opening message
-  const opening = "Hi! I'm Aria, your AI recruiting assistant. Tell me about the role you're hiring for — what's the job title and what will this person be doing?";
+  // Lina opening message
+  const opening = "Hi! I'm Lina, your AI recruiting assistant. Tell me about the role you're hiring for — what's the job title and what will this person be doing?";
   appendAriaMessage(opening, 'aria');
   ariaChatHistory.push({ role: 'assistant', content: opening });
 
@@ -1026,7 +1026,7 @@ async function sendAriaMessage(text) {
 
   const typingRow = appendAriaMessage('', 'aria-typing');
 
-  const systemPrompt = `You are Aria, an AI recruiting assistant for IntervieHire. Help hiring managers create job postings through a brief natural conversation.
+  const systemPrompt = `You are Lina, an AI recruiting assistant for IntervieHire. Help hiring managers create job postings through a brief natural conversation.
 
 Based on the conversation so far, determine if you have enough information to create a job posting. You need:
 1. Job title / role name
@@ -1078,7 +1078,7 @@ If you need more info, respond ONLY with this JSON (no extra text):
   } catch (err) {
     if (typingRow && typingRow.parentNode) typingRow.remove();
     appendAriaMessage("Sorry, I ran into a connectivity issue. Please try again.", 'aria');
-    console.error("Aria chat error:", err);
+    console.error("Lina chat error:", err);
     input.disabled = false;
     sendBtn.disabled = false;
   }
@@ -1362,7 +1362,7 @@ const simulatedLogTemplates = [
   () => {
     if (AppState.candidates.length === 0) return `<code>[${new Date().toLocaleTimeString()}] Swarm:</code> Awaiting candidate records...`;
     const name = AppState.candidates[Math.floor(Math.random() * AppState.candidates.length)].name;
-    return `<code>[${new Date().toLocaleTimeString()}] Aria:</code> Analysed resume profile for ${name}. Match index: ${(80 + Math.random()*19).toFixed(0)}%.`;
+    return `<code>[${new Date().toLocaleTimeString()}] Lina:</code> Analysed resume profile for ${name}. Match index: ${(80 + Math.random()*19).toFixed(0)}%.`;
   },
   () => {
     if (AppState.candidates.length === 0) return `<code>[${new Date().toLocaleTimeString()}] Swarm:</code> Vetting pipeline inactive.`;
@@ -1376,7 +1376,7 @@ const simulatedLogTemplates = [
   },
   () => {
     const job = AppState.jobs[Math.floor(Math.random() * AppState.jobs.length)].roleName;
-    return `<code>[${new Date().toLocaleTimeString()}] Aria:</code> Correlating candidates index for ${job}.`;
+    return `<code>[${new Date().toLocaleTimeString()}] Lina:</code> Correlating candidates index for ${job}.`;
   },
   () => {
     return `<code>[${new Date().toLocaleTimeString()}] Kaelen:</code> Reviewing active test-suites and coverage reports. System green.`;
@@ -1437,7 +1437,7 @@ function handleSwarmPrompt(promptText) {
     finalStatus = 'Communications queue synced successfully.';
   } else {
     targetAgent = 'aria';
-    response = `<code>[${new Date().toLocaleTimeString()}] Aria:</code> Filtered database matches. Identified candidates within desired experience and role configurations.`;
+    response = `<code>[${new Date().toLocaleTimeString()}] Lina:</code> Filtered database matches. Identified candidates within desired experience and role configurations.`;
     activeStatus = 'Searching database indices...';
     finalStatus = 'Resume search queries completed.';
   }
@@ -2733,7 +2733,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // CREATE JOB PAGE BINDINGS
   // ==========================================
 
-  // Aria "Start Creation" button
+  // Lina "Start Creation" button
   const btnStartAria = document.getElementById('btn-start-aria-creation');
   if (btnStartAria) {
     btnStartAria.addEventListener('click', () => {
@@ -2867,7 +2867,7 @@ Return ONLY valid JSON:
     });
   }
 
-  // Aria chat send button + Enter key
+  // Lina chat send button + Enter key
   const ariaChatInput = document.getElementById('aria-chat-input');
   const ariaSendBtn = document.getElementById('btn-aria-send');
 
@@ -2954,7 +2954,7 @@ Return ONLY valid JSON:
     }
   };
 
-  bindAgentCard('agent-aria', 'aria', 'Aria');
+  bindAgentCard('agent-aria', 'aria', 'Lina');
   bindAgentCard('agent-kaelen', 'kaelen', 'Kaelen');
   bindAgentCard('agent-lyra', 'lyra', 'Lyra');
 
@@ -3985,7 +3985,7 @@ function renderColumnsSelectorDropdowns() {
 }
 
 // ==========================================
-// RESUME ANALYSIS (AI-powered, Aria)
+// RESUME ANALYSIS (AI-powered, Lina)
 // ==========================================
 
 const resumeTextCache = {};
@@ -4016,7 +4016,7 @@ function renderResumeStagePaneForJob(candidates, job, container) {
           <textarea class="ra-paste-area ra-hidden" id="ra-paste-${c.id}" placeholder="Paste the candidate's resume text here..."></textarea>
           <button class="btn-analyse-resume" id="ra-btn-${c.id}">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Analyse with Aria
+            Analyse with Lina
           </button>
         </div>
         <div class="ra-result ra-hidden" id="ra-result-${c.id}"></div>
@@ -4098,7 +4098,7 @@ async function runResumeAnalysis(cid, job) {
   btn.disabled = true;
   btn.innerHTML = `<span class="ra-spinner"></span> Analysing…`;
 
-  const systemPrompt = `You are Aria, an expert ATS resume analyst for IntervieHire. Analyse the provided resume against the job requirements. Respond ONLY with a valid JSON object matching exactly this schema — no extra text, no markdown fences:
+  const systemPrompt = `You are Lina, an expert ATS resume analyst for IntervieHire. Analyse the provided resume against the job requirements. Respond ONLY with a valid JSON object matching exactly this schema — no extra text, no markdown fences:
 {"matchScore":number,"summary":"2-3 sentence professional assessment","experienceYears":"e.g. 4 years","skills":{"detected":["skill1"],"matched":["skill1"],"missing":["skill1"]},"scorecard":{"technical":number,"experience":number,"communication":number,"cultureFit":number},"recommendation":"Advance|Hold|Reject","recommendationReason":"1 sentence reason"}
 All scorecard values 0–10. matchScore 0–100.`;
 
@@ -4176,7 +4176,7 @@ function renderAnalysisResult(cid, result) {
       ${scRows}
     </div>
     <div class="ra-summary-box">
-      <span class="ra-summary-label">Aria's Assessment</span>
+      <span class="ra-summary-label">Lina's Assessment</span>
       <p class="ra-summary-text">"${result.summary}"</p>
     </div>
     <button class="btn-re-analyse" id="ra-re-${cid}">↺ Re-analyse</button>
@@ -4189,7 +4189,7 @@ function renderAnalysisResult(cid, result) {
     resultEl.classList.add('ra-hidden');
     inputEl?.classList.remove('ra-hidden');
     const btn = document.getElementById(`ra-btn-${cid}`);
-    if (btn) { btn.disabled = false; btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Analyse with Aria`; }
+    if (btn) { btn.disabled = false; btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Analyse with Lina`; }
   });
 }
 
@@ -4256,7 +4256,7 @@ function renderJobDetailPanes(job) {
             </div>
             <div class="transcript-box">
               <span class="transcript-label">AI Interview Transcript:</span>
-              <p class="transcript-text" data-transcript-id="${c.id}">"Aria: Can you explain how you handle conflicting opinions in project schedules?<br>Candidate: I lay out the technical constraints, compare the alternatives side-by-side using data, and facilitate a consensus meeting."</p>
+              <p class="transcript-text" data-transcript-id="${c.id}">"Lina: Can you explain how you handle conflicting opinions in project schedules?<br>Candidate: I lay out the technical constraints, compare the alternatives side-by-side using data, and facilitate a consensus meeting."</p>
             </div>
           </div>
           <div class="jd-card-actions">
@@ -5110,6 +5110,7 @@ Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdow
     soundEngine.playChime([329.63, 392, 523.25], 0.15, 0.1);
   });
 }
+
 
 
 
