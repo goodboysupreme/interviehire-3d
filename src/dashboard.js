@@ -4,7 +4,7 @@
 class SoundEngine {
   constructor() {
     this.ctx = null;
-    this.muted = false; // Enabled by default for interactive feedback in dashboard
+    this.muted = true;
     this.lastSliderSoundTime = 0;
   }
 
