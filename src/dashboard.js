@@ -1,4 +1,4 @@
-// ==========================================
+﻿// ==========================================
 // AUDIO SYNTHESIZER ENGINE (Synced with main.js)
 // ==========================================
 class SoundEngine {
@@ -173,7 +173,7 @@ const AppState = {
     {
       id: 'CAN-8234-EA1',
       name: 'Aditya Rana',
-      email: 'aditya@interviehire.com',
+      email: 'aditya@IntervieHire.com',
       jobApplied: 'Full Stack Developer',
       status: 'Functional',
       score: '94%',
@@ -1026,7 +1026,7 @@ async function sendAriaMessage(text) {
 
   const typingRow = appendAriaMessage('', 'aria-typing');
 
-  const systemPrompt = `You are Aria, an AI recruiting assistant for intervieHire. Help hiring managers create job postings through a brief natural conversation.
+  const systemPrompt = `You are Aria, an AI recruiting assistant for IntervieHire. Help hiring managers create job postings through a brief natural conversation.
 
 Based on the conversation so far, determine if you have enough information to create a job posting. You need:
 1. Job title / role name
@@ -1202,19 +1202,19 @@ function triggerExcelExport(dataType) {
     AppState.jobs.forEach(j => {
       csvContent += `"${j.id}","${j.roleName}","${j.cardName}","${j.experienceBand}","${j.createdBy}"\n`;
     });
-    filename = "interviehire_jobs_export.csv";
+    filename = "IntervieHire_jobs_export.csv";
   } else if (dataType === 'candidates') {
     csvContent += "Candidate ID,Name,Email,Job Applied,Status,Score,Registered On\n";
     AppState.candidates.forEach(c => {
       csvContent += `"${c.id}","${c.name}","${c.email}","${c.jobApplied}","${c.status}","${c.score}","${c.registeredOn}"\n`;
     });
-    filename = "interviehire_candidates_export.csv";
+    filename = "IntervieHire_candidates_export.csv";
   } else if (dataType === 'team') {
     csvContent += "Team Member,Email,Designation,Usertype,Registered On,Status\n";
     AppState.team.forEach(t => {
       csvContent += `"${t.name}","${t.email}","${t.designation}","${t.usertype}","${t.registeredOn}","${t.status}"\n`;
     });
-    filename = "interviehire_team_export.csv";
+    filename = "IntervieHire_team_export.csv";
   }
 
   const encodedUri = encodeURI(csvContent);
@@ -2432,8 +2432,8 @@ document.addEventListener('DOMContentLoaded', () => {
     soundEngine.playChime([523.25], 0.15);
     const domainName = document.getElementById('career-subdomain').value;
     const statusLink = document.querySelector('.status-link');
-    statusLink.textContent = `interviehire.com/careers/${domainName} ↗`;
-    statusLink.href = `https://interviehire.com/careers/${domainName}`;
+    statusLink.textContent = `IntervieHire.com/careers/${domainName} ↗`;
+    statusLink.href = `https://IntervieHire.com/careers/${domainName}`;
     
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const origText = submitBtn.textContent;
@@ -2645,7 +2645,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   if (btnThemeToggle) {
-    const savedTheme = localStorage.getItem('interviehire-theme');
+    const savedTheme = localStorage.getItem('IntervieHire-theme');
     const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
     
     if (savedTheme === 'light' || (!savedTheme && prefersLight)) {
@@ -2658,7 +2658,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnThemeToggle.addEventListener('click', () => {
       const isLight = document.body.classList.toggle('light-theme');
       const themeVal = isLight ? 'light' : 'dark';
-      localStorage.setItem('interviehire-theme', themeVal);
+      localStorage.setItem('IntervieHire-theme', themeVal);
       if (careerThemeSelect) {
         careerThemeSelect.value = themeVal;
       }
@@ -2677,7 +2677,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const isCurrentLight = document.body.classList.contains('light-theme');
       if (shouldBeLight !== isCurrentLight) {
         document.body.classList.toggle('light-theme', shouldBeLight);
-        localStorage.setItem('interviehire-theme', shouldBeLight ? 'light' : 'dark');
+        localStorage.setItem('IntervieHire-theme', shouldBeLight ? 'light' : 'dark');
         triggerChartThemeRedraw();
         if (shouldBeLight) {
           soundEngine.playChime([329.63, 392.00, 523.25], 0.12, 0.1);
@@ -3411,12 +3411,12 @@ function switchSourcingTab(tab) {
 
 // === CSV Intake Logic ===
 function downloadCsvTemplate() {
-  const csvContent = "Name,Email,Phone\\nJohn Doe,john.doe@example.com,+15550192834\\nJane Smith,jane.smith@example.com,\\nAditya Rana,aditya@interviehire.com,+919988776655";
+  const csvContent = "Name,Email,Phone\\nJohn Doe,john.doe@example.com,+15550192834\\nJane Smith,jane.smith@example.com,\\nAditya Rana,aditya@IntervieHire.com,+919988776655";
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.setAttribute("href", url);
-  link.setAttribute("download", "interviehire_candidates_template.csv");
+  link.setAttribute("download", "IntervieHire_candidates_template.csv");
   link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
@@ -4098,7 +4098,7 @@ async function runResumeAnalysis(cid, job) {
   btn.disabled = true;
   btn.innerHTML = `<span class="ra-spinner"></span> Analysing…`;
 
-  const systemPrompt = `You are Aria, an expert ATS resume analyst for intervieHire. Analyse the provided resume against the job requirements. Respond ONLY with a valid JSON object matching exactly this schema — no extra text, no markdown fences:
+  const systemPrompt = `You are Aria, an expert ATS resume analyst for IntervieHire. Analyse the provided resume against the job requirements. Respond ONLY with a valid JSON object matching exactly this schema — no extra text, no markdown fences:
 {"matchScore":number,"summary":"2-3 sentence professional assessment","experienceYears":"e.g. 4 years","skills":{"detected":["skill1"],"matched":["skill1"],"missing":["skill1"]},"scorecard":{"technical":number,"experience":number,"communication":number,"cultureFit":number},"recommendation":"Advance|Hold|Reject","recommendationReason":"1 sentence reason"}
 All scorecard values 0–10. matchScore 0–100.`;
 
@@ -4487,11 +4487,11 @@ function toggleCardPlayer(id) {
 let currentStagedQuestions = [];
 
 function saveStateToLocalStorage() {
-  localStorage.setItem('interviehire_jobs_state', JSON.stringify(AppState.jobs));
+  localStorage.setItem('IntervieHire_jobs_state', JSON.stringify(AppState.jobs));
 }
 
 function loadStateFromLocalStorage() {
-  const saved = localStorage.getItem('interviehire_jobs_state');
+  const saved = localStorage.getItem('IntervieHire_jobs_state');
   if (!saved) {
     saveStateToLocalStorage();
     return;
@@ -5110,5 +5110,6 @@ Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdow
     soundEngine.playChime([329.63, 392, 523.25], 0.15, 0.1);
   });
 }
+
 
 
