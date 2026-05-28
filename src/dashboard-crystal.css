@@ -83,6 +83,25 @@
   /* Legacy aliases (keep JS working) */
   --transition-smooth: var(--spring-smooth);
   --transition-fast:   var(--spring-fast);
+
+  /* Ambient Orbs */
+  --orb-color-1:            oklch(38% 0.16 278);
+  --orb-opacity-1:          0.20;
+  --orb-color-2:            oklch(35% 0.13 315);
+  --orb-opacity-2:          0.16;
+  --orb-color-3:            oklch(34% 0.11 232);
+  --orb-opacity-3:          0.14;
+  --orb-color-4:            oklch(36% 0.10 205);
+  --orb-opacity-4:          0.12;
+  
+  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, oklch(14% 0.05 278 / 0.85), transparent);
+  --scene-gradient-2:       radial-gradient(ellipse 60% 60% at 80% 80%, oklch(12% 0.04 308 / 0.65), transparent);
+
+  /* Card Glows */
+  --card-glow-indigo:       oklch(68% 0.13 278 / 0.12);
+  --card-glow-gold:         oklch(76% 0.14 76 / 0.10);
+  --glass-glow-indigo-hover: 0 0 24px var(--card-glow-indigo);
+  --glass-glow-gold-hover:   0 0 24px var(--card-glow-gold);
 }
 
 /* ============================================================
@@ -121,6 +140,23 @@ body.light-theme {
   --color-indigo-light:     #4338ca;
   --color-success:          #047857;
   --color-warning:          #b45309;
+
+  /* Ambient Orbs - Light */
+  --orb-color-1:            oklch(82% 0.08 278);
+  --orb-opacity-1:          0.14;
+  --orb-color-2:            oklch(88% 0.07 76);
+  --orb-opacity-2:          0.12;
+  --orb-color-3:            oklch(86% 0.08 328);
+  --orb-opacity-3:          0.10;
+  --orb-color-4:            oklch(84% 0.06 205);
+  --orb-opacity-4:          0.08;
+
+  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, oklch(92% 0.03 76 / 0.12), transparent);
+  --scene-gradient-2:       radial-gradient(ellipse 60% 60% at 80% 80%, oklch(90% 0.03 278 / 0.12), transparent);
+
+  /* Card Glows - Light */
+  --card-glow-indigo:       oklch(68% 0.13 278 / 0.06);
+  --card-glow-gold:         oklch(76% 0.14 76 / 0.04);
 }
 
 /* Light theme component overrides */
@@ -183,15 +219,10 @@ body { position: relative; color: var(--color-text-primary); }
   z-index: -3;
   overflow: hidden;
   pointer-events: none;
-  background: radial-gradient(ellipse 80% 80% at 50% -10%, oklch(13% 0.04 278 / 0.8), transparent),
-              radial-gradient(ellipse 60% 60% at 80% 80%, oklch(12% 0.03 308 / 0.6), transparent),
+  background: var(--scene-gradient-1),
+              var(--scene-gradient-2),
               var(--color-bg);
   transition: var(--spring-smooth);
-}
-body.light-theme .scene {
-  background: radial-gradient(ellipse 80% 80% at 50% -10%, rgba(201, 168, 76, 0.08), transparent),
-              radial-gradient(ellipse 60% 60% at 80% 80%, rgba(120, 100, 230, 0.08), transparent),
-              var(--color-bg);
 }
 
 .noise {
@@ -210,15 +241,10 @@ body.light-theme .scene {
   will-change: transform, opacity;
   animation: orb-drift-crystal 22s ease-in-out infinite alternate;
 }
-.orb-1 { width: 550px; height: 550px; left: -12%; top: -15%; background: oklch(36% 0.14 278); opacity: 0.18; animation-delay: 0s; }
-.orb-2 { width: 450px; height: 450px; right: -8%; top: 25%; background: oklch(34% 0.12 315); opacity: 0.15; animation-delay: -5s; }
-.orb-3 { width: 400px; height: 400px; left: 25%; bottom: -15%; background: oklch(33% 0.11 232); opacity: 0.12; animation-delay: -10s; }
-.orb-4 { width: 280px; height: 280px; right: 20%; top: 8%; background: oklch(35% 0.09 205); opacity: 0.08; animation-delay: -3s; }
-
-body.light-theme .orb-1 { opacity: 0.08; background: oklch(68% 0.13 278); }
-body.light-theme .orb-2 { opacity: 0.06; background: oklch(76% 0.14 76); }
-body.light-theme .orb-3 { opacity: 0.06; background: oklch(70% 0.17 328); }
-body.light-theme .orb-4 { opacity: 0.04; background: oklch(72% 0.11 278); }
+.orb-1 { width: 550px; height: 550px; left: -12%; top: -15%; background: var(--orb-color-1); opacity: var(--orb-opacity-1); animation-delay: 0s; }
+.orb-2 { width: 450px; height: 450px; right: -8%; top: 25%; background: var(--orb-color-2); opacity: var(--orb-opacity-2); animation-delay: -5s; }
+.orb-3 { width: 400px; height: 400px; left: 25%; bottom: -15%; background: var(--orb-color-3); opacity: var(--orb-opacity-3); animation-delay: -10s; }
+.orb-4 { width: 280px; height: 280px; right: 20%; top: 8%; background: var(--orb-color-4); opacity: var(--orb-opacity-4); animation-delay: -3s; }
 
 @keyframes orb-drift-crystal {
   0% { transform: translate(0, 0) scale(1); }
@@ -647,7 +673,7 @@ body.light-theme .theme-icon-sun { display: block; }
 .job-card:hover {
   border-color: var(--glass-border-gold);
   transform: translateY(-4px);
-  box-shadow: var(--glass-shadow-hover), 0 0 30px rgba(201,168,76,0.08);
+  box-shadow: var(--glass-shadow-hover), var(--glass-glow-gold-hover);
 }
 .job-card:active { transform: translateY(-2px); }
 
@@ -784,7 +810,11 @@ body.light-theme .theme-icon-sun { display: block; }
   transition: var(--spring-fast);
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
-.kanban-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); border-color: var(--glass-border-gold); }
+.kanban-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--glass-shadow-hover), var(--glass-glow-gold-hover);
+  border-color: var(--glass-border-gold);
+}
 .kanban-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
 .kanban-card-name { font-weight: 600; font-size: 0.88rem; }
 .kanban-card-score { font-family: var(--font-display); font-weight: 800; font-size: 0.9rem; color: var(--color-gold); }
@@ -835,7 +865,7 @@ body.light-theme .theme-icon-sun { display: block; }
 .card-metric:hover {
   border-color: var(--glass-border-gold);
   transform: translateY(-5px);
-  box-shadow: var(--glass-shadow-hover), 0 0 24px rgba(201,168,76,0.07);
+  box-shadow: var(--glass-shadow-hover), var(--glass-glow-gold-hover);
 }
 
 .metric-header { display: flex; align-items: center; gap: 10px; }
@@ -1157,7 +1187,11 @@ body.light-theme .theme-icon-sun { display: block; }
   gap: 4px;
   transition: var(--spring-fast);
 }
-.sub-metric:hover { border-color: var(--glass-border-gold); transform: translateY(-2px); }
+.sub-metric:hover {
+  border-color: var(--glass-border-gold);
+  transform: translateY(-2px);
+  box-shadow: var(--glass-shadow-hover), var(--glass-glow-gold-hover);
+}
 .sub-metric .lbl { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .sub-metric .val { font-family: var(--font-display); font-weight: 800; font-size: 1.35rem; color: var(--color-text-primary); }
 
@@ -1185,7 +1219,11 @@ body.light-theme .theme-icon-sun { display: block; }
   cursor: pointer;
   transition: var(--spring-smooth);
 }
-.agent-card:hover { border-color: var(--glass-border-gold); transform: translateX(4px); box-shadow: var(--glass-shadow-hover); }
+.agent-card:hover {
+  border-color: var(--glass-border-gold);
+  transform: translateX(4px);
+  box-shadow: var(--glass-shadow-hover), var(--glass-glow-indigo-hover);
+}
 
 .agent-avatar-status { position: relative; flex-shrink: 0; }
 .agent-pic {
@@ -1454,7 +1492,11 @@ body.light-theme .theme-icon-sun { display: block; }
   transition: var(--spring-smooth);
   box-shadow: var(--glass-shadow);
 }
-.cand-row:hover { border-color: var(--glass-border-gold); transform: translateX(4px); box-shadow: var(--glass-shadow-hover); }
+.cand-row:hover {
+  border-color: var(--glass-border-gold);
+  transform: translateX(4px);
+  box-shadow: var(--glass-shadow-hover), var(--glass-glow-indigo-hover);
+}
 
 .cand-avatar {
   width: 38px; height: 38px;
@@ -1504,7 +1546,12 @@ body.light-theme .theme-icon-sun { display: block; }
   font-family: var(--font-body);
   min-width: 130px;
 }
-.sourcing-tab-card:hover { border-color: var(--glass-border-gold); transform: translateY(-3px); color: var(--color-text-primary); }
+.sourcing-tab-card:hover {
+  border-color: var(--glass-border-gold);
+  transform: translateY(-3px);
+  color: var(--color-text-primary);
+  box-shadow: var(--glass-shadow-hover), var(--glass-glow-gold-hover);
+}
 .sourcing-tab-card.active { border-color: var(--glass-border-gold); background: var(--color-gold-dim); color: var(--color-gold); box-shadow: 0 4px 20px rgba(201,168,76,0.12); }
 .sourcing-tab-card.locked { opacity: 0.5; cursor: not-allowed; }
 .selection-dot { width: 8px; height: 8px; border-radius: 50%; background: transparent; border: 1px solid var(--glass-border); position: absolute; top: 10px; right: 10px; transition: var(--spring-fast); }
