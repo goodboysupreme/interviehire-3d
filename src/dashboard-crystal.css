@@ -2219,6 +2219,21 @@ body.light-theme .theme-icon-sun { display: block; }
 }
 
 /* ============================================================
+   SLIDING PILL — must be absolute so it never shifts flex siblings
+   ============================================================ */
+.sliding-pill {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: transparent;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              width    0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity  0.18s ease;
+}
+
+/* ============================================================
    LAYOUT TOGGLES & MISC
    ============================================================ */
 .layout-toggle-group { display: flex; gap: 4px; flex-shrink: 0; }
