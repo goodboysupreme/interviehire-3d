@@ -890,6 +890,176 @@ function navigateToTab(tabId) {
   }
 }
 
+// ==========================================
+// CREATE JOB + ARIA CHAT NAVIGATION
+// ==========================================
+
+function navigateToCreateJob() {
+  AppState.activeTab = 'create-job';
+  AppState.activeSubtab = '';
+
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+    item.classList.toggle('active', item.getAttribute('data-tab') === 'jobs');
+  });
+  document.querySelectorAll('.sub-nav li').forEach(li => li.classList.remove('active-sub'));
+  document.querySelectorAll('.dashboard-view').forEach(v => v.classList.remove('active-view'));
+
+  const breadcrumb = document.getElementById('breadcrumb-title');
+  breadcrumb.innerHTML = `<span class="breadcrumb-link" id="bc-jobs-link-cj">Jobs</span> <span class="breadcrumb-separator">/</span> Create Job`;
+  document.getElementById('bc-jobs-link-cj').addEventListener('click', () => navigateToTab('jobs'));
+  document.getElementById('header-main-title').textContent = 'Create Job';
+  document.getElementById('header-sub-text').textContent = 'Choose how you\'d like to create your new job posting';
+  document.getElementById('header-action-btn').style.display = 'none';
+  document.getElementById('view-create-job').classList.add('active-view');
+
+  // Reset create-job state
+  const filePreview = document.getElementById('dropzone-file-preview');
+  const pasteArea = document.getElementById('create-jd-paste');
+  const dropzone = document.getElementById('jd-dropzone');
+  const fileInput = document.getElementById('jd-file-input');
+  if (filePreview) { filePreview.style.display = 'none'; filePreview.innerHTML = ''; }
+  if (pasteArea) { pasteArea.style.display = 'none'; pasteArea.value = ''; }
+  if (dropzone) dropzone.classList.remove('has-file', 'drag-over');
+  if (fileInput) fileInput.value = '';
+  createJobUploadedFileName = null;
+  createJobUploadedText = null;
+
+  soundEngine.playChime([392, 523.25], 0.12, 0.1);
+}
+
+let ariaChatHistory = [];
+
+function navigateToAriaChat() {
+  AppState.activeTab = 'aria-chat';
+  AppState.activeSubtab = '';
+
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+    item.classList.toggle('active', item.getAttribute('data-tab') === 'jobs');
+  });
+  document.querySelectorAll('.dashboard-view').forEach(v => v.classList.remove('active-view'));
+
+  const breadcrumb = document.getElementById('breadcrumb-title');
+  breadcrumb.innerHTML = `<span class="breadcrumb-link" id="bc-jobs-link-aria">Jobs</span> <span class="breadcrumb-separator">/</span> <span class="breadcrumb-link" id="bc-cj-link-aria">Create Job</span> <span class="breadcrumb-separator">/</span> Aria`;
+  document.getElementById('bc-jobs-link-aria').addEventListener('click', () => navigateToTab('jobs'));
+  document.getElementById('bc-cj-link-aria').addEventListener('click', navigateToCreateJob);
+  document.getElementById('header-main-title').textContent = 'Aria Requisition';
+  document.getElementById('header-sub-text').textContent = 'Creating a new job through AI conversation';
+  document.getElementById('header-action-btn').style.display = 'none';
+  document.getElementById('view-aria-chat').classList.add('active-view');
+
+  // Reset chat
+  ariaChatHistory = [];
+  const messagesContainer = document.getElementById('aria-chat-messages');
+  if (messagesContainer) messagesContainer.innerHTML = '';
+  const chatInput = document.getElementById('aria-chat-input');
+  if (chatInput) { chatInput.value = ''; chatInput.disabled = false; }
+  const sendBtn = document.getElementById('btn-aria-send');
+  if (sendBtn) sendBtn.disabled = false;
+
+  // Aria opening message
+  const opening = "Hi! I'm Aria, your AI recruiting assistant. Tell me about the role you're hiring for — what's the job title and what will this person be doing?";
+  appendAriaMessage(opening, 'aria');
+  ariaChatHistory.push({ role: 'assistant', content: opening });
+
+  soundEngine.playChime([329.63, 392, 523.25], 0.12, 0.1);
+}
+
+function appendAriaMessage(text, sender) {
+  const container = document.getElementById('aria-chat-messages');
+  if (!container) return;
+
+  const isTyping = sender === 'aria-typing';
+  const row = document.createElement('div');
+  row.className = `aria-msg aria-msg-from-aria${isTyping ? ' aria-msg-typing' : ''}`;
+
+  if (sender === 'user') {
+    row.className = 'aria-msg aria-msg-from-user';
+    row.innerHTML = `<div class="aria-msg-bubble">${text}</div>`;
+  } else {
+    row.innerHTML = `
+      <div class="aria-msg-avatar">A</div>
+      <div class="aria-msg-bubble">${isTyping ? '<span class="dot-flash">●&nbsp;●&nbsp;●</span>' : text}</div>`;
+  }
+
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+  return row;
+}
+
+async function sendAriaMessage(text) {
+  if (!text.trim()) return;
+  const input = document.getElementById('aria-chat-input');
+  const sendBtn = document.getElementById('btn-aria-send');
+  input.value = '';
+  input.disabled = true;
+  sendBtn.disabled = true;
+
+  appendAriaMessage(text, 'user');
+  ariaChatHistory.push({ role: 'user', content: text });
+
+  const typingRow = appendAriaMessage('', 'aria-typing');
+
+  const systemPrompt = `You are Aria, an AI recruiting assistant for intervieHire. Help hiring managers create job postings through a brief natural conversation.
+
+Based on the conversation so far, determine if you have enough information to create a job posting. You need:
+1. Job title / role name
+2. Experience level
+3. A brief description of responsibilities
+
+If you have all three, respond ONLY with this JSON (no extra text):
+{"ready":true,"roleName":"...","cardName":"...","experienceBand":"one of: Upto 2 Years | 1-4 Years | 3-6 Years | 5+ Years","description":"2-3 sentence professional job description"}
+
+If you need more info, respond ONLY with this JSON (no extra text):
+{"ready":false,"message":"your warm 1-2 sentence follow-up question"}`;
+
+  try {
+    const response = await callDeepSeekAPI([
+      { role: 'system', content: systemPrompt },
+      ...ariaChatHistory
+    ], true);
+
+    if (typingRow && typingRow.parentNode) typingRow.remove();
+
+    const parsed = JSON.parse(sanitizeJSONResponse(response));
+
+    if (parsed.ready) {
+      const newJob = {
+        id: generateJobId(),
+        roleName: parsed.roleName,
+        cardName: parsed.cardName || parsed.roleName,
+        created: new Date().toLocaleString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
+        status: 'published',
+        customJobId: '-',
+        experienceBand: parsed.experienceBand || 'Upto 2 Years',
+        createdBy: 'Devasri',
+        description: parsed.description,
+        questions: [],
+        pipeline: { total: 0, resume: 0, screening: 0, functional: 0 }
+      };
+      AppState.jobs.unshift(newJob);
+      saveStateToLocalStorage();
+      appendAriaMessage(`Perfect! I've created the "${parsed.roleName}" job posting. Taking you to the job detail now...`, 'aria');
+      soundEngine.playChime([329.63, 392, 523.25, 659.25], 0.2, 0.08);
+      setTimeout(() => navigateToJobDetail(newJob.id), 1400);
+    } else {
+      appendAriaMessage(parsed.message, 'aria');
+      ariaChatHistory.push({ role: 'assistant', content: parsed.message });
+      input.disabled = false;
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  } catch (err) {
+    if (typingRow && typingRow.parentNode) typingRow.remove();
+    appendAriaMessage("Sorry, I ran into a connectivity issue. Please try again.", 'aria');
+    console.error("Aria chat error:", err);
+    input.disabled = false;
+    sendBtn.disabled = false;
+  }
+}
+
+let createJobUploadedFileName = null;
+let createJobUploadedText = null;
+
 function navigateToSubtab(subtabId) {
   AppState.activeTab = 'settings';
   AppState.activeSubtab = subtabId;
@@ -1894,7 +2064,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (AppState.activeTab === 'team') {
       openDrawer('member');
     } else {
-      openDrawer('job');
+      navigateToCreateJob();
     }
   });
 
@@ -2532,6 +2702,158 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       soundEngine.playClick();
+    });
+  }
+
+  // ==========================================
+  // CREATE JOB PAGE BINDINGS
+  // ==========================================
+
+  // Aria "Start Creation" button
+  const btnStartAria = document.getElementById('btn-start-aria-creation');
+  if (btnStartAria) {
+    btnStartAria.addEventListener('click', () => {
+      soundEngine.playChime([392, 523.25, 659.25], 0.12, 0.1);
+      navigateToAriaChat();
+    });
+  }
+
+  // "No file? click here" toggles paste textarea
+  const btnNoFile = document.getElementById('btn-no-file-click');
+  if (btnNoFile) {
+    btnNoFile.addEventListener('click', (e) => {
+      e.preventDefault();
+      const pasteArea = document.getElementById('create-jd-paste');
+      const dropzone = document.getElementById('jd-dropzone');
+      if (!pasteArea) return;
+      const isShowing = pasteArea.style.display !== 'none';
+      pasteArea.style.display = isShowing ? 'none' : 'block';
+      if (dropzone) dropzone.style.display = isShowing ? 'flex' : 'none';
+      btnNoFile.textContent = isShowing ? 'No file? click here' : 'Use file upload instead';
+      if (!isShowing) { pasteArea.focus(); }
+    });
+  }
+
+  // Dropzone file select
+  const jdDropzone = document.getElementById('jd-dropzone');
+  const jdFileInput = document.getElementById('jd-file-input');
+
+  function handleCreateJobFile(file) {
+    if (!file) return;
+    createJobUploadedFileName = file.name;
+    const preview = document.getElementById('dropzone-file-preview');
+    if (preview) {
+      preview.style.display = 'flex';
+      preview.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+        <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${file.name}</span>
+        <button class="dropzone-remove-btn" id="btn-dropzone-remove">×</button>
+      `;
+      document.getElementById('btn-dropzone-remove')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        createJobUploadedFileName = null;
+        createJobUploadedText = null;
+        preview.style.display = 'none';
+        preview.innerHTML = '';
+        if (jdDropzone) jdDropzone.classList.remove('has-file');
+        if (jdFileInput) jdFileInput.value = '';
+        soundEngine.playClick();
+      });
+    }
+    if (jdDropzone) jdDropzone.classList.add('has-file');
+    const reader = new FileReader();
+    reader.onload = (ev) => { createJobUploadedText = ev.target.result; };
+    reader.onerror = () => { createJobUploadedText = null; };
+    reader.readAsText(file);
+    soundEngine.playChime([523.25], 0.1, 0.08);
+  }
+
+  if (jdDropzone) {
+    jdDropzone.addEventListener('click', () => jdFileInput?.click());
+    jdDropzone.addEventListener('dragover', (e) => { e.preventDefault(); jdDropzone.classList.add('drag-over'); });
+    jdDropzone.addEventListener('dragleave', () => jdDropzone.classList.remove('drag-over'));
+    jdDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      jdDropzone.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) handleCreateJobFile(file);
+    });
+  }
+  if (jdFileInput) {
+    jdFileInput.addEventListener('change', () => {
+      if (jdFileInput.files[0]) handleCreateJobFile(jdFileInput.files[0]);
+    });
+  }
+
+  // Continue button — process file or pasted text with DeepSeek
+  const btnContinue = document.getElementById('btn-create-job-continue');
+  if (btnContinue) {
+    btnContinue.addEventListener('click', async () => {
+      const pasteArea = document.getElementById('create-jd-paste');
+      const pastedText = (pasteArea && pasteArea.style.display !== 'none') ? pasteArea.value.trim() : '';
+      const textToProcess = pastedText || createJobUploadedText;
+      const sourceName = createJobUploadedFileName || 'pasted text';
+
+      if (!textToProcess) {
+        showPremiumToast("Upload a file or paste a job description first.", "error");
+        return;
+      }
+
+      const originalHTML = btnContinue.innerHTML;
+      btnContinue.disabled = true;
+      btnContinue.innerHTML = `<div class="spinner-mini" style="display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin-mini 0.6s linear infinite;margin-right:6px;vertical-align:middle;"></div> Processing...`;
+
+      soundEngine.playChime([392, 440], 0.1, 0.1);
+
+      const systemPrompt = `You are a job description parser. Extract structured job info from the provided text.
+Return ONLY valid JSON:
+{"roleName":"exact job title","cardName":"job title + brief context","experienceBand":"one of: Upto 2 Years | 1-4 Years | 3-6 Years | 5+ Years | 8+ Years","description":"clean 2-3 sentence professional job description"}`;
+
+      try {
+        const response = await callDeepSeekAPI([
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Parse this job description:\n\n${textToProcess.slice(0, 2500)}` }
+        ], true);
+
+        const parsed = JSON.parse(sanitizeJSONResponse(response));
+        const newJob = {
+          id: generateJobId(),
+          roleName: parsed.roleName,
+          cardName: parsed.cardName || parsed.roleName,
+          created: new Date().toLocaleString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
+          status: 'published',
+          customJobId: '-',
+          experienceBand: parsed.experienceBand || 'Upto 2 Years',
+          createdBy: 'Devasri',
+          description: parsed.description || textToProcess.slice(0, 500),
+          questions: [],
+          pipeline: { total: 0, resume: 0, screening: 0, functional: 0 }
+        };
+        AppState.jobs.unshift(newJob);
+        saveStateToLocalStorage();
+        showPremiumToast(`Job "${parsed.roleName}" created successfully.`, "success");
+        soundEngine.playChime([329.63, 392, 523.25], 0.2, 0.08);
+        navigateToJobDetail(newJob.id);
+      } catch (err) {
+        console.error("Job creation from JD failed:", err);
+        showPremiumToast("Failed to process job description. Check API status.", "error");
+        btnContinue.disabled = false;
+        btnContinue.innerHTML = originalHTML;
+      }
+    });
+  }
+
+  // Aria chat send button + Enter key
+  const ariaChatInput = document.getElementById('aria-chat-input');
+  const ariaSendBtn = document.getElementById('btn-aria-send');
+
+  if (ariaSendBtn && ariaChatInput) {
+    ariaSendBtn.addEventListener('click', () => sendAriaMessage(ariaChatInput.value));
+    ariaChatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendAriaMessage(ariaChatInput.value);
+      }
     });
   }
 
