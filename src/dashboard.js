@@ -205,6 +205,15 @@ const AppState = {
       status: 'Screening',
       score: '91%',
       registeredOn: '13 Mar 2026, 11:05 AM'
+    },
+    {
+      id: 'CAN-4402-RA1',
+      name: 'Rohan Mehta',
+      email: 'rohan.mehta@hire.io',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '28 May 2026, 09:00 AM'
     }
   ],
 
@@ -3958,6 +3967,215 @@ function renderColumnsSelectorDropdowns() {
   }
 }
 
+// ==========================================
+// RESUME ANALYSIS (AI-powered, Aria)
+// ==========================================
+
+const resumeTextCache = {};
+const resumeAnalysisCache = {};
+
+function renderResumeStagePaneForJob(candidates, job, container) {
+  container.innerHTML = candidates.map(c => {
+    const initials = c.name.split(' ').map(n => n[0]).join('');
+    return `
+      <div class="resume-analysis-card" data-cid="${c.id}">
+        <div class="jd-card-header">
+          <div class="user-avatar-mini" style="background:rgba(var(--color-gold-rgb),0.12);border-color:rgba(var(--color-gold-rgb),0.4);color:var(--color-gold)">${initials}</div>
+          <div class="user-details">
+            <span class="cand-name">${c.name}</span>
+            <span class="cand-email">${c.email}</span>
+          </div>
+          <span class="score-badge ra-score-badge" id="badge-${c.id}">${c.score}</span>
+        </div>
+        <div class="ra-input-section" id="ra-input-${c.id}">
+          <div class="ra-upload-zone" id="ra-zone-${c.id}">
+            <input type="file" id="ra-file-${c.id}" class="ra-file-input" accept=".pdf,.docx,.txt" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            <p class="ra-zone-title">Drop resume here</p>
+            <p class="ra-zone-sub">PDF · DOCX · TXT — or click to browse</p>
+          </div>
+          <div class="ra-file-preview ra-hidden" id="ra-preview-${c.id}"></div>
+          <a class="ra-paste-toggle" id="ra-paste-toggle-${c.id}" href="#">✎ No file? Paste resume text</a>
+          <textarea class="ra-paste-area ra-hidden" id="ra-paste-${c.id}" placeholder="Paste the candidate's resume text here..."></textarea>
+          <button class="btn-analyse-resume" id="ra-btn-${c.id}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Analyse with Aria
+          </button>
+        </div>
+        <div class="ra-result ra-hidden" id="ra-result-${c.id}"></div>
+        <div class="jd-card-actions">
+          <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
+          <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening">Advance to Screening →</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  bindResumeAnalysisEvents(job);
+}
+
+function bindResumeAnalysisEvents(job) {
+  document.querySelectorAll('.resume-analysis-card').forEach(card => {
+    const cid = card.dataset.cid;
+    const zone = document.getElementById(`ra-zone-${cid}`);
+    const fileInput = document.getElementById(`ra-file-${cid}`);
+    const pasteToggle = document.getElementById(`ra-paste-toggle-${cid}`);
+    const pasteArea = document.getElementById(`ra-paste-${cid}`);
+    const btn = document.getElementById(`ra-btn-${cid}`);
+
+    if (resumeAnalysisCache[cid]) renderAnalysisResult(cid, resumeAnalysisCache[cid]);
+
+    zone?.addEventListener('click', () => fileInput?.click());
+    zone?.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone?.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone?.addEventListener('drop', e => {
+      e.preventDefault(); zone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) handleResumeFile(cid, e.dataTransfer.files[0]);
+    });
+    fileInput?.addEventListener('change', () => {
+      if (fileInput.files[0]) handleResumeFile(cid, fileInput.files[0]);
+    });
+    pasteToggle?.addEventListener('click', e => {
+      e.preventDefault();
+      const nowHidden = pasteArea?.classList.toggle('ra-hidden');
+      pasteToggle.textContent = nowHidden ? '✎ No file? Paste resume text' : '✕ Hide paste area';
+    });
+    btn?.addEventListener('click', () => runResumeAnalysis(cid, job));
+  });
+}
+
+function handleResumeFile(cid, file) {
+  const preview = document.getElementById(`ra-preview-${cid}`);
+  const zone = document.getElementById(`ra-zone-${cid}`);
+  const reader = new FileReader();
+  reader.onload = e => {
+    resumeTextCache[cid] = e.target.result;
+    zone?.classList.add('has-file');
+    if (preview) {
+      preview.classList.remove('ra-hidden');
+      preview.innerHTML = `
+        <div class="ra-file-chip">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span>${file.name}</span>
+          <button class="ra-remove-file" data-rcid="${cid}">×</button>
+        </div>`;
+      preview.querySelector('.ra-remove-file')?.addEventListener('click', () => {
+        resumeTextCache[cid] = null;
+        preview.classList.add('ra-hidden');
+        preview.innerHTML = '';
+        zone?.classList.remove('has-file');
+        const fi = document.getElementById(`ra-file-${cid}`);
+        if (fi) fi.value = '';
+      });
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function runResumeAnalysis(cid, job) {
+  const pasteArea = document.getElementById(`ra-paste-${cid}`);
+  const btn = document.getElementById(`ra-btn-${cid}`);
+  const resumeText = (resumeTextCache[cid] || '') + '\n' + (pasteArea?.value || '');
+  if (!resumeText.trim()) { showPremiumToast('Upload a resume or paste text first.', 'error'); return; }
+
+  const origHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="ra-spinner"></span> Analysing…`;
+
+  const systemPrompt = `You are Aria, an expert ATS resume analyst for intervieHire. Analyse the provided resume against the job requirements. Respond ONLY with a valid JSON object matching exactly this schema — no extra text, no markdown fences:
+{"matchScore":number,"summary":"2-3 sentence professional assessment","experienceYears":"e.g. 4 years","skills":{"detected":["skill1"],"matched":["skill1"],"missing":["skill1"]},"scorecard":{"technical":number,"experience":number,"communication":number,"cultureFit":number},"recommendation":"Advance|Hold|Reject","recommendationReason":"1 sentence reason"}
+All scorecard values 0–10. matchScore 0–100.`;
+
+  const userMsg = `Job Title: ${job.cardName}\nRole: ${job.roleName}\nExperience Required: ${job.experienceBand}\nJob Description: ${job.description || '(Not provided)'}\n\n--- RESUME ---\n${resumeText.slice(0, 3500)}`;
+
+  try {
+    const raw = await callDeepSeekAPI(
+      [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }],
+      true
+    );
+    const result = JSON.parse(sanitizeJSONResponse(raw));
+    resumeAnalysisCache[cid] = result;
+    const cand = AppState.candidates.find(c => c.id === cid);
+    if (cand) { cand.score = `${result.matchScore}%`; saveStateToLocalStorage(); }
+    renderAnalysisResult(cid, result);
+    showPremiumToast('Resume analysis complete.', 'success');
+  } catch {
+    showPremiumToast('Analysis failed — please try again.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = origHTML;
+  }
+}
+
+function renderAnalysisResult(cid, result) {
+  const resultEl = document.getElementById(`ra-result-${cid}`);
+  const inputEl  = document.getElementById(`ra-input-${cid}`);
+  const badgeEl  = document.getElementById(`badge-${cid}`);
+  if (!resultEl) return;
+
+  if (badgeEl) {
+    badgeEl.textContent = `${result.matchScore}%`;
+    const c = result.matchScore >= 75 ? '34,197,94' : result.matchScore >= 50 ? '251,191,36' : '239,68,68';
+    badgeEl.style.cssText = `background:rgba(${c},0.12);color:rgb(${c});border-color:rgba(${c},0.3);`;
+  }
+
+  const recClass = result.recommendation === 'Advance' ? 'advance' : result.recommendation === 'Hold' ? 'hold' : 'reject';
+  const recIcon  = result.recommendation === 'Advance' ? '✅' : result.recommendation === 'Hold' ? '⏸' : '❌';
+
+  const scRows = [
+    ['Technical',     result.scorecard?.technical     ?? 0],
+    ['Experience',    result.scorecard?.experience    ?? 0],
+    ['Communication', result.scorecard?.communication ?? 0],
+    ['Culture Fit',   result.scorecard?.cultureFit    ?? 0],
+  ].map(([lbl, val]) => `
+    <div class="sc-bar-row">
+      <span class="sc-label">${lbl}</span>
+      <div class="sc-bar-track"><div class="sc-bar-fill sc-fill-${recClass}" style="width:${(+val)*10}%"></div></div>
+      <span class="sc-val">${(+val).toFixed(1)}</span>
+    </div>`).join('');
+
+  const chips = (arr, cls) => (arr || []).map(s => `<span class="skill-chip ${cls}">${s}</span>`).join('');
+
+  resultEl.innerHTML = `
+    <div class="ra-result-top">
+      <div class="ra-score-ring-wrap">
+        <div class="ra-score-ring" style="--score:${result.matchScore}">
+          <span class="ra-score-num">${result.matchScore}</span>
+          <span class="ra-score-pct">%</span>
+        </div>
+        <p class="ra-exp-label">~&nbsp;${result.experienceYears}</p>
+      </div>
+      <div class="ra-rec-block">
+        <div class="rec-badge ${recClass}">${recIcon}&nbsp;${result.recommendation}</div>
+        <p class="rec-reason">${result.recommendationReason}</p>
+      </div>
+    </div>
+    ${(result.skills?.matched?.length || result.skills?.missing?.length || result.skills?.detected?.length) ? `
+    <div class="ra-skills-section">
+      ${result.skills?.matched?.length  ? `<div class="ra-skills-row"><span class="rsk-label matched-label">Matched</span><div class="skill-chips-wrap">${chips(result.skills.matched,'matched')}</div></div>` : ''}
+      ${result.skills?.missing?.length  ? `<div class="ra-skills-row"><span class="rsk-label missing-label">Missing</span><div class="skill-chips-wrap">${chips(result.skills.missing,'missing')}</div></div>` : ''}
+      ${result.skills?.detected?.length ? `<div class="ra-skills-row"><span class="rsk-label detected-label">Detected</span><div class="skill-chips-wrap">${chips(result.skills.detected,'detected')}</div></div>` : ''}
+    </div>` : ''}
+    <div class="ra-scorecard">
+      <p class="ra-sc-title">AI Scorecard</p>
+      ${scRows}
+    </div>
+    <div class="ra-summary-box">
+      <span class="ra-summary-label">Aria's Assessment</span>
+      <p class="ra-summary-text">"${result.summary}"</p>
+    </div>
+    <button class="btn-re-analyse" id="ra-re-${cid}">↺ Re-analyse</button>
+  `;
+
+  resultEl.classList.remove('ra-hidden');
+  inputEl?.classList.add('ra-hidden');
+
+  document.getElementById(`ra-re-${cid}`)?.addEventListener('click', () => {
+    resultEl.classList.add('ra-hidden');
+    inputEl?.classList.remove('ra-hidden');
+    const btn = document.getElementById(`ra-btn-${cid}`);
+    if (btn) { btn.disabled = false; btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Analyse with Aria`; }
+  });
+}
+
 function renderJobDetailPanes(job) {
   const searchVal = document.getElementById('jd-candidate-search').value.trim().toLowerCase();
   
@@ -3982,32 +4200,7 @@ function renderJobDetailPanes(job) {
         </div>
       `;
     } else {
-      resumeList.innerHTML = resumeCands.map(c => `
-        <div class="jd-candidate-row-card">
-          <div class="jd-card-header">
-            <div class="user-avatar-mini">${c.name.split(' ').map(n=>n[0]).join('')}</div>
-            <div class="user-details">
-              <span class="cand-name">${c.name}</span>
-              <span class="cand-email">${c.email}</span>
-            </div>
-            <span class="score-badge">${c.score} match</span>
-          </div>
-          <div class="jd-card-body">
-            <div class="analysis-section">
-              <span class="sec-label">AI Extraction Summary:</span>
-              <p class="sec-desc">Strong background matching the requirements. Demonstrated skills in core technologies, proposal execution, and cross-functional team collaboration.</p>
-            </div>
-            <div class="analysis-section">
-              <span class="sec-label">Experience Band:</span>
-              <p class="sec-desc">${job.experienceBand}</p>
-            </div>
-          </div>
-          <div class="jd-card-actions">
-            <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
-            <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening">Advance to Screening →</button>
-          </div>
-        </div>
-      `).join('');
+      renderResumeStagePaneForJob(resumeCands, job, resumeList);
     }
   }
 
