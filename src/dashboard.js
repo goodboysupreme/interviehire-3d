@@ -163,7 +163,30 @@ const AppState = {
       registeredOn: '26 Feb 2026, 05:33 PM',
       status: 'Active'
     }
-  ]
+  ],
+  visibleColumnsAnalyticsJobs: ['id', 'roleName', 'cardName', 'customJobId', 'experienceBand', 'tags', 'createdBy', 'collaborators', 'recruiters'],
+  visibleColumnsAnalyticsCandidates: ['id', 'name', 'jobApplied', 'registeredOn', 'status', 'score', 'actions'],
+  visibleColumnsTeam: ['member', 'designation', 'usertype', 'registeredOn', 'status', 'actions'],
+  agentConfigs: {
+    aria: {
+      model: 'gpt-4o',
+      temperature: 0.2,
+      threshold: 80,
+      prompt: 'You are Aria, the Resume Analyst Agent. Your job is to extract candidate experience, skills, and check eligibility for public tenders. Screen out any profiles below the match score threshold.'
+    },
+    kaelen: {
+      model: 'claude-3-5-sonnet',
+      temperature: 0.5,
+      threshold: 85,
+      prompt: 'You are Kaelen, the Technical Vetting Specialist. Evaluate code submissions for correctness, clean structure, memory leak preventions, and correct algorithmic complexity.'
+    },
+    lyra: {
+      model: 'gpt-4o',
+      temperature: 0.7,
+      threshold: 75,
+      prompt: 'You are Lyra, the HR Communications Bot. Draft friendly invitations to candidates, schedule interviews, and handle follow-up emails regarding their screening status.'
+    }
+  }
 };
 
 // Helper for generating custom job IDs
@@ -314,17 +337,20 @@ function renderAnalyticsTable() {
   const searchVal = AppState.tableSearch.toLowerCase();
   
   if (AppState.analyticsSubtab === 'jobs-data') {
-    headers.innerHTML = `
-      <th class="sortable" data-sort="id">Job ID <span class="arrow">${AppState.jobsSortKey === 'id' ? (AppState.jobsSortAsc ? '↑' : '↓') : '↕'}</span></th>
-      <th class="sortable" data-sort="role">Role Name <span class="arrow">${AppState.jobsSortKey === 'role' ? (AppState.jobsSortAsc ? '↑' : '↓') : '↕'}</span></th>
-      <th class="sortable" data-sort="card">Card Name <span class="arrow">${AppState.jobsSortKey === 'card' ? (AppState.jobsSortAsc ? '↑' : '↓') : '↕'}</span></th>
-      <th>Custom Job ID</th>
-      <th>Experience Band</th>
-      <th>Tags</th>
-      <th>Job Created By</th>
-      <th>Collaborators</th>
-      <th>Recruiters</th>
-    `;
+    const visible = AppState.visibleColumnsAnalyticsJobs;
+    let headerHtml = '';
+    
+    if (visible.includes('id')) headerHtml += `<th class="sortable" data-sort="id">Job ID <span class="arrow">${AppState.jobsSortKey === 'id' ? (AppState.jobsSortAsc ? '↑' : '↓') : '↕'}</span></th>`;
+    if (visible.includes('roleName')) headerHtml += `<th class="sortable" data-sort="role">Role Name <span class="arrow">${AppState.jobsSortKey === 'role' ? (AppState.jobsSortAsc ? '↑' : '↓') : '↕'}</span></th>`;
+    if (visible.includes('cardName')) headerHtml += `<th class="sortable" data-sort="card">Card Name <span class="arrow">${AppState.jobsSortKey === 'card' ? (AppState.jobsSortAsc ? '↑' : '↓') : '↕'}</span></th>`;
+    if (visible.includes('customJobId')) headerHtml += `<th>Custom Job ID</th>`;
+    if (visible.includes('experienceBand')) headerHtml += `<th>Experience Band</th>`;
+    if (visible.includes('tags')) headerHtml += `<th>Tags</th>`;
+    if (visible.includes('createdBy')) headerHtml += `<th>Job Created By</th>`;
+    if (visible.includes('collaborators')) headerHtml += `<th>Collaborators</th>`;
+    if (visible.includes('recruiters')) headerHtml += `<th>Recruiters</th>`;
+    
+    headers.innerHTML = headerHtml;
 
     // Process Sort & Search on Jobs
     let list = [...AppState.jobs];
@@ -348,37 +374,42 @@ function renderAnalyticsTable() {
     document.getElementById('analytics-table-showing').textContent = `Showing 1-${list.length} of ${list.length}`;
 
     if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--color-text-muted); padding: 32px;">No job data matching query</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${visible.length}" style="text-align: center; color: var(--color-text-muted); padding: 32px;">No job data matching query</td></tr>`;
       return;
     }
 
     list.forEach(job => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="cell-mono">${job.id}</td>
-        <td><strong>${job.roleName}</strong></td>
-        <td>${job.cardName}</td>
-        <td>${job.customJobId}</td>
-        <td>${job.experienceBand}</td>
-        <td style="color: var(--color-text-faint);">-</td>
-        <td>${job.createdBy}</td>
-        <td style="color: var(--color-text-faint);">-</td>
-        <td style="color: var(--color-text-faint);">-</td>
-      `;
+      let cellsHtml = '';
+      
+      if (visible.includes('id')) cellsHtml += `<td class="cell-mono">${job.id}</td>`;
+      if (visible.includes('roleName')) cellsHtml += `<td><strong>${job.roleName}</strong></td>`;
+      if (visible.includes('cardName')) cellsHtml += `<td>${job.cardName}</td>`;
+      if (visible.includes('customJobId')) cellsHtml += `<td>${job.customJobId}</td>`;
+      if (visible.includes('experienceBand')) cellsHtml += `<td>${job.experienceBand}</td>`;
+      if (visible.includes('tags')) cellsHtml += `<td style="color: var(--color-text-faint);">-</td>`;
+      if (visible.includes('createdBy')) cellsHtml += `<td>${job.createdBy}</td>`;
+      if (visible.includes('collaborators')) cellsHtml += `<td style="color: var(--color-text-faint);">-</td>`;
+      if (visible.includes('recruiters')) cellsHtml += `<td style="color: var(--color-text-faint);">-</td>`;
+      
+      tr.innerHTML = cellsHtml;
       tbody.appendChild(tr);
     });
 
   } else {
     // Candidates data headers
-    headers.innerHTML = `
-      <th>Candidate ID</th>
-      <th>Candidate Name</th>
-      <th>Job Applied</th>
-      <th>Registered On</th>
-      <th>Pipeline Stage</th>
-      <th>Match Score</th>
-      <th>Actions</th>
-    `;
+    const visible = AppState.visibleColumnsAnalyticsCandidates;
+    let headerHtml = '';
+    
+    if (visible.includes('id')) headerHtml += `<th>Candidate ID</th>`;
+    if (visible.includes('name')) headerHtml += `<th>Candidate Name</th>`;
+    if (visible.includes('jobApplied')) headerHtml += `<th>Job Applied</th>`;
+    if (visible.includes('registeredOn')) headerHtml += `<th>Registered On</th>`;
+    if (visible.includes('status')) headerHtml += `<th>Pipeline Stage</th>`;
+    if (visible.includes('score')) headerHtml += `<th>Match Score</th>`;
+    if (visible.includes('actions')) headerHtml += `<th>Actions</th>`;
+    
+    headers.innerHTML = headerHtml;
 
     // Filter Candidates by search
     let list = [...AppState.candidates];
@@ -389,41 +420,67 @@ function renderAnalyticsTable() {
     document.getElementById('analytics-table-showing').textContent = `Showing 1-${list.length} of ${list.length}`;
 
     if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--color-text-muted); padding: 32px;">No candidates matching query</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${visible.length}" style="text-align: center; color: var(--color-text-muted); padding: 32px;">No candidates matching query</td></tr>`;
       return;
     }
 
     list.forEach(c => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="cell-mono">${c.id}</td>
-        <td>
-          <div class="user-cell">
-            <div class="user-avatar-mini">${c.name.split(' ').map(n => n[0]).join('')}</div>
-            <div class="user-details">
-              <span style="font-weight: 600;">${c.name}</span>
-              <span class="user-email-mini">${c.email}</span>
+      let cellsHtml = '';
+      
+      if (visible.includes('id')) cellsHtml += `<td class="cell-mono">${c.id}</td>`;
+      if (visible.includes('name')) {
+        cellsHtml += `
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar-mini">${c.name.split(' ').map(n => n[0]).join('')}</div>
+              <div class="user-details">
+                <span style="font-weight: 600;">${c.name}</span>
+                <span class="user-email-mini">${c.email}</span>
+              </div>
             </div>
-          </div>
-        </td>
-        <td>${c.jobApplied}</td>
-        <td class="cell-mono">${c.registeredOn}</td>
-        <td>
-          <span class="badge-role ${c.status === 'Screening' ? 'recruiter' : 'interviewer'}">
-            <span class="badge-role-icon"></span>
-            ${c.status}
-          </span>
-        </td>
-        <td>
-          <strong style="color: var(--color-gold); text-shadow: 0 0 8px var(--color-gold-glow); font-family: var(--font-mono);">${c.score}</strong>
-        </td>
-        <td>
-          <button class="table-btn-action" title="View Full Report">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-          </button>
-        </td>
-      `;
+          </td>
+        `;
+      }
+      if (visible.includes('jobApplied')) cellsHtml += `<td>${c.jobApplied}</td>`;
+      if (visible.includes('registeredOn')) cellsHtml += `<td class="cell-mono">${c.registeredOn}</td>`;
+      if (visible.includes('status')) {
+        cellsHtml += `
+          <td>
+            <span class="badge-role ${c.status === 'Screening' ? 'recruiter' : 'interviewer'}">
+              <span class="badge-role-icon"></span>
+              ${c.status}
+            </span>
+          </td>
+        `;
+      }
+      if (visible.includes('score')) {
+        cellsHtml += `
+          <td>
+            <strong style="color: var(--color-gold); text-shadow: 0 0 8px var(--color-gold-glow); font-family: var(--font-mono);">${c.score}</strong>
+          </td>
+        `;
+      }
+      if (visible.includes('actions')) {
+        cellsHtml += `
+          <td>
+            <button class="table-btn-action btn-view-report-from-table" data-candidate-id="${c.id}" title="View Full Report">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </td>
+        `;
+      }
+      
+      tr.innerHTML = cellsHtml;
       tbody.appendChild(tr);
+    });
+    
+    // Bind click handlers to full report buttons in the table
+    tbody.querySelectorAll('.btn-view-report-from-table').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.getAttribute('data-candidate-id');
+        openCandidateReport(candId);
+      });
     });
   }
 
@@ -471,8 +528,21 @@ function renderTeamTable() {
 
   document.getElementById('team-table-showing').textContent = `Showing 1-${filteredTeam.length} of ${filteredTeam.length}`;
 
+  const visible = AppState.visibleColumnsTeam;
+  const headers = document.querySelector('#team-members-table thead tr');
+  if (headers) {
+    let headerHtml = '';
+    if (visible.includes('member')) headerHtml += `<th>Team Member</th>`;
+    if (visible.includes('designation')) headerHtml += `<th>Designation</th>`;
+    if (visible.includes('usertype')) headerHtml += `<th>Usertype</th>`;
+    if (visible.includes('registeredOn')) headerHtml += `<th>Registered On</th>`;
+    if (visible.includes('status')) headerHtml += `<th>Status</th>`;
+    if (visible.includes('actions')) headerHtml += `<th>Actions</th>`;
+    headers.innerHTML = headerHtml;
+  }
+
   if (filteredTeam.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 32px;">No team members matching criteria</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${visible.length}" style="text-align: center; color: var(--color-text-muted); padding: 32px;">No team members matching criteria</td></tr>`;
     return;
   }
 
@@ -482,38 +552,120 @@ function renderTeamTable() {
     // Status styles
     let statusClass = 'published';
     if (member.status === 'Invited') statusClass = 'draft';
+    else if (member.status === 'Inactive') statusClass = 'archived';
     
-    tr.innerHTML = `
-      <td>
-        <div class="user-cell">
-          <div class="user-avatar-mini" style="background-color: var(--color-gold-dim); border-color: var(--color-gold); color: var(--color-gold-light);">${member.name.charAt(0)}</div>
-          <div class="user-details">
-            <span style="font-weight: 600;">${member.name} ${member.name === 'Devasri' ? '(me)' : ''}</span>
-            <span class="user-email-mini">${member.email}</span>
+    let cellsHtml = '';
+    if (visible.includes('member')) {
+      cellsHtml += `
+        <td>
+          <div class="user-cell">
+            <div class="user-avatar-mini" style="background-color: var(--color-gold-dim); border-color: var(--color-gold); color: var(--color-gold-light);">${member.name.charAt(0)}</div>
+            <div class="user-details">
+              <span style="font-weight: 600;">${member.name} ${member.name === 'Devasri' ? '(me)' : ''}</span>
+              <span class="user-email-mini">${member.email}</span>
+            </div>
           </div>
-        </div>
-      </td>
-      <td>${member.designation}</td>
-      <td>
-        <span class="badge-role ${member.usertype === 'Recruiter' ? 'recruiter' : (member.usertype === 'Interviewer' ? 'interviewer' : '')}">
-          <span class="badge-role-icon"></span>
-          ${member.usertype}
-        </span>
-      </td>
-      <td class="cell-mono">${member.registeredOn}</td>
-      <td>
-        <span class="status-badge ${statusClass}">
-          <span class="status-badge-dot"></span>
-          ${member.status}
-        </span>
-      </td>
-      <td>
-        <button class="table-btn-action" style="color: var(--color-orange);" title="Deactivate Member" ${member.name === 'Devasri' ? 'disabled style="opacity: 0.2; cursor: not-allowed;"' : ''}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-        </button>
-      </td>
-    `;
+        </td>
+      `;
+    }
+    if (visible.includes('designation')) cellsHtml += `<td>${member.designation}</td>`;
+    if (visible.includes('usertype')) {
+      if (member.name === 'Devasri') {
+        cellsHtml += `
+          <td>
+            <span class="badge-role">
+              <span class="badge-role-icon"></span>
+              ${member.usertype}
+            </span>
+          </td>
+        `;
+      } else {
+        cellsHtml += `
+          <td>
+            <select class="select-styled-table team-usertype-select" data-email="${member.email}">
+              <option value="Org. Admin" ${member.usertype === 'Org. Admin' ? 'selected' : ''}>Org. Admin</option>
+              <option value="Recruiter" ${member.usertype === 'Recruiter' ? 'selected' : ''}>Recruiter</option>
+              <option value="Interviewer" ${member.usertype === 'Interviewer' ? 'selected' : ''}>Interviewer</option>
+            </select>
+          </td>
+        `;
+      }
+    }
+    if (visible.includes('registeredOn')) cellsHtml += `<td class="cell-mono">${member.registeredOn}</td>`;
+    if (visible.includes('status')) {
+      if (member.name === 'Devasri') {
+        cellsHtml += `
+          <td>
+            <span class="status-badge published">
+              <span class="status-badge-dot"></span>
+              ${member.status}
+            </span>
+          </td>
+        `;
+      } else {
+        cellsHtml += `
+          <td>
+            <select class="select-styled-table team-status-select" data-email="${member.email}">
+              <option value="Active" ${member.status === 'Active' ? 'selected' : ''}>Active</option>
+              <option value="Inactive" ${member.status === 'Inactive' ? 'selected' : ''}>Inactive</option>
+              <option value="Invited" ${member.status === 'Invited' ? 'selected' : ''}>Invited</option>
+            </select>
+          </td>
+        `;
+      }
+    }
+    if (visible.includes('actions')) {
+      cellsHtml += `
+        <td>
+          <button class="table-btn-action btn-revoke-member" data-email="${member.email}" style="color: var(--color-orange);" title="Deactivate/Revoke Member" ${member.name === 'Devasri' ? 'disabled style="opacity: 0.2; cursor: not-allowed;"' : ''}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+          </button>
+        </td>
+      `;
+    }
+    
+    tr.innerHTML = cellsHtml;
     tbody.appendChild(tr);
+  });
+
+  // Bind change/click events to inline dropdowns & buttons
+  tbody.querySelectorAll('.team-usertype-select').forEach(sel => {
+    sel.addEventListener('change', (e) => {
+      const email = sel.getAttribute('data-email');
+      const member = AppState.team.find(m => m.email === email);
+      if (member) {
+        member.usertype = e.target.value;
+        soundEngine.playChime([523.25], 0.1);
+        showPremiumToast(`${member.name}'s role updated to ${member.usertype}.`, 'success');
+        renderTeamTable();
+      }
+    });
+  });
+
+  tbody.querySelectorAll('.team-status-select').forEach(sel => {
+    sel.addEventListener('change', (e) => {
+      const email = sel.getAttribute('data-email');
+      const member = AppState.team.find(m => m.email === email);
+      if (member) {
+        member.status = e.target.value;
+        soundEngine.playChime([523.25], 0.1);
+        showPremiumToast(`${member.name}'s status updated to ${member.status}.`, 'success');
+        renderTeamTable();
+      }
+    });
+  });
+
+  tbody.querySelectorAll('.btn-revoke-member').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const email = btn.getAttribute('data-email');
+      const member = AppState.team.find(m => m.email === email);
+      if (member) {
+        AppState.team = AppState.team.filter(m => m.email !== email);
+        soundEngine.playChime([392, 293.66], 0.15, 0.08);
+        showPremiumToast(`${member.name} has been revoked from the team access list.`, 'success');
+        renderTeamTable();
+      }
+    });
   });
 }
 
@@ -844,6 +996,17 @@ function renderKanbanBoard() {
 
     const card = document.createElement('div');
     card.className = 'kanban-card';
+    card.setAttribute('draggable', 'true');
+    
+    card.addEventListener('dragstart', (e) => {
+      card.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', c.id);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+    });
     
     const isHired = stage === 'Hired';
     
@@ -1258,6 +1421,7 @@ function navigateToJobDetail(jobId) {
 
   renderFunnelStages(job);
   renderFunnelInsights(job);
+  renderJobDetailPanes(job);
 
   // SVG needs layout to be painted first
   requestAnimationFrame(() => {
@@ -1389,26 +1553,23 @@ function drawFunnelSVG(job, candidates) {
     );
   }
 
+  const isLight = document.body.classList.contains('light-theme');
+  const dividerStroke = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.065)';
+  
+  // Clean solid flat colors configured separately for light and dark themes
+  const pinkFill = isLight ? '#be185d' : '#ec4899';   // Deep rose for light, vibrant pink for dark
+  const greenFill = isLight ? '#047857' : '#10b981';  // Forest green for light, vibrant emerald for dark
+
   const dividers = pts.slice(1, -1).map(p =>
     `<line x1="${p.lx - 14}" y1="${p.y}" x2="${p.rx + 14}" y2="${p.y}"
-      stroke="rgba(255,255,255,0.065)" stroke-width="1" stroke-dasharray="4 3"/>`
+      stroke="${dividerStroke}" stroke-width="1" stroke-dasharray="4 3"/>`
   ).join('');
 
   svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svgEl.innerHTML = `
-    <defs>
-      <linearGradient id="jd-gp" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#f472b6" stop-opacity="0.95"/>
-        <stop offset="100%" stop-color="#9d174d" stop-opacity="0.7"/>
-      </linearGradient>
-      <linearGradient id="jd-gg" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#34d399" stop-opacity="0.95"/>
-        <stop offset="100%" stop-color="#064e3b" stop-opacity="0.7"/>
-      </linearGradient>
-    </defs>
     ${dividers}
-    ${pinkSegs.map(d => `<path d="${d}" fill="url(#jd-gp)"/>`).join('')}
-    ${greenSegs.map(d => `<path d="${d}" fill="url(#jd-gg)"/>`).join('')}
+    ${pinkSegs.map(d => `<path d="${d}" fill="${pinkFill}" opacity="0.9"/>`).join('')}
+    ${greenSegs.map(d => `<path d="${d}" fill="${greenFill}" opacity="0.9"/>`).join('')}
   `;
 }
 
@@ -1438,14 +1599,21 @@ function drawScoreDistributionSVG(job, candidates) {
   const barW = (chartW / buckets.length) * 0.52;
   const gap = chartW / buckets.length;
 
+  const isLight = document.body.classList.contains('light-theme');
+  const gridStroke = isLight ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.045)';
+  const labelFill = isLight ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.3)';
+  const valFill = isLight ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.65)';
+  const bucketFill = isLight ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.35)';
+  const barFill = isLight ? '#4f46e5' : '#6366f1';
+
   const yTicks = [0, 25, 50, 75, 100];
   const yLines = yTicks.map(v => {
     const y = padT + chartH - (v / 100) * chartH;
     return `
       <line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}"
-        stroke="rgba(255,255,255,0.045)" stroke-width="1"/>
+        stroke="${gridStroke}" stroke-width="1"/>
       <text x="${padL - 6}" y="${y + 3.5}" text-anchor="end"
-        fill="rgba(255,255,255,0.3)" font-size="9" font-family="sans-serif">${v}%</text>`;
+        fill="${labelFill}" font-size="9" font-family="sans-serif">${v}%</text>`;
   }).join('');
 
   const bars = percs.map((p, i) => {
@@ -1453,11 +1621,11 @@ function drawScoreDistributionSVG(job, candidates) {
     const x = padL + i * gap + (gap - barW) / 2;
     const y = padT + chartH - barH;
     return `
-      <rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="#6366f1" rx="3" opacity="0.9"/>
+      <rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${barFill}" rx="3" opacity="0.9"/>
       ${p > 0 ? `<text x="${x + barW / 2}" y="${y - 4}" text-anchor="middle"
-        fill="rgba(255,255,255,0.65)" font-size="9.5" font-family="sans-serif">${Math.round(p)}%</text>` : ''}
+        fill="${valFill}" font-size="9.5" font-family="sans-serif">${Math.round(p)}%</text>` : ''}
       <text x="${x + barW / 2}" y="${H - padB + 14}" text-anchor="middle"
-        fill="rgba(255,255,255,0.35)" font-size="9" font-family="sans-serif">${buckets[i]}</text>`;
+        fill="${bucketFill}" font-size="9" font-family="sans-serif">${buckets[i]}</text>`;
   }).join('');
 
   svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
@@ -1937,14 +2105,48 @@ document.addEventListener('DOMContentLoaded', () => {
     triggerExcelExport('team');
   });
 
-  // Columns toggles buttons mock actions
-  document.getElementById('btn-columns-toggle').addEventListener('click', () => {
+  // Columns toggles buttons actions
+  document.getElementById('btn-columns-toggle').addEventListener('click', (e) => {
+    e.stopPropagation();
     soundEngine.playClick();
-    alert('Column configuration interface details can be linked to your role custom database.');
+    const pop = document.getElementById('pop-columns-toggle');
+    const isShowing = pop.style.display !== 'none';
+    
+    // Close other
+    const popTeam = document.getElementById('pop-columns-team');
+    if (popTeam) popTeam.style.display = 'none';
+    
+    if (isShowing) {
+      pop.style.display = 'none';
+    } else {
+      renderColumnsSelectorDropdowns();
+      pop.style.display = 'flex';
+    }
   });
-  document.getElementById('btn-columns-team').addEventListener('click', () => {
+  document.getElementById('btn-columns-team').addEventListener('click', (e) => {
+    e.stopPropagation();
     soundEngine.playClick();
-    alert('Column configuration details can be linked to your team custom database.');
+    const pop = document.getElementById('pop-columns-team');
+    const isShowing = pop.style.display !== 'none';
+    
+    // Close other
+    const popToggle = document.getElementById('pop-columns-toggle');
+    if (popToggle) popToggle.style.display = 'none';
+    
+    if (isShowing) {
+      pop.style.display = 'none';
+    } else {
+      renderColumnsSelectorDropdowns();
+      pop.style.display = 'flex';
+    }
+  });
+
+  // Global click outside to hide column popups
+  document.addEventListener('click', () => {
+    const popToggle = document.getElementById('pop-columns-toggle');
+    const popTeam = document.getElementById('pop-columns-team');
+    if (popToggle) popToggle.style.display = 'none';
+    if (popTeam) popTeam.style.display = 'none';
   });
 
   // Kanban view switching setup
@@ -2039,6 +2241,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Theme Toggle Logic
   const btnThemeToggle = document.getElementById('btn-theme-toggle');
   const careerThemeSelect = document.getElementById('career-theme');
+
+  function triggerChartThemeRedraw() {
+    if (AppState.activeTab === 'job-detail' && AppState.activeJobId) {
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+      if (activeJob) {
+        const jobCandidates = AppState.candidates.filter(
+          c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName
+        );
+        drawFunnelSVG(activeJob, jobCandidates);
+        drawScoreDistributionSVG(activeJob, jobCandidates);
+      }
+    }
+  }
   
   if (btnThemeToggle) {
     const savedTheme = localStorage.getItem('interviehire-theme');
@@ -2058,6 +2273,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (careerThemeSelect) {
         careerThemeSelect.value = themeVal;
       }
+      triggerChartThemeRedraw();
       if (isLight) {
         soundEngine.playChime([329.63, 392.00, 523.25], 0.12, 0.1);
       } else {
@@ -2073,6 +2289,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (shouldBeLight !== isCurrentLight) {
         document.body.classList.toggle('light-theme', shouldBeLight);
         localStorage.setItem('interviehire-theme', shouldBeLight ? 'light' : 'dark');
+        triggerChartThemeRedraw();
         if (shouldBeLight) {
           soundEngine.playChime([329.63, 392.00, 523.25], 0.12, 0.1);
         } else {
@@ -2092,6 +2309,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const pane = document.getElementById(`jd-pane-${tabId}`);
       if (pane) pane.classList.add('active');
       soundEngine.playClick();
+      
+      // Stop any active card audio playing
+      stopActiveCardPlayer();
+      
+      // Render detail panes if there is an active job
+      if (AppState.activeJobId) {
+        const job = AppState.jobs.find(j => j.id === AppState.activeJobId);
+        if (job) {
+          renderJobDetailPanes(job);
+        }
+      }
     });
   });
 
@@ -2118,6 +2346,96 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize Crystal Glass Sliding Tab Pills
   initSlidingPills();
+
+  // Initialize Sourcing and Mass Applicant Addition
+  initSourcing();
+
+  // Initialize Kanban Drag & Drop
+  initKanbanDragAndDrop();
+
+  // Candidates Search Filter on job details sub-panes
+  const jdSearchInput = document.getElementById('jd-candidate-search');
+  if (jdSearchInput) {
+    jdSearchInput.addEventListener('input', () => {
+      if (AppState.activeJobId) {
+        const job = AppState.jobs.find(j => j.id === AppState.activeJobId);
+        if (job) {
+          renderJobDetailPanes(job);
+        }
+      }
+    });
+  }
+
+  // Close button inside Agent Drawer
+  const btnCloseAgent = document.getElementById('btn-close-drawer-agent');
+  if (btnCloseAgent) {
+    btnCloseAgent.addEventListener('click', closeDrawers);
+  }
+
+  // Agent slider value displays
+  const tempSlider = document.getElementById('agent-temp-slider');
+  if (tempSlider) {
+    tempSlider.addEventListener('input', (e) => {
+      document.getElementById('agent-temp-val').textContent = parseFloat(e.target.value).toFixed(1);
+    });
+  }
+  const threshSlider = document.getElementById('agent-threshold-slider');
+  if (threshSlider) {
+    threshSlider.addEventListener('input', (e) => {
+      document.getElementById('agent-threshold-val').textContent = `${e.target.value}%`;
+    });
+  }
+
+  // Bind Swarm Agent Customizer Drawers trigger on agent-cards clicking
+  const bindAgentCard = (elementId, agentKey, agentName) => {
+    const card = document.getElementById(elementId);
+    if (card) {
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', () => {
+        const overlay = document.getElementById('drawer-backdrop');
+        overlay.classList.add('active');
+        
+        const drawer = document.getElementById('drawer-agent-config');
+        drawer.classList.add('active');
+        
+        const config = AppState.agentConfigs[agentKey];
+        document.getElementById('agent-config-title').textContent = `Configure ${agentName}`;
+        document.getElementById('config-agent-id').value = agentKey;
+        document.getElementById('agent-model-select').value = config.model;
+        document.getElementById('agent-temp-slider').value = config.temperature;
+        document.getElementById('agent-temp-val').textContent = config.temperature.toFixed(1);
+        document.getElementById('agent-threshold-slider').value = config.threshold;
+        document.getElementById('agent-threshold-val').textContent = `${config.threshold}%`;
+        document.getElementById('agent-prompt-input').value = config.prompt;
+        
+        soundEngine.playChime([392.00, 523.25], 0.12, 0.1);
+      });
+    }
+  };
+
+  bindAgentCard('agent-aria', 'aria', 'Aria');
+  bindAgentCard('agent-kaelen', 'kaelen', 'Kaelen');
+  bindAgentCard('agent-lyra', 'lyra', 'Lyra');
+
+  // Submit Agent settings config
+  const formAgentConfig = document.getElementById('form-agent-config');
+  if (formAgentConfig) {
+    formAgentConfig.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const agentKey = document.getElementById('config-agent-id').value;
+      const config = AppState.agentConfigs[agentKey];
+      if (config) {
+        config.model = document.getElementById('agent-model-select').value;
+        config.temperature = parseFloat(document.getElementById('agent-temp-slider').value);
+        config.threshold = parseInt(document.getElementById('agent-threshold-slider').value);
+        config.prompt = document.getElementById('agent-prompt-input').value;
+        
+        closeDrawers();
+        showPremiumToast(`Saved agent configuration settings.`, 'success');
+        soundEngine.playChime([261.63, 392.00, 523.25], 0.2, 0.08);
+      }
+    });
+  }
 
 });
 
@@ -2180,12 +2498,12 @@ function updateSlidingPill(container) {
 }
 
 function updateAllSlidingPills() {
-  const tracks = document.querySelectorAll('.sidebar-nav ul, .filter-options, .table-tabs, #team-status-tabs, .report-tabs, .jd-tabs, .sub-nav');
+  const tracks = document.querySelectorAll('.sidebar-nav ul, .filter-options, .table-tabs, #team-status-tabs, .report-tabs, .jd-tabs, .sub-nav, .sourcing-mode-toggle');
   tracks.forEach(track => updateSlidingPill(track));
 }
 
 function initSlidingPills() {
-  const tracks = document.querySelectorAll('.sidebar-nav ul, .filter-options, .table-tabs, #team-status-tabs, .report-tabs, .jd-tabs, .sub-nav');
+  const tracks = document.querySelectorAll('.sidebar-nav ul, .filter-options, .table-tabs, #team-status-tabs, .report-tabs, .jd-tabs, .sub-nav, .sourcing-mode-toggle');
   
   tracks.forEach(track => {
     // Initial paint
@@ -2193,7 +2511,7 @@ function initSlidingPills() {
     
     // Auto-listen to click events within track
     track.addEventListener('click', (e) => {
-      const isTab = e.target.closest('.nav-item, .filter-tab, .table-tab-btn, .report-tab-btn, .jd-tab, .sub-nav li');
+      const isTab = e.target.closest('.nav-item, .filter-tab, .table-tab-btn, .report-tab-btn, .jd-tab, .sub-nav li, .mode-toggle-btn');
       if (isTab) {
         updateSlidingPill(track);
       }
@@ -2225,4 +2543,1222 @@ function initSlidingPills() {
   setTimeout(updateAllSlidingPills, 100);
   setTimeout(updateAllSlidingPills, 300); // Back up for view rendering latency
 }
+
+// ============================================================
+// SOURCING VIEW CONTROLLER & MASS INTAKE LOGIC
+// ============================================================
+
+let sourcingQueue = [];
+let csvParsedCandidates = [];
+let uploadedFiles = [];
+let currentSourcingMode = 'schedule';
+let currentSourcingTab = 'csv';
+
+function initSourcing() {
+  // Bind click on '+ Add Applicants' inside job detail overview
+  const addApplicantsBtn = document.querySelector('.btn-jd-primary');
+  if (addApplicantsBtn) {
+    addApplicantsBtn.addEventListener('click', () => {
+      navigateToSourcing(AppState.activeJobId);
+    });
+  }
+
+  // Breadcrumbs navigation link back clicks
+  const srcBcJobs = document.getElementById('src-bc-jobs');
+  if (srcBcJobs) {
+    srcBcJobs.addEventListener('click', () => {
+      navigateToTab('jobs');
+    });
+  }
+  
+  const srcBcJobname = document.getElementById('src-bc-jobname');
+  if (srcBcJobname) {
+    srcBcJobname.addEventListener('click', () => {
+      navigateToJobDetail(AppState.activeJobId);
+    });
+  }
+
+  // View Responses button click (goes back to job detail overview)
+  const viewResponsesBtn = document.getElementById('btn-src-view-responses');
+  if (viewResponsesBtn) {
+    viewResponsesBtn.addEventListener('click', () => {
+      navigateToJobDetail(AppState.activeJobId);
+    });
+  }
+
+  // Add Collaborator inside sourcing
+  const srcCollabBtn = document.getElementById('btn-src-collaborator');
+  if (srcCollabBtn) {
+    srcCollabBtn.addEventListener('click', () => {
+      openDrawer('member');
+    });
+  }
+
+  // Sourcing mode toggle buttons
+  const modeButtons = document.querySelectorAll('.mode-toggle-btn');
+  modeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mode = btn.getAttribute('data-sourcing-mode');
+      switchSourcingMode(mode);
+    });
+  });
+
+  // Tab card selectors
+  const tabCards = document.querySelectorAll('.sourcing-tab-card');
+  tabCards.forEach(card => {
+    card.addEventListener('click', () => {
+      if (card.classList.contains('locked')) {
+        soundEngine.playClick();
+        switchSourcingTab('ats');
+        return;
+      }
+      const tab = card.getAttribute('data-sourcing-tab');
+      switchSourcingTab(tab);
+    });
+  });
+
+  // === CSV Panel Event Bindings ===
+  const btnDownloadCsv = document.getElementById('btn-download-csv-template');
+  if (btnDownloadCsv) {
+    btnDownloadCsv.addEventListener('click', (e) => {
+      e.preventDefault();
+      downloadCsvTemplate();
+    });
+  }
+
+  const btnBrowseCsv = document.getElementById('btn-browse-csv');
+  const inputFileCsv = document.getElementById('input-file-csv');
+  if (btnBrowseCsv && inputFileCsv) {
+    btnBrowseCsv.addEventListener('click', () => {
+      inputFileCsv.click();
+    });
+    inputFileCsv.addEventListener('change', handleCsvFileSelect);
+  }
+
+  // Drag & drop for CSV
+  const dropzoneCsv = document.getElementById('dropzone-csv');
+  if (dropzoneCsv) {
+    dropzoneCsv.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzoneCsv.classList.add('dragover');
+    });
+    dropzoneCsv.addEventListener('dragleave', () => {
+      dropzoneCsv.classList.remove('dragover');
+    });
+    dropzoneCsv.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzoneCsv.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0 && files[0].name.endsWith('.csv')) {
+        parseCsvFile(files[0]);
+      } else {
+        showPremiumToast("Please drop a valid .csv file.", "error");
+      }
+    });
+    dropzoneCsv.addEventListener('click', () => {
+      inputFileCsv.click();
+    });
+  }
+
+  const btnCsvCancel = document.getElementById('btn-csv-cancel');
+  if (btnCsvCancel) {
+    btnCsvCancel.addEventListener('click', () => {
+      csvParsedCandidates = [];
+      document.getElementById('csv-preview-box').style.display = 'none';
+      if (inputFileCsv) inputFileCsv.value = '';
+      soundEngine.playClick();
+    });
+  }
+
+  const btnCsvImport = document.getElementById('btn-csv-import');
+  if (btnCsvImport) {
+    btnCsvImport.addEventListener('click', () => {
+      importCsvCandidates();
+    });
+  }
+
+  // === Resumes Panel Event Bindings ===
+  const btnBrowseResumes = document.getElementById('btn-browse-resumes');
+  const inputFileResumes = document.getElementById('input-file-resumes');
+  if (btnBrowseResumes && inputFileResumes) {
+    btnBrowseResumes.addEventListener('click', () => {
+      inputFileResumes.click();
+    });
+    inputFileResumes.addEventListener('change', handleResumesFileSelect);
+  }
+
+  // Drag & drop for Resumes
+  const dropzoneResumes = document.getElementById('dropzone-resumes');
+  if (dropzoneResumes) {
+    dropzoneResumes.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzoneResumes.classList.add('dragover');
+    });
+    dropzoneResumes.addEventListener('dragleave', () => {
+      dropzoneResumes.classList.remove('dragover');
+    });
+    dropzoneResumes.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzoneResumes.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        simulateResumesParsing(files);
+      }
+    });
+    dropzoneResumes.addEventListener('click', () => {
+      inputFileResumes.click();
+    });
+  }
+
+  const btnResumesCancel = document.getElementById('btn-resumes-cancel');
+  if (btnResumesCancel) {
+    btnResumesCancel.addEventListener('click', () => {
+      uploadedFiles = [];
+      document.getElementById('resumes-preview-box').style.display = 'none';
+      if (inputFileResumes) inputFileResumes.value = '';
+      soundEngine.playClick();
+    });
+  }
+
+  const btnResumesImport = document.getElementById('btn-resumes-import');
+  if (btnResumesImport) {
+    btnResumesImport.addEventListener('click', () => {
+      importResumesCandidates();
+    });
+  }
+
+  // === Manual Entry Event Bindings ===
+  const formManual = document.getElementById('form-manual-candidate');
+  if (formManual) {
+    formManual.addEventListener('submit', (e) => {
+      e.preventDefault();
+      addCandidateToManualQueue();
+    });
+  }
+
+  const btnClearManual = document.getElementById('btn-clear-manual');
+  if (btnClearManual) {
+    btnClearManual.addEventListener('click', () => {
+      sourcingQueue = [];
+      renderManualQueue();
+      soundEngine.playClick();
+    });
+  }
+
+  const btnManualImport = document.getElementById('btn-manual-import');
+  if (btnManualImport) {
+    btnManualImport.addEventListener('click', () => {
+      importManualQueue();
+    });
+  }
+
+  // === Locked ATS features event ===
+  const btnUpgradeSourcing = document.querySelector('.btn-upgrade-sourcing');
+  if (btnUpgradeSourcing) {
+    btnUpgradeSourcing.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast("ATS Integration is an Enterprise level feature. Please upgrade your plan.", "error");
+    });
+  }
+}
+
+function navigateToSourcing(jobId) {
+  const job = AppState.jobs.find(j => j.id === jobId);
+  if (!job) return;
+
+  AppState.activeJobId = jobId;
+  AppState.activeTab = 'sourcing';
+
+  // Highlight Jobs sidebar
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+    item.classList.toggle('active', item.getAttribute('data-tab') === 'jobs');
+  });
+
+  // Breadcrumbs text config
+  const shortName = job.cardName.length > 24 ? job.cardName.slice(0, 24) + '…' : job.cardName;
+  const srcBcJobname = document.getElementById('src-bc-jobname');
+  if (srcBcJobname) {
+    srcBcJobname.textContent = shortName;
+  }
+
+  // Switch view section visibility
+  document.querySelectorAll('.dashboard-view').forEach(v => v.classList.remove('active-view'));
+  document.getElementById('view-sourcing').classList.add('active-view');
+
+  // Hide the global page header action button
+  const actionBtn = document.getElementById('header-action-btn');
+  if (actionBtn) actionBtn.style.display = 'none';
+
+  // Reset inputs & states
+  sourcingQueue = [];
+  csvParsedCandidates = [];
+  uploadedFiles = [];
+  renderManualQueue();
+  document.getElementById('csv-preview-box').style.display = 'none';
+  document.getElementById('resumes-preview-box').style.display = 'none';
+  
+  const formManual = document.getElementById('form-manual-candidate');
+  if (formManual) formManual.reset();
+
+  const fileCsv = document.getElementById('input-file-csv');
+  if (fileCsv) fileCsv.value = '';
+  const fileRes = document.getElementById('input-file-resumes');
+  if (fileRes) fileRes.value = '';
+
+  // Default mode & tab
+  switchSourcingMode('schedule');
+
+  setTimeout(updateAllSlidingPills, 50);
+  soundEngine.playChime([329.63, 392.00, 523.25], 0.15, 0.08);
+}
+
+function switchSourcingMode(mode) {
+  currentSourcingMode = mode;
+
+  // Toggle active class on pills
+  const modeButtons = document.querySelectorAll('.mode-toggle-btn');
+  modeButtons.forEach(btn => {
+    const btnMode = btn.getAttribute('data-sourcing-mode');
+    btn.classList.toggle('active', btnMode === mode);
+  });
+
+  // Show/Hide Grid cards based on active mode
+  const csvCard = document.getElementById('card-src-csv');
+  const manualCard = document.getElementById('card-src-manual');
+
+  if (mode === 'analyse') {
+    if (csvCard) csvCard.style.display = 'none';
+    if (manualCard) manualCard.style.display = 'none';
+    
+    // Default to Resumes tab for Analyse mode
+    if (currentSourcingTab !== 'resumes' && currentSourcingTab !== 'ats') {
+      currentSourcingTab = 'resumes';
+    }
+  } else {
+    if (csvCard) csvCard.style.display = 'flex';
+    if (manualCard) manualCard.style.display = 'flex';
+  }
+
+  // Refresh active tab views
+  switchSourcingTab(currentSourcingTab);
+  setTimeout(updateAllSlidingPills, 50);
+  soundEngine.playClick();
+}
+
+function switchSourcingTab(tab) {
+  currentSourcingTab = tab;
+
+  // Toggle card active states
+  const tabCards = document.querySelectorAll('.sourcing-tab-card');
+  tabCards.forEach(card => {
+    const cardTab = card.getAttribute('data-sourcing-tab');
+    card.classList.toggle('active', cardTab === tab);
+  });
+
+  // Toggle active workspace panel visibility
+  const panels = document.querySelectorAll('.sourcing-panel');
+  panels.forEach(panel => {
+    const panelId = panel.id;
+    panel.classList.toggle('active', panelId === `panel-src-${tab}`);
+  });
+
+  setTimeout(updateAllSlidingPills, 50);
+  soundEngine.playClick();
+}
+
+// === CSV Intake Logic ===
+function downloadCsvTemplate() {
+  const csvContent = "Name,Email,Phone\\nJohn Doe,john.doe@example.com,+15550192834\\nJane Smith,jane.smith@example.com,\\nAditya Rana,aditya@interviehire.com,+919988776655";
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", "interviehire_candidates_template.csv");
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  soundEngine.playClick();
+}
+
+function handleCsvFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  parseCsvFile(file);
+}
+
+function parseCsvFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    processCsvText(text);
+  };
+  reader.readAsText(file);
+}
+
+function processCsvText(text) {
+  const lines = text.split(/\\r?\\n/);
+  if (lines.length === 0) return;
+
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+  const nameIndex = headers.indexOf('name');
+  const emailIndex = headers.indexOf('email');
+  const phoneIndex = headers.indexOf('phone');
+
+  if (nameIndex === -1 || emailIndex === -1) {
+    showPremiumToast("Invalid CSV. Header row must contain Name and Email.", "error");
+    return;
+  }
+
+  csvParsedCandidates = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const cols = line.split(',').map(c => c.trim());
+    if (cols.length <= Math.max(nameIndex, emailIndex)) continue;
+
+    const name = cols[nameIndex];
+    const email = cols[emailIndex];
+    const phone = phoneIndex !== -1 ? (cols[phoneIndex] || '') : '';
+
+    if (name && email) {
+      csvParsedCandidates.push({ name, email, phone });
+    }
+  }
+
+  if (csvParsedCandidates.length === 0) {
+    showPremiumToast("No valid candidates found in CSV.", "error");
+    return;
+  }
+
+  renderCsvPreview();
+}
+
+function renderCsvPreview() {
+  const box = document.getElementById('csv-preview-box');
+  const countSpan = document.getElementById('csv-parsed-count');
+  const tbody = document.getElementById('csv-preview-rows');
+
+  if (!box || !countSpan || !tbody) return;
+
+  countSpan.textContent = csvParsedCandidates.length;
+  tbody.innerHTML = csvParsedCandidates.map(cand => `
+    <tr>
+      <td><strong>\${cand.name}</strong></td>
+      <td>\${cand.email}</td>
+      <td>\${cand.phone || '-'}</td>
+      <td><span class="upload-file-status-badge done">Ready to Sync</span></td>
+    </tr>
+  `).join('');
+
+  box.style.display = 'block';
+  soundEngine.playChime([392.00, 523.25], 0.15, 0.08);
+}
+
+function importCsvCandidates() {
+  if (csvParsedCandidates.length === 0) return;
+
+  const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+  if (!activeJob) return;
+
+  csvParsedCandidates.forEach(cand => {
+    addCandidateToAppState(cand.name, cand.email, cand.phone, activeJob);
+  });
+
+  soundEngine.playChime([392.00, 523.25, 659.25], 0.2, 0.08);
+  showPremiumToast(`Successfully imported \${csvParsedCandidates.length} candidate(s) into "\${activeJob.roleName}".`, "success");
+
+  // Reset
+  csvParsedCandidates = [];
+  document.getElementById('csv-preview-box').style.display = 'none';
+  const fileCsv = document.getElementById('input-file-csv');
+  if (fileCsv) fileCsv.value = '';
+
+  // Synchronize and navigate back
+  recalculateJobPipelines();
+  updateSummaryMetrics();
+  renderAnalyticsTable();
+  
+  if (document.getElementById('jobs-board-container') && document.getElementById('jobs-board-container').style.display !== 'none') {
+    renderKanbanBoard();
+  } else {
+    renderJobCards();
+  }
+
+  navigateToJobDetail(AppState.activeJobId);
+}
+
+// === Resumes Intake Logic ===
+function handleResumesFileSelect(event) {
+  const files = event.target.files;
+  if (files.length === 0) return;
+  simulateResumesParsing(files);
+}
+
+function simulateResumesParsing(files) {
+  const box = document.getElementById('resumes-preview-box');
+  const filesList = document.getElementById('resumes-files-list');
+  const countSpan = document.getElementById('resumes-upload-count');
+  const importBtn = document.getElementById('btn-resumes-import');
+
+  if (!box || !filesList || !countSpan || !importBtn) return;
+
+  box.style.display = 'block';
+  countSpan.textContent = files.length;
+  importBtn.disabled = true;
+
+  uploadedFiles = [];
+  filesList.innerHTML = '';
+
+  Array.from(files).forEach((file, idx) => {
+    const item = {
+      name: file.name,
+      size: (file.size / 1024).toFixed(1) + ' KB',
+      progress: 0,
+      status: 'parsing'
+    };
+    uploadedFiles.push(item);
+
+    const fileRow = document.createElement('div');
+    fileRow.className = 'upload-file-item';
+    fileRow.id = `file-item-\${idx}`;
+    fileRow.innerHTML = `
+      <div class="upload-file-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+      </div>
+      <div class="upload-file-info">
+        <span class="upload-file-name">\${item.name}</span>
+        <div class="upload-file-size">\${item.size}</div>
+      </div>
+      <div class="upload-file-progress-wrap">
+        <div class="upload-file-progress-bar">
+          <div class="upload-file-progress-inner" id="progress-inner-\${idx}"></div>
+        </div>
+      </div>
+      <span class="upload-file-status-badge parsing" id="status-badge-\${idx}">Analyzing...</span>
+    `;
+    filesList.appendChild(fileRow);
+
+    // Simulate progress bars
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += Math.floor(Math.random() * 20 + 15);
+      if (currentProgress >= 100) {
+        currentProgress = 100;
+        clearInterval(interval);
+
+        const badge = document.getElementById(`status-badge-\${idx}`);
+        if (badge) {
+          badge.textContent = 'Extracted';
+          badge.className = 'upload-file-status-badge done';
+        }
+
+        item.status = 'done';
+        checkAllResumesDone();
+      }
+
+      const progressInner = document.getElementById(`progress-inner-\${idx}`);
+      if (progressInner) {
+        progressInner.style.width = `\${currentProgress}%`;
+      }
+    }, 150 + Math.random() * 150);
+  });
+}
+
+function checkAllResumesDone() {
+  const allDone = uploadedFiles.every(f => f.status === 'done');
+  if (allDone) {
+    const importBtn = document.getElementById('btn-resumes-import');
+    if (importBtn) importBtn.disabled = false;
+    soundEngine.playChime([523.25, 659.25], 0.12, 0.08);
+  }
+}
+
+function importResumesCandidates() {
+  if (uploadedFiles.length === 0) return;
+
+  const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+  if (!activeJob) return;
+
+  uploadedFiles.forEach(file => {
+    const rawName = extractCandidateNameFromFilename(file.name);
+    const email = rawName.toLowerCase().replace(/\\s+/g, ".") + "@example.com";
+    const phone = "+1 (555) 01" + Math.floor(Math.random() * 900 + 100);
+    addCandidateToAppState(rawName, email, phone, activeJob);
+  });
+
+  soundEngine.playChime([392.00, 523.25, 659.25], 0.2, 0.08);
+  showPremiumToast(`Successfully processed and imported \${uploadedFiles.length} candidate(s) into "\${activeJob.roleName}".`, "success");
+
+  // Reset
+  uploadedFiles = [];
+  document.getElementById('resumes-preview-box').style.display = 'none';
+  const fileRes = document.getElementById('input-file-resumes');
+  if (fileRes) fileRes.value = '';
+
+  // Synchronize and navigate back
+  recalculateJobPipelines();
+  updateSummaryMetrics();
+  renderAnalyticsTable();
+  
+  if (document.getElementById('jobs-board-container') && document.getElementById('jobs-board-container').style.display !== 'none') {
+    renderKanbanBoard();
+  } else {
+    renderJobCards();
+  }
+
+  navigateToJobDetail(AppState.activeJobId);
+}
+
+function extractCandidateNameFromFilename(filename) {
+  let name = filename.replace(/\\.[^/.]+$/, ""); // strip extension
+  name = name.replace(/[_\-\\.]/g, " "); // replace symbols
+  name = name.replace(/\\b(resume|cv|hiring|job|developer|executive|profile|senior|junior|doc|pdf|en)\\b/gi, "");
+  name = name.trim().split(/\\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  if (!name) name = "Candidate " + Math.floor(Math.random() * 1000);
+  return name;
+}
+
+// === Manual Queue Intake Logic ===
+function addCandidateToManualQueue() {
+  const nameInput = document.getElementById('manual-name');
+  const emailInput = document.getElementById('manual-email');
+  const phoneInput = document.getElementById('manual-phone');
+
+  if (!nameInput || !emailInput) return;
+
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  const phone = phoneInput ? phoneInput.value.trim() : '';
+
+  if (!name || !email) return;
+
+  const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+  if (!emailRegex.test(email)) {
+    showPremiumToast("Please enter a valid email address.", "error");
+    return;
+  }
+
+  sourcingQueue.push({ name, email, phone });
+  renderManualQueue();
+
+  // Reset inputs
+  nameInput.value = '';
+  emailInput.value = '';
+  if (phoneInput) phoneInput.value = '';
+
+  soundEngine.playClick();
+}
+
+function removeCandidateFromQueue(index) {
+  sourcingQueue.splice(index, 1);
+  renderManualQueue();
+  soundEngine.playClick();
+}
+window.removeCandidateFromQueue = removeCandidateFromQueue;
+
+function renderManualQueue() {
+  const container = document.getElementById('manual-queue-list');
+  const countSpan = document.getElementById('manual-queue-count');
+  const clearBtn = document.getElementById('btn-clear-manual');
+  const importBtn = document.getElementById('btn-manual-import');
+  const emptyState = document.getElementById('manual-queue-empty');
+
+  if (!container || !countSpan || !clearBtn || !importBtn || !emptyState) return;
+
+  countSpan.textContent = sourcingQueue.length;
+
+  if (sourcingQueue.length === 0) {
+    emptyState.style.display = 'flex';
+    container.innerHTML = '';
+    clearBtn.style.display = 'none';
+    importBtn.disabled = true;
+    return;
+  }
+
+  emptyState.style.display = 'none';
+  clearBtn.style.display = 'block';
+  importBtn.disabled = false;
+
+  container.innerHTML = sourcingQueue.map((cand, idx) => `
+    <li class="queue-item">
+      <div class="queue-item-details">
+        <span class="queue-item-name">\${cand.name}</span>
+        <span class="queue-item-email">\${cand.email} \${cand.phone ? ' · ' + cand.phone : ''}</span>
+      </div>
+      <button class="btn-remove-queue" onclick="removeCandidateFromQueue(\${idx})" title="Remove">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </li>
+  `).join('');
+}
+
+function importManualQueue() {
+  if (sourcingQueue.length === 0) return;
+
+  const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+  if (!activeJob) return;
+
+  sourcingQueue.forEach(cand => {
+    addCandidateToAppState(cand.name, cand.email, cand.phone, activeJob);
+  });
+
+  soundEngine.playChime([392.00, 523.25, 659.25], 0.2, 0.08);
+  showPremiumToast(`Successfully imported \${sourcingQueue.length} candidate(s) into "\${activeJob.roleName}".`, "success");
+
+  sourcingQueue = [];
+  renderManualQueue();
+
+  // Synchronize and navigate back
+  recalculateJobPipelines();
+  updateSummaryMetrics();
+  renderAnalyticsTable();
+  
+  if (document.getElementById('jobs-board-container') && document.getElementById('jobs-board-container').style.display !== 'none') {
+    renderKanbanBoard();
+  } else {
+    renderJobCards();
+  }
+
+  navigateToJobDetail(AppState.activeJobId);
+}
+
+// === Shared Candidate Insertion helper ===
+function addCandidateToAppState(name, email, phone, job) {
+  const idChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let candId = 'CAN-';
+  for (let i = 0; i < 4; i++) {
+    candId += idChars[Math.floor(Math.random() * 10)];
+  }
+  candId += '-' + idChars[Math.floor(Math.random() * idChars.length)] + idChars[Math.floor(Math.random() * idChars.length)] + Math.floor(Math.random() * 9);
+
+  const now = new Date();
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const hours = now.getHours();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const formatHour = hours % 12 || 12;
+  const dateStr = `\${now.getDate().toString().padStart(2, '0')} \${months[now.getMonth()]} \${now.getFullYear()}, \${formatHour.toString().padStart(2, '0')}:\${now.getMinutes().toString().padStart(2, '0')} \${ampm}`;
+
+  const status = currentSourcingMode === 'analyse' ? 'Resume' : 'Screening';
+  const score = `\${Math.floor(Math.random() * 20 + 80)}%`;
+
+  AppState.candidates.push({
+    id: candId,
+    name: name,
+    email: email,
+    jobApplied: job.roleName,
+    status: status,
+    score: score,
+    registeredOn: dateStr
+  });
+}
+
+function showPremiumToast(message, type = 'success') {
+  const existing = document.querySelector('.toast-notification');
+  if (existing) {
+    existing.remove();
+  }
+  
+  const toast = document.createElement('div');
+  toast.className = `toast-notification \${type}`;
+  
+  let iconSvg = '';
+  if (type === 'success') {
+    iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+  } else {
+    iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+  }
+  
+  toast.innerHTML = `
+    <span class="toast-icon">\${iconSvg}</span>
+    <span class="toast-message">\${message}</span>
+  `;
+  
+  document.body.appendChild(toast);
+  
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      toast.remove();
+    }, 450);
+  }, 2800);
+}
+
+// === Drag and Drop, Column Customization, Stage Panes and Agent Customization ===
+
+let activeCardPlayerId = null;
+let activeCardInterval = null;
+let activeCardTime = 0; // ms
+const cardDuration = 15000; // 15 seconds
+
+function initKanbanDragAndDrop() {
+  const cols = {
+    Resume: document.getElementById('col-resume'),
+    Screening: document.getElementById('col-screening'),
+    Functional: document.getElementById('col-functional'),
+    Hired: document.getElementById('col-hired')
+  };
+
+  Object.entries(cols).forEach(([stage, col]) => {
+    if (!col) return;
+
+    col.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      col.classList.add('drag-hover');
+    });
+
+    col.addEventListener('dragleave', () => {
+      col.classList.remove('drag-hover');
+    });
+
+    col.addEventListener('drop', (e) => {
+      e.preventDefault();
+      col.classList.remove('drag-hover');
+      
+      const candidateId = e.dataTransfer.getData('text/plain');
+      const candidate = AppState.candidates.find(c => c.id === candidateId);
+      
+      if (candidate && candidate.status !== stage) {
+        const oldStatus = candidate.status;
+        candidate.status = stage;
+        
+        soundEngine.playChime([329.63, 440.00, 523.25], 0.2, 0.08);
+        showPremiumToast(`${candidate.name} moved from ${oldStatus} to ${stage}`, 'success');
+        
+        recalculateJobPipelines();
+        updateSummaryMetrics();
+        renderAnalyticsTable();
+        renderKanbanBoard();
+      }
+    });
+  });
+}
+
+function renderColumnsSelectorDropdowns() {
+  const popToggle = document.getElementById('pop-columns-toggle');
+  const popTeam = document.getElementById('pop-columns-team');
+
+  if (popToggle) {
+    popToggle.innerHTML = '';
+    if (AppState.analyticsSubtab === 'jobs-data') {
+      const columns = [
+        { id: 'id', label: 'Job ID' },
+        { id: 'roleName', label: 'Role Name' },
+        { id: 'cardName', label: 'Card Name' },
+        { id: 'customJobId', label: 'Custom Job ID' },
+        { id: 'experienceBand', label: 'Experience Band' },
+        { id: 'tags', label: 'Tags' },
+        { id: 'createdBy', label: 'Created By' },
+        { id: 'collaborators', label: 'Collaborators' },
+        { id: 'recruiters', label: 'Recruiters' }
+      ];
+      columns.forEach(col => {
+        const checked = AppState.visibleColumnsAnalyticsJobs.includes(col.id) ? 'checked' : '';
+        const label = document.createElement('label');
+        label.className = 'columns-popup-item';
+        label.innerHTML = `<input type="checkbox" data-col-id="${col.id}" ${checked} /> <span>${col.label}</span>`;
+        label.querySelector('input').addEventListener('change', (e) => {
+          const isChecked = e.target.checked;
+          if (isChecked) {
+            if (!AppState.visibleColumnsAnalyticsJobs.includes(col.id)) {
+              AppState.visibleColumnsAnalyticsJobs.push(col.id);
+            }
+          } else {
+            AppState.visibleColumnsAnalyticsJobs = AppState.visibleColumnsAnalyticsJobs.filter(id => id !== col.id);
+          }
+          soundEngine.playClick();
+          renderAnalyticsTable();
+        });
+        popToggle.appendChild(label);
+      });
+    } else {
+      const columns = [
+        { id: 'id', label: 'Candidate ID' },
+        { id: 'name', label: 'Candidate Name' },
+        { id: 'jobApplied', label: 'Job Applied' },
+        { id: 'registeredOn', label: 'Registered On' },
+        { id: 'status', label: 'Pipeline Stage' },
+        { id: 'score', label: 'Match Score' },
+        { id: 'actions', label: 'Actions' }
+      ];
+      columns.forEach(col => {
+        const checked = AppState.visibleColumnsAnalyticsCandidates.includes(col.id) ? 'checked' : '';
+        const label = document.createElement('label');
+        label.className = 'columns-popup-item';
+        label.innerHTML = `<input type="checkbox" data-col-id="${col.id}" ${checked} /> <span>${col.label}</span>`;
+        label.querySelector('input').addEventListener('change', (e) => {
+          const isChecked = e.target.checked;
+          if (isChecked) {
+            if (!AppState.visibleColumnsAnalyticsCandidates.includes(col.id)) {
+              AppState.visibleColumnsAnalyticsCandidates.push(col.id);
+            }
+          } else {
+            AppState.visibleColumnsAnalyticsCandidates = AppState.visibleColumnsAnalyticsCandidates.filter(id => id !== col.id);
+          }
+          soundEngine.playClick();
+          renderAnalyticsTable();
+        });
+        popToggle.appendChild(label);
+      });
+    }
+  }
+
+  if (popTeam) {
+    popTeam.innerHTML = '';
+    const columns = [
+      { id: 'member', label: 'Team Member' },
+      { id: 'designation', label: 'Designation' },
+      { id: 'usertype', label: 'Usertype Role' },
+      { id: 'registeredOn', label: 'Registered On' },
+      { id: 'status', label: 'Status' },
+      { id: 'actions', label: 'Actions' }
+    ];
+    columns.forEach(col => {
+      const checked = AppState.visibleColumnsTeam.includes(col.id) ? 'checked' : '';
+      const label = document.createElement('label');
+      label.className = 'columns-popup-item';
+      label.innerHTML = `<input type="checkbox" data-col-id="${col.id}" ${checked} /> <span>${col.label}</span>`;
+      label.querySelector('input').addEventListener('change', (e) => {
+        const isChecked = e.target.checked;
+        if (isChecked) {
+          if (!AppState.visibleColumnsTeam.includes(col.id)) {
+            AppState.visibleColumnsTeam.push(col.id);
+          }
+        } else {
+          AppState.visibleColumnsTeam = AppState.visibleColumnsTeam.filter(id => id !== col.id);
+        }
+        soundEngine.playClick();
+        renderTeamTable();
+      });
+      popTeam.appendChild(label);
+    });
+  }
+}
+
+function renderJobDetailPanes(job) {
+  const searchVal = document.getElementById('jd-candidate-search').value.trim().toLowerCase();
+  
+  const jobCandidates = AppState.candidates.filter(c => {
+    const matchesJob = c.jobApplied === job.roleName || c.jobApplied === job.cardName;
+    if (!matchesJob) return false;
+    if (searchVal) {
+      return c.name.toLowerCase().includes(searchVal) || c.email.toLowerCase().includes(searchVal);
+    }
+    return true;
+  });
+
+  // 1. Resume pane
+  const resumeList = document.getElementById('list-stage-resume');
+  if (resumeList) {
+    const resumeCands = jobCandidates.filter(c => c.status === 'Resume');
+    if (resumeCands.length === 0) {
+      resumeList.innerHTML = `
+        <div class="jd-empty-pane">
+          <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          <p>Resume Analysis — No candidates in this stage</p>
+        </div>
+      `;
+    } else {
+      resumeList.innerHTML = resumeCands.map(c => `
+        <div class="jd-candidate-row-card">
+          <div class="jd-card-header">
+            <div class="user-avatar-mini">${c.name.split(' ').map(n=>n[0]).join('')}</div>
+            <div class="user-details">
+              <span class="cand-name">${c.name}</span>
+              <span class="cand-email">${c.email}</span>
+            </div>
+            <span class="score-badge">${c.score} match</span>
+          </div>
+          <div class="jd-card-body">
+            <div class="analysis-section">
+              <span class="sec-label">AI Extraction Summary:</span>
+              <p class="sec-desc">Strong background matching the requirements. Demonstrated skills in core technologies, proposal execution, and cross-functional team collaboration.</p>
+            </div>
+            <div class="analysis-section">
+              <span class="sec-label">Experience Band:</span>
+              <p class="sec-desc">${job.experienceBand}</p>
+            </div>
+          </div>
+          <div class="jd-card-actions">
+            <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
+            <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening">Advance to Screening →</button>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+  // 2. Screening pane
+  const screeningList = document.getElementById('list-stage-screening');
+  if (screeningList) {
+    const screeningCands = jobCandidates.filter(c => c.status === 'Screening');
+    if (screeningCands.length === 0) {
+      screeningList.innerHTML = `
+        <div class="jd-empty-pane">
+          <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+          <p>Recruiter Screening — No candidates in this stage</p>
+        </div>
+      `;
+    } else {
+      screeningList.innerHTML = screeningCands.map(c => `
+        <div class="jd-candidate-row-card" data-candidate-id="${c.id}">
+          <div class="jd-card-header">
+            <div class="user-avatar-mini" style="background-color: var(--color-indigo-dim); border-color: var(--color-indigo); color: var(--color-indigo-light);">${c.name.split(' ').map(n=>n[0]).join('')}</div>
+            <div class="user-details">
+              <span class="cand-name">${c.name}</span>
+              <span class="cand-email">${c.email}</span>
+            </div>
+            <span class="score-badge indigo">${c.score} match</span>
+          </div>
+          <div class="jd-card-body">
+            <div class="screening-audio-player" data-player-id="${c.id}">
+              <button class="btn-player-play" data-play-id="${c.id}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="play-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="pause-icon" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+              </button>
+              <div class="player-wave-bars" data-wave-id="${c.id}">
+                <!-- Will be filled programmatically -->
+              </div>
+              <span class="player-time" data-time-id="${c.id}">0:00 / 0:15</span>
+            </div>
+            <div class="transcript-box">
+              <span class="transcript-label">AI Interview Transcript:</span>
+              <p class="transcript-text" data-transcript-id="${c.id}">"Aria: Can you explain how you handle conflicting opinions in project schedules?<br>Candidate: I lay out the technical constraints, compare the alternatives side-by-side using data, and facilitate a consensus meeting."</p>
+            </div>
+          </div>
+          <div class="jd-card-actions">
+            <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
+            <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Functional">Advance to Functional →</button>
+          </div>
+        </div>
+      `).join('');
+
+      // Populate waves for screening cards
+      screeningCands.forEach(c => {
+        const waveContainer = document.querySelector(`.player-wave-bars[data-wave-id="${c.id}"]`);
+        if (waveContainer) {
+          waveContainer.innerHTML = '';
+          for (let i = 0; i < 28; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'player-wave-bar';
+            const h = Math.floor(Math.random() * 70 + 20);
+            bar.style.height = `${h}%`;
+            waveContainer.appendChild(bar);
+          }
+        }
+      });
+    }
+  }
+
+  // 3. Functional pane
+  const functionalList = document.getElementById('list-stage-functional');
+  if (functionalList) {
+    const functionalCands = jobCandidates.filter(c => c.status === 'Functional');
+    if (functionalCands.length === 0) {
+      functionalList.innerHTML = `
+        <div class="jd-empty-pane">
+          <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+          <p>Functional Interview — No candidates in this stage</p>
+        </div>
+      `;
+    } else {
+      functionalList.innerHTML = functionalCands.map(c => {
+        const review = CandidateReviews[c.id] || CandidateReviews['CAN-8234-EA1'];
+        return `
+          <div class="jd-candidate-row-card">
+            <div class="jd-card-header">
+              <div class="user-avatar-mini" style="background-color: var(--color-gold-dim); border-color: var(--color-gold); color: var(--color-gold-light);">${c.name.split(' ').map(n=>n[0]).join('')}</div>
+              <div class="user-details">
+                <span class="cand-name">${c.name}</span>
+                <span class="cand-email">${c.email}</span>
+              </div>
+              <span class="score-badge gold">${c.score} match</span>
+            </div>
+            <div class="jd-card-body">
+              <div class="code-review-pane">
+                <div class="code-header">
+                  <span class="file-name">${review.file}</span>
+                  <span class="reviewer-tag">Code Evaluator: ${review.reviewer}</span>
+                </div>
+                <pre class="code-box"><code>${review.code}</code></pre>
+                <div class="review-comment">
+                  <strong>Kaelen Feedback:</strong>
+                  <p>${review.comment}</p>
+                </div>
+              </div>
+            </div>
+            <div class="jd-card-actions">
+              <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
+              <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Hired">Hire Candidate ✓</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // Bind actions
+  const pane = document.getElementById('view-job-detail');
+  if (pane) {
+    pane.querySelectorAll('.btn-stage-reject').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.getAttribute('data-candidate-id');
+        updateCandidateStatus(candId, 'Rejected');
+      });
+    });
+    
+    pane.querySelectorAll('.btn-stage-advance').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.getAttribute('data-candidate-id');
+        const nextStage = btn.getAttribute('data-next-stage');
+        updateCandidateStatus(candId, nextStage);
+      });
+    });
+
+    pane.querySelectorAll('.btn-player-play').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.getAttribute('data-play-id');
+        toggleCardPlayer(candId);
+      });
+    });
+  }
+}
+
+function updateCandidateStatus(candId, newStatus) {
+  const candidate = AppState.candidates.find(c => c.id === candId);
+  if (!candidate) return;
+  
+  const oldStatus = candidate.status;
+  candidate.status = newStatus;
+  
+  if (newStatus === 'Rejected') {
+    showPremiumToast(`${candidate.name} has been rejected from the pipeline.`, 'success');
+    soundEngine.playChime([392, 293.66], 0.2, 0.1);
+  } else if (newStatus === 'Hired') {
+    showPremiumToast(`Congratulations! ${candidate.name} has been marked as Hired.`, 'success');
+    soundEngine.playChime([523.25, 659.25, 783.99, 1046.50], 0.25, 0.08);
+  } else {
+    showPremiumToast(`${candidate.name} advanced to ${newStatus}.`, 'success');
+    soundEngine.playChime([329.63, 440.00, 523.25], 0.2, 0.08);
+  }
+  
+  recalculateJobPipelines();
+  updateSummaryMetrics();
+  renderAnalyticsTable();
+  
+  const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+  if (activeJob) {
+    document.getElementById('jd-count-screening').textContent = activeJob.pipeline.screening;
+    const funcLabel = activeJob.pipeline.screening > 0
+      ? `${activeJob.pipeline.functional} of ${activeJob.pipeline.screening}`
+      : activeJob.pipeline.functional;
+    document.getElementById('jd-count-functional').textContent = funcLabel;
+    
+    renderFunnelStages(activeJob);
+    renderFunnelInsights(activeJob);
+    
+    const jobCandidates = AppState.candidates.filter(
+      c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName
+    );
+    drawFunnelSVG(activeJob, jobCandidates);
+    drawScoreDistributionSVG(activeJob, jobCandidates);
+    
+    renderJobDetailPanes(activeJob);
+  }
+  
+  if (document.getElementById('jobs-board-container') && document.getElementById('jobs-board-container').style.display !== 'none') {
+    renderKanbanBoard();
+  } else {
+    renderJobCards();
+  }
+}
+
+function stopActiveCardPlayer() {
+  if (activeCardInterval) {
+    clearInterval(activeCardInterval);
+    activeCardInterval = null;
+  }
+  if (activeCardPlayerId) {
+    const oldId = activeCardPlayerId;
+    const playBtn = document.querySelector(`[data-play-id="${oldId}"]`);
+    if (playBtn) {
+      playBtn.querySelector('.play-icon').style.display = 'block';
+      playBtn.querySelector('.pause-icon').style.display = 'none';
+    }
+    const timeLabel = document.querySelector(`[data-time-id="${oldId}"]`);
+    if (timeLabel) timeLabel.textContent = '0:00 / 0:15';
+    
+    const bars = document.querySelectorAll(`.player-wave-bars[data-wave-id="${oldId}"] .player-wave-bar`);
+    bars.forEach(b => {
+      b.classList.remove('played');
+      b.style.height = `${Math.floor(Math.random() * 70 + 20)}%`;
+    });
+    activeCardPlayerId = null;
+  }
+}
+
+function toggleCardPlayer(id) {
+  if (activeCardPlayerId === id) {
+    clearInterval(activeCardInterval);
+    activeCardInterval = null;
+    activeCardPlayerId = null;
+    const playBtn = document.querySelector(`[data-play-id="${id}"]`);
+    if (playBtn) {
+      playBtn.querySelector('.play-icon').style.display = 'block';
+      playBtn.querySelector('.pause-icon').style.display = 'none';
+    }
+    soundEngine.playClick();
+  } else {
+    stopActiveCardPlayer();
+    
+    activeCardPlayerId = id;
+    activeCardTime = 0;
+    soundEngine.playChime([440, 554.37], 0.1, 0.05);
+    
+    const playBtn = document.querySelector(`[data-play-id="${id}"]`);
+    if (playBtn) {
+      playBtn.querySelector('.play-icon').style.display = 'none';
+      playBtn.querySelector('.pause-icon').style.display = 'block';
+    }
+    
+    const timeLabel = document.querySelector(`[data-time-id="${id}"]`);
+    const bars = document.querySelectorAll(`.player-wave-bars[data-wave-id="${id}"] .player-wave-bar`);
+    
+    activeCardInterval = setInterval(() => {
+      activeCardTime += 100;
+      if (activeCardTime >= cardDuration) {
+        stopActiveCardPlayer();
+        soundEngine.playChime([523.25, 392], 0.15, 0.08);
+        return;
+      }
+      
+      if (timeLabel) {
+        const secs = Math.floor(activeCardTime / 1000);
+        timeLabel.textContent = `0:${secs.toString().padStart(2, '0')} / 0:15`;
+      }
+      
+      const progress = activeCardTime / cardDuration;
+      const activeIndex = Math.floor(progress * bars.length);
+      
+      bars.forEach((bar, idx) => {
+        if (idx === activeIndex || (idx < activeIndex && Math.random() > 0.4)) {
+          const h = Math.floor(Math.random() * 70 + 20);
+          bar.style.height = `${h}%`;
+        }
+        if (idx <= activeIndex) {
+          bar.classList.add('played');
+        } else {
+          bar.classList.remove('played');
+        }
+      });
+    }, 100);
+  }
+}
+
 

@@ -5,13 +5,18 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="intervieHire Client Portal & Administration Dashboard" />
-    <title>intervieHire | Admin Dashboard</title>
-    <link rel="stylesheet" href="/src/dashboard.css" />
+    <title>intervieHire | Crystal Glass Dashboard</title>
+    <link rel="stylesheet" href="/src/dashboard-crystal.css" />
   </head>
   <body>
-    <!-- Background grid elements -->
-    <div class="bg-grid"></div>
-    <div class="bg-radial"></div>
+    <!-- Scene / Background -->
+    <div class="scene">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="orb orb-4"></div>
+    </div>
+    <div class="noise"></div>
 
     <!-- Dashboard App Grid -->
     <div class="dashboard-app">
@@ -20,7 +25,7 @@
       <aside class="sidebar">
         <!-- Logo -->
         <a href="/" class="logo-area">
-          <img src="/Logo.png" alt="intervieHire Logo" class="logo-img" />
+          <div class="logo-mark">iH</div>
           <span class="logo-text">intervie<span class="logo-highlight">Hire</span></span>
         </a>
 
@@ -191,8 +196,7 @@
 
             <!-- Jobs Cards Grid -->
             <div class="jobs-cards-grid" id="jobs-list-container">
-              <!-- Dynamically populated or static baseline cards -->
-              <!-- Will be loaded via JS for complete control -->
+              <!-- Dynamically populated via JS -->
             </div>
 
             <!-- Kanban board wrapper -->
@@ -440,80 +444,85 @@
                   </span>
                   <div class="pagination-pages">
                     <button class="btn-pag prev" disabled>Previous</button>
-              </div>
-            </section>
-
-            <!-- ===================================== -->
-            <!-- AI SWARM VIEW (TAB 2.5) -->
-            <!-- ===================================== -->
-            <section class="dashboard-view" id="view-swarm">
-              <div class="swarm-layout">
-                <!-- Agents Cards Grid -->
-                <div class="agents-status-grid">
-                  <!-- Agent Aria -->
-                  <div class="card-glass agent-card" id="agent-aria">
-                    <div class="agent-avatar-status">
-                      <div class="agent-pic">AR</div>
-                      <span class="pulse-dot green"></span>
-                    </div>
-                    <div class="agent-meta">
-                      <h3 class="agent-name">Aria</h3>
-                      <p class="agent-role-lbl">Resume Analyst Agent</p>
-                      <p class="agent-status-msg" id="aria-status">Monitoring candidate submissions...</p>
-                    </div>
-                  </div>
-                  <!-- Agent Kaelen -->
-                  <div class="card-glass agent-card" id="agent-kaelen">
-                    <div class="agent-avatar-status">
-                      <div class="agent-pic">KL</div>
-                      <span class="pulse-dot green"></span>
-                    </div>
-                    <div class="agent-meta">
-                      <h3 class="agent-name">Kaelen</h3>
-                      <p class="agent-role-lbl">Technical Vetting Specialist</p>
-                      <p class="agent-status-msg" id="kaelen-status">Generating code challenge rubrics...</p>
-                    </div>
-                  </div>
-                  <!-- Agent Lyra -->
-                  <div class="card-glass agent-card" id="agent-lyra">
-                    <div class="agent-avatar-status">
-                      <div class="agent-pic">LY</div>
-                      <span class="pulse-dot orange"></span>
-                    </div>
-                    <div class="agent-meta">
-                      <h3 class="agent-name">Lyra</h3>
-                      <p class="agent-role-lbl">HR Communications Bot</p>
-                      <p class="agent-status-msg" id="lyra-status">Idle. Waiting for candidate triggers...</p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Terminal console logs -->
-                <div class="card-glass terminal-box">
-                  <div class="terminal-header">
-                    <div class="terminal-dots">
-                      <span class="dot red"></span>
-                      <span class="dot yellow"></span>
-                      <span class="dot green"></span>
-                    </div>
-                    <span class="terminal-title">A.I. Swarm Ticker Activity Feed</span>
-                  </div>
-                  <div class="terminal-body" id="swarm-terminal-body">
-                    <div class="term-log"><code>[10:42:01] Aria:</code> System diagnostics initiated. Swarm link online.</div>
-                    <div class="term-log"><code>[10:42:15] Lyra:</code> Syncing candidate databases with email queue...</div>
-                    <div class="term-log font-gold"><code>[10:43:02] Kaelen:</code> Dispatched coding test to Candidate CAN-8234-EA1.</div>
-                  </div>
-                  <div class="terminal-input-wrap">
-                    <span class="terminal-prompt">&gt;</span>
-                    <input type="text" id="swarm-prompter" placeholder="Ask the AI Swarm to do something... (e.g. 'Aria, search for Go devs')" />
-                    <button id="btn-swarm-prompt" class="btn-term-send">Send</button>
+                    <span class="page-num">Page 1 of 1</span>
+                    <button class="btn-pag next" disabled>Next</button>
                   </div>
                 </div>
               </div>
-            </section>
+            </div>
+          </section>
 
-            <!-- ===================================== -->
-            <!-- CAREER PAGE VIEW (TAB 4) -->
+          <!-- ===================================== -->
+          <!-- AI SWARM VIEW (TAB 2.5) -->
+          <!-- ===================================== -->
+          <section class="dashboard-view" id="view-swarm">
+            <div class="swarm-layout">
+              <!-- Agents Cards Grid -->
+              <div class="agents-status-grid">
+                <!-- Agent Aria -->
+                <div class="card-glass agent-card" id="agent-aria">
+                  <div class="agent-avatar-status">
+                    <div class="agent-pic">AR</div>
+                    <span class="pulse-dot green"></span>
+                  </div>
+                  <div class="agent-meta">
+                    <h3 class="agent-name">Aria</h3>
+                    <p class="agent-role-lbl">Resume Analyst Agent</p>
+                    <p class="agent-status-msg" id="aria-status">Monitoring candidate submissions...</p>
+                  </div>
+                </div>
+                <!-- Agent Kaelen -->
+                <div class="card-glass agent-card" id="agent-kaelen">
+                  <div class="agent-avatar-status">
+                    <div class="agent-pic">KL</div>
+                    <span class="pulse-dot green"></span>
+                  </div>
+                  <div class="agent-meta">
+                    <h3 class="agent-name">Kaelen</h3>
+                    <p class="agent-role-lbl">Technical Vetting Specialist</p>
+                    <p class="agent-status-msg" id="kaelen-status">Generating code challenge rubrics...</p>
+                  </div>
+                </div>
+                <!-- Agent Lyra -->
+                <div class="card-glass agent-card" id="agent-lyra">
+                  <div class="agent-avatar-status">
+                    <div class="agent-pic">LY</div>
+                    <span class="pulse-dot orange"></span>
+                  </div>
+                  <div class="agent-meta">
+                    <h3 class="agent-name">Lyra</h3>
+                    <p class="agent-role-lbl">HR Communications Bot</p>
+                    <p class="agent-status-msg" id="lyra-status">Idle. Waiting for candidate triggers...</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Terminal console logs -->
+              <div class="card-glass terminal-box">
+                <div class="terminal-header">
+                  <div class="terminal-dots">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                  </div>
+                  <span class="terminal-title">A.I. Swarm Ticker Activity Feed</span>
+                </div>
+                <div class="terminal-body" id="swarm-terminal-body">
+                  <div class="term-log"><code>[10:42:01] Aria:</code> System diagnostics initiated. Swarm link online.</div>
+                  <div class="term-log"><code>[10:42:15] Lyra:</code> Syncing candidate databases with email queue...</div>
+                  <div class="term-log font-gold"><code>[10:43:02] Kaelen:</code> Dispatched coding test to Candidate CAN-8234-EA1.</div>
+                </div>
+                <div class="terminal-input-wrap">
+                  <span class="terminal-prompt">&gt;</span>
+                  <input type="text" id="swarm-prompter" placeholder="Ask the AI Swarm to do something... (e.g. 'Aria, search for Go devs')" />
+                  <button id="btn-swarm-prompt" class="btn-term-send">Send</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===================================== -->
+          <!-- CAREER PAGE VIEW (TAB 4) -->
           <!-- ===================================== -->
           <section class="dashboard-view" id="view-career">
             <div class="config-grid">
@@ -1181,7 +1190,7 @@
               <div class="code-editor-body">
                 <pre class="code-view-container"><code><span class="keyword">import</span> { useState, useEffect } <span class="keyword">from</span> <span class="string">'react'</span>;
 
-<span class="keyword">export default function</span> <span class="func">UserList</span>() {
+export default function <span class="func">UserList</span>() {
   <span class="keyword">const</span> [users, setUsers] = useState([]);
   <span class="keyword">const</span> [loading, setLoading] = useState(<span class="keyword">true</span>);
 
