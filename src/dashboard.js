@@ -5135,6 +5135,7 @@ function initCrystalAnimations() {
       
       // Camera - Full screen plane OrthographicCamera (depth Z centered at -1 to 1 to prevent mesh clipping)
       const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 1);
+      camera.position.z = 1;
       
       // Renderer - initialize WebGL
       const renderer = new THREE.WebGLRenderer({
@@ -5262,7 +5263,8 @@ function initCrystalAnimations() {
         fragmentShader,
         uniforms,
         depthWrite: false,
-        depthTest: false
+        depthTest: false,
+        side: THREE.DoubleSide
       });
       
       const mesh = new THREE.Mesh(geometry, material);
