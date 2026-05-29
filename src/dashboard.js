@@ -5218,25 +5218,25 @@ function initCrystalAnimations() {
           
           float f = fbm(p + 1.1 * r);
           
-          // Theme 1 (Dark Mode): Futuristic Purples and Vibrant Cobalt/Sapphire Blues
-          vec3 darkBg = vec3(0.031, 0.024, 0.059);     // Deep midnight purple-slate
-          vec3 darkPurple = vec3(0.482, 0.184, 0.906); // Neon Violet
-          vec3 darkBlue = vec3(0.122, 0.353, 0.941);   // Electric Sapphire Blue
-          vec3 darkAccent = vec3(0.247, 0.078, 0.529); // Royal Indigo Accent
+          // Theme 1 (Dark Mode): Deep Subtle Purples and Midnight Blues (Darker for readability)
+          vec3 darkBg = vec3(0.008, 0.006, 0.018);     // Extremely dark midnight purple-slate
+          vec3 darkPurple = vec3(0.12, 0.04, 0.25);    // Subtle deep violet
+          vec3 darkBlue = vec3(0.03, 0.08, 0.22);      // Subtle deep sapphire
+          vec3 darkAccent = vec3(0.05, 0.02, 0.12);    // Subtle deep indigo
           
-          vec3 darkColor = mix(darkBg, darkPurple, f);
-          darkColor = mix(darkColor, darkBlue, r.x);
-          darkColor = mix(darkColor, darkAccent, q.y * 0.4);
+          vec3 darkColor = mix(darkBg, darkPurple, f * 0.6);
+          darkColor = mix(darkColor, darkBlue, r.x * 0.5);
+          darkColor = mix(darkColor, darkAccent, q.y * 0.3);
           
-          // Theme 2 (Light Mode): Modern Soft Beige/Cream and Vibrant Warm Orange/Yellow
-          vec3 lightBg = vec3(0.969, 0.961, 0.929);     // Premium warm cream beige
-          vec3 lightOrange = vec3(0.973, 0.588, 0.294); // Fluid warm orange
-          vec3 lightYellow = vec3(0.980, 0.824, 0.392); // Sunlit soft yellow
-          vec3 lightAccent = vec3(0.933, 0.890, 0.804); // Deep beige shadow
+          // Theme 2 (Light Mode): Muted Soft Beige/Cream and Light Pastel Accents (Toned down for readability)
+          vec3 lightBg = vec3(0.975, 0.970, 0.955);     // Clean, pale warm cream
+          vec3 lightOrange = vec3(0.985, 0.925, 0.880); // Ultra pale, soft pastel peach
+          vec3 lightYellow = vec3(0.990, 0.965, 0.910); // Ultra pale, soft champagne
+          vec3 lightAccent = vec3(0.965, 0.945, 0.915); // Very soft beige
           
-          vec3 lightColor = mix(lightBg, lightOrange, f * 0.65);
-          lightColor = mix(lightColor, lightYellow, r.y * 0.55);
-          lightColor = mix(lightColor, lightAccent, q.x * 0.35);
+          vec3 lightColor = mix(lightBg, lightOrange, f * 0.35);
+          lightColor = mix(lightColor, lightYellow, r.y * 0.25);
+          lightColor = mix(lightColor, lightAccent, q.x * 0.2);
           
           // Smooth crossfade based on active theme uniform (0.0 to 1.0)
           vec3 finalColor = mix(darkColor, lightColor, u_theme);
