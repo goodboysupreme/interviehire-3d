@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { gsap } from 'gsap';
 
 // ==========================================
@@ -5121,16 +5122,212 @@ Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdow
 // CRYSTAL GLASS OVERDRIVE: DYNAMIC INTERACTIVE ANIMATIONS
 // ==========================================
 function initCrystalAnimations() {
-  // 1. Dynamic mouse-drifting background orbs
+  // 1. WebGL Fullscreen fluid background shader setup
+  const canvas = document.getElementById('crystal-shader-canvas');
+  if (canvas) {
+    try {
+      const container = canvas.parentElement;
+      const scene = new THREE.Scene();
+      
+      // Camera - Full screen plane OrthographicCamera
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      
+      // Renderer
+      const renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+        alpha: true,
+        powerPreference: "high-performance"
+      });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      // Cap device pixel ratio for smooth performance (60 FPS focus)
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+      
+      // Simple full-screen quad vertex shader
+      const vertexShader = `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = vec4(position, 1.0);
+        }
+      `;
+      
+      // Fragment Shader: domain-warped fractal Brownian noise for a liquid fluid glass background
+      const fragmentShader = `
+        uniform float u_time;
+        uniform vec2 u_resolution;
+        uniform float u_theme; // 0.0 for dark (purple/blue), 1.0 for light (beige/orange/yellow)
+        uniform vec2 u_mouse;
+        
+        varying vec2 vUv;
+        
+        float hash(vec2 p) {
+          return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+        }
+        
+        float noise(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          vec2 u = f*f*(3.0-2.0*f);
+          return mix(mix(hash(i + vec2(0.0,0.0)), hash(i + vec2(1.0,0.0)), u.x),
+                     mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y);
+        }
+        
+        float fbm(vec2 p) {
+          float value = 0.0;
+          float amplitude = 0.5;
+          float frequency = 1.0;
+          for (int i = 0; i < 4; i++) {
+            value += amplitude * noise(p * frequency);
+            frequency *= 2.0;
+            amplitude *= 0.5;
+          }
+          return value;
+        }
+        
+        void main() {
+          vec2 st = gl_FragCoord.xy / u_resolution.xy;
+          
+          float aspect = u_resolution.x / u_resolution.y;
+          vec2 uv = st;
+          uv.x *= aspect;
+          
+          // Organic drag displacement based on normalized mouse coords
+          uv += u_mouse * 0.04;
+          
+          // Warping Step 1
+          vec2 q = vec2(0.0);
+          q.x = fbm(uv + 0.08 * u_time);
+          q.y = fbm(uv + vec2(1.0) + 0.06 * u_time);
+          
+          // Warping Step 2
+          vec2 r = vec2(0.0);
+          r.x = fbm(uv + 1.2 * q + vec2(1.7, 9.2) + 0.12 * u_time);
+          r.y = fbm(uv + 1.2 * q + vec2(8.3, 2.8) + 0.09 * u_time);
+          
+          float f = fbm(uv + 1.1 * r);
+          
+          // Theme 1 (Dark Mode): Futuristic Purples and Vibrant Cobalt/Sapphire Blues
+          vec3 darkBg = vec3(0.031, 0.024, 0.059);     // Deep midnight purple-slate
+          vec3 darkPurple = vec3(0.482, 0.184, 0.906); // Neon Violet
+          vec3 darkBlue = vec3(0.122, 0.353, 0.941);   // Electric Sapphire Blue
+          vec3 darkAccent = vec3(0.247, 0.078, 0.529); // Royal Indigo Accent
+          
+          vec3 darkColor = mix(darkBg, darkPurple, f);
+          darkColor = mix(darkColor, darkBlue, r.x);
+          darkColor = mix(darkColor, darkAccent, q.y * 0.4);
+          
+          // Theme 2 (Light Mode): Modern Soft Beige/Cream and Vibrant Warm Orange/Yellow
+          vec3 lightBg = vec3(0.969, 0.961, 0.929);     // Premium warm cream beige
+          vec3 lightOrange = vec3(0.973, 0.588, 0.294); // Fluid warm orange
+          vec3 lightYellow = vec3(0.980, 0.824, 0.392); // Sunlit soft yellow
+          vec3 lightAccent = vec3(0.933, 0.890, 0.804); // Deep beige shadow
+          
+          vec3 lightColor = mix(lightBg, lightOrange, f * 0.65);
+          lightColor = mix(lightColor, lightYellow, r.y * 0.55);
+          lightColor = mix(lightColor, lightAccent, q.x * 0.35);
+          
+          // Smooth crossfade based on active theme uniform (0.0 to 1.0)
+          vec3 finalColor = mix(darkColor, lightColor, u_theme);
+          
+          gl_FragColor = vec4(finalColor, 1.0);
+        }
+      `;
+      
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      
+      const themeState = {
+        value: document.body.classList.contains('light-theme') ? 1.0 : 0.0
+      };
+      
+      const uniforms = {
+        u_time: { value: 0.0 },
+        u_resolution: { value: new THREE.Vector2(container.clientWidth, container.clientHeight) },
+        u_theme: { value: themeState.value },
+        u_mouse: { value: new THREE.Vector2(0, 0) }
+      };
+      
+      const material = new THREE.ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms,
+        depthWrite: false,
+        depthTest: false
+      });
+      
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+      
+      // Mouse tracking interpolators
+      let mouseX = 0, mouseY = 0;
+      let targetMouseX = 0, targetMouseY = 0;
+      
+      window.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth) * 2.0 - 1.0;
+        mouseY = -(e.clientY / window.innerHeight) * 2.0 + 1.0;
+      });
+      
+      // MutationObserver to animate theme uniform when light-theme class changes
+      const themeObserver = new MutationObserver(() => {
+        const isLight = document.body.classList.contains('light-theme');
+        const targetTheme = isLight ? 1.0 : 0.0;
+        if (themeState.value !== targetTheme) {
+          gsap.to(themeState, {
+            value: targetTheme,
+            duration: 1.2,
+            ease: "power2.out",
+            onUpdate: () => {
+              uniforms.u_theme.value = themeState.value;
+            }
+          });
+        }
+      });
+      themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+      
+      const clock = new THREE.Clock();
+      
+      function renderShader() {
+        requestAnimationFrame(renderShader);
+        
+        uniforms.u_time.value = clock.getElapsedTime();
+        
+        // Easing interpolation for mouse slide inertia
+        targetMouseX += (mouseX - targetMouseX) * 0.05;
+        targetMouseY += (mouseY - targetMouseY) * 0.05;
+        uniforms.u_mouse.value.set(targetMouseX, targetMouseY);
+        
+        renderer.render(scene, camera);
+      }
+      
+      renderShader();
+      
+      window.addEventListener('resize', () => {
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        if (uniforms.u_resolution) {
+          uniforms.u_resolution.value.set(container.clientWidth, container.clientHeight);
+        }
+      });
+      
+      container.classList.add('has-shader');
+      
+    } catch (err) {
+      console.warn("Crystal shader failed to initialize, falling back to CSS static orbs:", err);
+    }
+  }
+
+  // 1b. Fallback mouse-drifting background orbs (only runs if WebGL is disabled/failed)
   window.addEventListener('mousemove', (e) => {
     const { clientX, clientY } = e;
-    const xPercent = (clientX / window.innerWidth - 0.5) * 60; // shift up to 60px
+    const xPercent = (clientX / window.innerWidth - 0.5) * 60;
     const yPercent = (clientY / window.innerHeight - 0.5) * 60;
     
-    gsap.to('.orb-1', { x: xPercent * 0.9, y: yPercent * 0.9, duration: 1.8, ease: 'power2.out' });
-    gsap.to('.orb-2', { x: -xPercent * 0.7, y: -yPercent * 0.7, duration: 2.2, ease: 'power2.out' });
-    gsap.to('.orb-3', { x: xPercent * 0.6, y: -yPercent * 0.6, duration: 2.4, ease: 'power2.out' });
-    gsap.to('.orb-4', { x: -xPercent * 0.5, y: yPercent * 0.5, duration: 2.6, ease: 'power2.out' });
+    const orbs = document.querySelectorAll('.orb');
+    if (orbs.length > 0 && (!canvas || !canvas.parentElement.classList.contains('has-shader'))) {
+      gsap.to('.orb-1', { x: xPercent * 0.9, y: yPercent * 0.9, duration: 1.8, ease: 'power2.out' });
+      gsap.to('.orb-2', { x: -xPercent * 0.7, y: -yPercent * 0.7, duration: 2.2, ease: 'power2.out' });
+      gsap.to('.orb-3', { x: xPercent * 0.6, y: -yPercent * 0.6, duration: 2.4, ease: 'power2.out' });
+      gsap.to('.orb-4', { x: -xPercent * 0.5, y: yPercent * 0.5, duration: 2.6, ease: 'power2.out' });
+    }
   });
 
   // 2. 3D Card Hover Tilt and Shine Spotlights

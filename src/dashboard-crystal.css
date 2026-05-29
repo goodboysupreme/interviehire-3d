@@ -251,6 +251,24 @@ body { position: relative; color: var(--color-text-primary); }
   transition: var(--spring-smooth);
 }
 
+#crystal-shader-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.scene.has-shader .orb {
+  display: none !important;
+}
+
+.scene.has-shader {
+  background: none !important;
+}
+
 .noise {
   position: fixed;
   inset: 0;
