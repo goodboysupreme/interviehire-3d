@@ -3525,6 +3525,7 @@ function navigateToSourcing(jobId) {
   setTimeout(updateAllSlidingPills, 50);
   soundEngine.playChime([329.63, 392.00, 523.25], 0.15, 0.08);
 }
+window.navigateToSourcing = navigateToSourcing;
 
 function switchSourcingMode(mode) {
   currentSourcingMode = mode;
