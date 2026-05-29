@@ -182,7 +182,10 @@ body.light-theme .dashboard-header {
   background: rgba(248, 246, 255, 0.88);
   border-bottom-color: rgba(var(--color-gold-rgb), 0.10);
 }
-body.light-theme .sidebar { border-right-color: rgba(var(--color-gold-rgb), 0.10); }
+body.light-theme .sidebar {
+  background: rgba(248, 246, 255, 0.95);
+  border-right-color: rgba(var(--color-gold-rgb), 0.10);
+}
 body.light-theme .user-profile { border-top-color: rgba(var(--color-gold-rgb), 0.08); }
 body.light-theme .card-plan { background: rgba(var(--color-gold-rgb),0.04); border-color: rgba(var(--color-gold-rgb),0.12); }
 body.light-theme .nav-item:hover { background: rgba(var(--color-gold-rgb), 0.05); }
@@ -312,7 +315,7 @@ body { position: relative; color: var(--color-text-primary); }
    SIDEBAR
    ============================================================ */
 .sidebar {
-  background: var(--color-surface);
+  background: rgba(5, 5, 8, 0.96);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   border-right: 1px solid var(--glass-border);

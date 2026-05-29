@@ -128,7 +128,10 @@ body.light-theme .dashboard-header {
   background: rgba(240, 242, 250, 0.82);
   border-bottom-color: rgba(0,0,0,0.06);
 }
-body.light-theme .sidebar { border-right-color: rgba(0,0,0,0.08); }
+body.light-theme .sidebar {
+  background: rgba(255, 255, 255, 0.95);
+  border-right-color: rgba(0,0,0,0.08);
+}
 body.light-theme .user-profile { border-top-color: rgba(0,0,0,0.06); }
 body.light-theme .card-plan { background: rgba(255,107,53,0.04); border-color: rgba(255,107,53,0.12); }
 body.light-theme .nav-item:hover { background: rgba(0,0,0,0.02); }
@@ -278,7 +281,7 @@ body { position: relative; color: var(--color-text-primary); }
    SIDEBAR
    ============================================================ */
 .sidebar {
-  background: var(--color-surface);
+  background: rgba(5, 5, 8, 0.96);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   border-right: 1px solid var(--glass-border);
