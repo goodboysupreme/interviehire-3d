@@ -284,6 +284,150 @@ function generateJobId() {
 }
 
 // ==========================================
+// CANDIDATE VETTING DATABASE & STATE TRACKING
+// ==========================================
+const activeCandidateSubTabs = {};
+
+const CandidateVettingDetails = {
+  'CAN-3401-EA1': {
+    summary: 'Strong candidate with structured knowledge in modern layout patterns and CSS grids. Showed great alignment with procurement executive requirements but has a 2-month notice period.',
+    caveats: [
+      { type: 'warning', text: 'Notice Period: 2 months (requires immediate buyout context).' },
+      { type: 'warning', text: 'Language Vetting: Occasional grammatical hesitancy when detailing high-volume client negotiations.' },
+      { type: 'info', text: 'Technical Depth: Fluent in modern CSS (variables, grid, flexbox) but lacks full-stack routing experience.' }
+    ],
+    pros: [
+      'Expertise in structured layout frameworks (CSS Grid & Flexbox).',
+      'Strong eye for interface consistency and typography scaling.',
+      'Calm, solution-oriented conversational tone.'
+    ],
+    cons: [
+      'No experience with server-side proposal templating engines.',
+      'May require initial guidance on government tender format specifics.'
+    ],
+    rubrics: [
+      { label: 'Aesthetic Alignment', score: 9.0 },
+      { label: 'Technical Foundation', score: 8.0 },
+      { label: 'Communication Tone', score: 9.0 },
+      { label: 'Tender Process Knowledge', score: 7.5 }
+    ],
+    transcript: [
+      { speaker: 'Lina', text: 'Can you explain how you handle conflicting opinions in project schedules?' },
+      { speaker: 'Ines', text: 'I lay out the technical constraints, compare the alternatives side-by-side using data, and facilitate a consensus meeting.' },
+      { speaker: 'Lina', text: 'How do you structure CSS grids for dynamic content lengths in proposals?' },
+      { speaker: 'Ines', text: 'I use auto-fit and minmax patterns in grid-template-columns, which lets the browser calculate layout sizes without breaking columns.' }
+    ]
+  },
+  'CAN-9012-EA2': {
+    summary: 'Detail-oriented backend engineer with secure session experience. Demonstrated strong knowledge of cryptography libraries, but requires training in front-end JS frameworks.',
+    caveats: [
+      { type: 'warning', text: 'Framework Gap: Highly proficient in Python helper patterns but lacks React ecosystem exposure.' },
+      { type: 'info', text: 'Security Focus: Implements proper JWT signature controls and secret rotation mechanisms.' }
+    ],
+    pros: [
+      'Excellent grasp of cryptography tools and JWT implementations.',
+      'High rigor in outlining edge cases for secure communications.',
+      'Proactive approach to rate limit headers and client defense.'
+    ],
+    cons: [
+      'Limited visual interface development experience.',
+      'Needs training to support team front-end deliverables.'
+    ],
+    rubrics: [
+      { label: 'Security & Auth Vetting', score: 9.5 },
+      { label: 'System Architecture', score: 9.0 },
+      { label: 'Communication Flow', score: 8.5 },
+      { label: 'Clean Code Hygiene', score: 9.0 }
+    ],
+    transcript: [
+      { speaker: 'Lina', text: 'Can you explain how you handle conflicting opinions in project schedules?' },
+      { speaker: 'Sarah', text: 'I align everyone on the technical goal first, document the architectural impact, and make a decision based on scalability.' },
+      { speaker: 'Lina', text: 'What is your strategy for secure token rotation in API clients?' },
+      { speaker: 'Sarah', text: 'We issue short-lived access tokens, use secure HttpOnly cookies for refresh tokens, and revoke the refresh chain if a duplicate usage is detected.' }
+    ]
+  },
+  'CAN-7128-DF5': {
+    summary: 'Remarkable performance in Golang tender scraper evaluation. Developed clean worker pools with proper context lifecycle support. Fits the culture perfectly.',
+    caveats: [
+      { type: 'warning', text: 'Remote Preference: Prefers fully remote work (might require adjustment for hybrid tender briefs).' },
+      { type: 'info', text: 'Execution Speed: Code shows high efficiency with zero goroutine leaks on exit.' }
+    ],
+    pros: [
+      'Superb implementation of Go worker pools and parallel channels.',
+      'Handles external request cancellation gracefully using context.WithTimeout.',
+      'Clear documentation structure inside codebase.'
+    ],
+    cons: [
+      'Prefers purely backend tasks, slight resistance to frontend adjustments.'
+    ],
+    rubrics: [
+      { label: 'Concurrency Control', score: 10.0 },
+      { label: 'Context Lifecycle', score: 9.5 },
+      { label: 'Scraping Architecture', score: 9.0 },
+      { label: 'Executive Presentation', score: 9.5 }
+    ],
+    transcript: [
+      { speaker: 'Kaelen', text: 'Can you walk through your concurrency implementation in the tender scraper?' },
+      { speaker: 'Devasri', text: 'I spin up a buffered work channel and limit our worker goroutines. I select on context cancellation to stop fetching immediately if there is a timeout or if the user cancels.' }
+    ]
+  },
+  'CAN-8234-EA1': {
+    summary: 'Strong React cleanup designer. Implements AbortController to cleanly cancel asynchronous state updates and prevent memory leaks.',
+    caveats: [
+      { type: 'warning', text: 'React Version: Deep React 18 knowledge but needs alignment on React 19 Server Actions.' },
+      { type: 'info', text: 'Resource Management: Uses active cancellation protocols to avoid race conditions.' }
+    ],
+    pros: [
+      'Excellent cleanup hook implementation.',
+      'Understands async race conditions in concurrent UI fetches.',
+      'Clean file organization and concise component design.'
+    ],
+    cons: [
+      'Lacks familiarity with modern Next.js App Router configurations.'
+    ],
+    rubrics: [
+      { label: 'Resource Cleanup', score: 9.5 },
+      { label: 'State Management', score: 9.0 },
+      { label: 'Race Prevention', score: 9.0 },
+      { label: 'Code Aesthetics', score: 9.5 }
+    ],
+    transcript: [
+      { speaker: 'Kaelen', text: 'How do you handle memory leaks in React side effects?' },
+      { speaker: 'Aditya', text: 'I use the cleanup function of useEffect. By returning a function that aborts the controller or clears timeouts, we prevent state updates on unmounted components.' }
+    ]
+  }
+};
+
+function getCandidateVettingDetails(candId, candidateName) {
+  if (CandidateVettingDetails[candId]) {
+    return CandidateVettingDetails[candId];
+  }
+  return {
+    summary: `${candidateName} is an active candidate currently undergoing evaluation. Shown promising results during initial screening tests.`,
+    caveats: [
+      { type: 'info', text: 'Evaluation is in progress. Initial scores are generated dynamically.' }
+    ],
+    pros: [
+      'Structured response formatting.',
+      'Active alignment with the target role description.'
+    ],
+    cons: [
+      'Pending final technical interview round.'
+    ],
+    rubrics: [
+      { label: 'Technical Fit', score: 8.5 },
+      { label: 'Communication', score: 8.0 },
+      { label: 'Cultural Fit', score: 8.0 },
+      { label: 'Problem Solving', score: 8.5 }
+    ],
+    transcript: [
+      { speaker: 'Lina', text: 'Please tell us a bit about your experience.' },
+      { speaker: 'Candidate', text: 'I have been working in engineering roles, focusing on building scalable systems and collaborating with product teams.' }
+    ]
+  };
+}
+
+// ==========================================
 // RENDERING & INTERACTIVE VIEWS
 // ==========================================
 
@@ -1668,13 +1812,20 @@ function navigateToJobDetail(jobId) {
   });
   document.querySelectorAll('.sub-nav li').forEach(li => li.classList.remove('active-sub'));
 
-  // Breadcrumb — "Jobs" clickable link
+  // Breadcrumb — "Jobs" clickable link and Job Name clickable link
   const breadcrumb = document.getElementById('breadcrumb-title');
   const shortName = job.cardName.length > 30 ? job.cardName.slice(0, 30) + '…' : job.cardName;
   breadcrumb.innerHTML = `<span class="breadcrumb-link" id="bc-jobs-link">Jobs</span>
-    <span class="breadcrumb-separator">/</span> ${shortName}
+    <span class="breadcrumb-separator">/</span> <span class="breadcrumb-link" id="bc-jobname-link">${shortName}</span>
     <span class="breadcrumb-separator">/</span> Responses`;
   document.getElementById('bc-jobs-link').addEventListener('click', () => navigateToTab('jobs'));
+  document.getElementById('bc-jobname-link').addEventListener('click', () => {
+    document.querySelectorAll('.jd-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.jd-tab[data-jd-tab="overview"]').classList.add('active');
+    document.querySelectorAll('.jd-pane').forEach(p => p.classList.remove('active'));
+    document.getElementById('jd-pane-overview').classList.add('active');
+    soundEngine.playClick();
+  });
 
   // Header
   document.getElementById('header-main-title').textContent = job.cardName;
@@ -1712,6 +1863,7 @@ function navigateToJobDetail(jobId) {
 
   soundEngine.playChime([440.00, 523.25, 659.25], 0.12, 0.08);
 }
+window.navigateToJobDetail = navigateToJobDetail;
 
 function renderFunnelStages(job) {
   const container = document.getElementById('jd-funnel-stages');
@@ -2053,6 +2205,14 @@ document.addEventListener('DOMContentLoaded', () => {
         appContainer.classList.toggle('sidebar-collapsed');
         soundEngine.playClick();
       }
+    });
+  }
+
+  // Breadcrumbs: Client Portal Click
+  const portalLink = document.getElementById('bc-portal-link');
+  if (portalLink) {
+    portalLink.addEventListener('click', () => {
+      navigateToTab('jobs');
     });
   }
 
@@ -4240,53 +4400,123 @@ function renderJobDetailPanes(job) {
         </div>
       `;
     } else {
-      screeningList.innerHTML = screeningCands.map(c => `
-        <div class="jd-candidate-row-card" data-candidate-id="${c.id}">
-          <div class="jd-card-header">
-            <div class="user-avatar-mini" style="background-color: var(--color-indigo-dim); border-color: var(--color-indigo); color: var(--color-indigo-light);">${c.name.split(' ').map(n=>n[0]).join('')}</div>
-            <div class="user-details">
-              <span class="cand-name">${c.name}</span>
-              <span class="cand-email">${c.email}</span>
-            </div>
-            <span class="score-badge indigo">${c.score} match</span>
-          </div>
-          <div class="jd-card-body">
-            <div class="screening-audio-player" data-player-id="${c.id}">
-              <button class="btn-player-play" data-play-id="${c.id}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="play-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="pause-icon" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-              </button>
-              <div class="player-wave-bars" data-wave-id="${c.id}">
-                <!-- Will be filled programmatically -->
+      screeningList.innerHTML = screeningCands.map(c => {
+        const activeTab = activeCandidateSubTabs[c.id] || 'transcript';
+        const vetting = getCandidateVettingDetails(c.id, c.name);
+        
+        let tabContentHTML = '';
+        if (activeTab === 'transcript') {
+          tabContentHTML = `
+            <div class="tab-pane-content active animate-fade-in">
+              <div class="screening-audio-player" data-player-id="${c.id}">
+                <button class="btn-player-play" data-play-id="${c.id}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="play-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="pause-icon" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                </button>
+                <div class="player-wave-bars" data-wave-id="${c.id}">
+                  ${Array.from({length: 28}, () => `<div class="player-wave-bar" style="height: ${Math.floor(Math.random() * 70 + 20)}%"></div>`).join('')}
+                </div>
+                <span class="player-time" data-time-id="${c.id}">0:00 / 0:15</span>
               </div>
-              <span class="player-time" data-time-id="${c.id}">0:00 / 0:15</span>
+              <div class="transcript-box compact">
+                <span class="transcript-label">AI Interview Transcript:</span>
+                <div class="transcript-chat-flow">
+                  ${vetting.transcript.map(line => `
+                    <div class="transcript-chat-line chat-speaker-${line.speaker.toLowerCase()}">
+                      <span class="chat-speaker-badge">${line.speaker}:</span>
+                      <span class="chat-text-bubble">${line.text}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
             </div>
-            <div class="transcript-box">
-              <span class="transcript-label">AI Interview Transcript:</span>
-              <p class="transcript-text" data-transcript-id="${c.id}">"Lina: Can you explain how you handle conflicting opinions in project schedules?<br>Candidate: I lay out the technical constraints, compare the alternatives side-by-side using data, and facilitate a consensus meeting."</p>
+          `;
+        } else if (activeTab === 'scores') {
+          const rubricRows = vetting.rubrics.map(r => `
+            <div class="rubric-row">
+              <span class="rubric-lbl">${r.label}</span>
+              <div class="rubric-bar-track">
+                <div class="rubric-bar-fill indigo" style="width: ${r.score * 10}%"></div>
+              </div>
+              <span class="rubric-val">${r.score}/10</span>
             </div>
-          </div>
-          <div class="jd-card-actions">
-            <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
-            <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Functional">Advance to Functional →</button>
-          </div>
-        </div>
-      `).join('');
+          `).join('');
 
-      // Populate waves for screening cards
-      screeningCands.forEach(c => {
-        const waveContainer = document.querySelector(`.player-wave-bars[data-wave-id="${c.id}"]`);
-        if (waveContainer) {
-          waveContainer.innerHTML = '';
-          for (let i = 0; i < 28; i++) {
-            const bar = document.createElement('div');
-            bar.className = 'player-wave-bar';
-            const h = Math.floor(Math.random() * 70 + 20);
-            bar.style.height = `${h}%`;
-            waveContainer.appendChild(bar);
-          }
+          const caveatTags = vetting.caveats.map(cav => `
+            <div class="caveat-tag ${cav.type}">
+              <span class="caveat-icon">${cav.type === 'warning' ? '⚠️' : '💡'}</span>
+              <span class="caveat-text">${cav.text}</span>
+            </div>
+          `).join('');
+
+          const prosList = vetting.pros.map(p => `<li><span class="list-bullet pro">✓</span>${p}</li>`).join('');
+          const consList = vetting.cons.map(cn => `<li><span class="list-bullet con">✗</span>${cn}</li>`).join('');
+
+          tabContentHTML = `
+            <div class="tab-pane-content active animate-fade-in scores-caveats-pane">
+              <div class="pane-grid-half">
+                <div class="rubrics-section">
+                  <span class="section-sub-title">AI Vetting Scorecard</span>
+                  ${rubricRows}
+                </div>
+                <div class="caveats-section">
+                  <span class="section-sub-title">AI Caveats & Flags</span>
+                  <div class="caveats-list-tags">
+                    ${caveatTags}
+                  </div>
+                </div>
+              </div>
+              <div class="pros-cons-grid">
+                <div class="pro-col">
+                  <span class="section-sub-title pros">Pros</span>
+                  <ul>${prosList}</ul>
+                </div>
+                <div class="con-col">
+                  <span class="section-sub-title cons">Cons</span>
+                  <ul>${consList}</ul>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (activeTab === 'actions') {
+          tabContentHTML = `
+            <div class="tab-pane-content active animate-fade-in actions-tab-pane">
+              <div class="recruiter-notes-wrap">
+                <span class="notes-label">Recruiter Notes & Vetting Summary:</span>
+                <p class="candidate-summary-quote">"${vetting.summary}"</p>
+                <textarea class="recruiter-notes-textarea" placeholder="Add custom notes on notice buyout or communication flags..."></textarea>
+              </div>
+              <div class="jd-card-actions inline">
+                <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
+                <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Functional">Advance to Functional →</button>
+              </div>
+            </div>
+          `;
         }
-      });
+
+        return `
+          <div class="jd-candidate-row-card compact" data-candidate-id="${c.id}">
+            <div class="jd-card-header compact">
+              <div class="avatar-details-group">
+                <div class="user-avatar-mini" style="background-color: var(--color-indigo-dim); border-color: var(--color-indigo); color: var(--color-indigo-light);">${c.name.split(' ').map(n=>n[0]).join('')}</div>
+                <div class="user-details-compact">
+                  <span class="cand-name">${c.name}</span>
+                  <span class="cand-email">${c.email}</span>
+                </div>
+              </div>
+              <div class="card-subtabs-row" data-cand-id="${c.id}">
+                <button class="subtab-btn ${activeTab === 'transcript' ? 'active' : ''}" data-tab="transcript">Transcript & Audio</button>
+                <button class="subtab-btn ${activeTab === 'scores' ? 'active' : ''}" data-tab="scores">Scores & Caveats</button>
+                <button class="subtab-btn ${activeTab === 'actions' ? 'active' : ''}" data-tab="actions">Actions & Notes</button>
+              </div>
+              <span class="score-badge indigo">${c.score} match</span>
+            </div>
+            <div class="jd-card-body-compact">
+              ${tabContentHTML}
+            </div>
+          </div>
+        `;
+      }).join('');
     }
   }
 
@@ -4304,32 +4534,106 @@ function renderJobDetailPanes(job) {
     } else {
       functionalList.innerHTML = functionalCands.map(c => {
         const review = CandidateReviews[c.id] || CandidateReviews['CAN-8234-EA1'];
+        const activeTab = activeCandidateSubTabs[c.id] || 'code';
+        const vetting = getCandidateVettingDetails(c.id, c.name);
+
+        let tabContentHTML = '';
+        if (activeTab === 'code') {
+          tabContentHTML = `
+            <div class="tab-pane-content active animate-fade-in code-review-pane compact">
+              <div class="code-header">
+                <span class="file-name">${review.file}</span>
+                <span class="reviewer-tag">Code Evaluator: ${review.reviewer}</span>
+              </div>
+              <pre class="code-box"><code>${review.code}</code></pre>
+              <div class="review-comment">
+                <strong>Feedback summary:</strong>
+                <p>${review.comment}</p>
+              </div>
+            </div>
+          `;
+        } else if (activeTab === 'scores') {
+          const rubricRows = vetting.rubrics.map(r => `
+            <div class="rubric-row">
+              <span class="rubric-lbl">${r.label}</span>
+              <div class="rubric-bar-track">
+                <div class="rubric-bar-fill gold" style="width: ${r.score * 10}%"></div>
+              </div>
+              <span class="rubric-val">${r.score}/10</span>
+            </div>
+          `).join('');
+
+          const caveatTags = vetting.caveats.map(cav => `
+            <div class="caveat-tag ${cav.type}">
+              <span class="caveat-icon">${cav.type === 'warning' ? '⚠️' : '💡'}</span>
+              <span class="caveat-text">${cav.text}</span>
+            </div>
+          `).join('');
+
+          const prosList = vetting.pros.map(p => `<li><span class="list-bullet pro">✓</span>${p}</li>`).join('');
+          const consList = vetting.cons.map(cn => `<li><span class="list-bullet con">✗</span>${cn}</li>`).join('');
+
+          tabContentHTML = `
+            <div class="tab-pane-content active animate-fade-in scores-caveats-pane">
+              <div class="pane-grid-half">
+                <div class="rubrics-section">
+                  <span class="section-sub-title">AI Functional Scorecard</span>
+                  ${rubricRows}
+                </div>
+                <div class="caveats-section">
+                  <span class="section-sub-title">Vetting Warnings & Info</span>
+                  <div class="caveats-list-tags">
+                    ${caveatTags}
+                  </div>
+                </div>
+              </div>
+              <div class="pros-cons-grid">
+                <div class="pro-col">
+                  <span class="section-sub-title pros">Pros</span>
+                  <ul>${prosList}</ul>
+                </div>
+                <div class="con-col">
+                  <span class="section-sub-title cons">Cons</span>
+                  <ul>${consList}</ul>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (activeTab === 'actions') {
+          tabContentHTML = `
+            <div class="tab-pane-content active animate-fade-in actions-tab-pane">
+              <div class="recruiter-notes-wrap">
+                <span class="notes-label">Vetting Assessment:</span>
+                <p class="candidate-summary-quote">"${vetting.summary}"</p>
+                <textarea class="recruiter-notes-textarea" placeholder="Add feedback comments or executive vetting notes..."></textarea>
+              </div>
+              <div class="jd-card-actions inline">
+                <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
+                <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Hired">Hire Candidate ✓</button>
+              </div>
+            </div>
+          `;
+        }
+
         return `
-          <div class="jd-candidate-row-card">
-            <div class="jd-card-header">
-              <div class="user-avatar-mini" style="background-color: var(--color-gold-dim); border-color: var(--color-gold); color: var(--color-gold-light);">${c.name.split(' ').map(n=>n[0]).join('')}</div>
-              <div class="user-details">
-                <span class="cand-name">${c.name}</span>
-                <span class="cand-email">${c.email}</span>
+          <div class="jd-candidate-row-card compact" data-candidate-id="${c.id}">
+            <div class="jd-card-header compact">
+              <div class="avatar-details-group">
+                <div class="user-avatar-mini" style="background-color: var(--color-gold-dim); border-color: var(--color-gold); color: var(--color-gold-light);">${c.name.split(' ').map(n=>n[0]).join('')}</div>
+                <div class="user-details-compact">
+                  <span class="cand-name">${c.name}</span>
+                  <span class="cand-email">${c.email}</span>
+                </div>
+              </div>
+              <div class="card-subtabs-row" data-cand-id="${c.id}">
+                <button class="subtab-btn ${activeTab === 'code' ? 'active' : ''}" data-tab="code">Code Evaluation</button>
+                <button class="subtab-btn ${activeTab === 'scores' ? 'active' : ''}" data-tab="scores">Scores & Caveats</button>
+                <button class="subtab-btn ${activeTab === 'actions' ? 'active' : ''}" data-tab="actions">Actions & Notes</button>
               </div>
               <span class="score-badge gold">${c.score} match</span>
             </div>
-            <div class="jd-card-body">
-              <div class="code-review-pane">
-                <div class="code-header">
-                  <span class="file-name">${review.file}</span>
-                  <span class="reviewer-tag">Code Evaluator: ${review.reviewer}</span>
-                </div>
-                <pre class="code-box"><code>${review.code}</code></pre>
-                <div class="review-comment">
-                  <strong>Kaelen Feedback:</strong>
-                  <p>${review.comment}</p>
-                </div>
-              </div>
-            </div>
-            <div class="jd-card-actions">
-              <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
-              <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Hired">Hire Candidate ✓</button>
+            <div class="jd-card-body-compact">
+              ${tabContentHTML}
             </div>
           </div>
         `;
@@ -4340,6 +4644,20 @@ function renderJobDetailPanes(job) {
   // Bind actions
   const pane = document.getElementById('view-job-detail');
   if (pane) {
+    pane.querySelectorAll('.subtab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.parentElement.getAttribute('data-cand-id');
+        const tabName = btn.getAttribute('data-tab');
+        
+        // Stop audio playing if swapping tabs
+        stopActiveCardPlayer();
+        
+        activeCandidateSubTabs[candId] = tabName;
+        soundEngine.playClick();
+        renderJobDetailPanes(job);
+      });
+    });
+
     pane.querySelectorAll('.btn-stage-reject').forEach(btn => {
       btn.addEventListener('click', () => {
         const candId = btn.getAttribute('data-candidate-id');
@@ -4482,6 +4800,11 @@ function toggleCardPlayer(id) {
       const activeIndex = Math.floor(progress * bars.length);
       
       bars.forEach((bar, idx) => {
+        if (idx <= activeIndex) {
+          bar.classList.add('played');
+        } else {
+          bar.classList.remove('played');
+        }
       });
     }, 100);
   }
