@@ -85,18 +85,18 @@
   --transition-smooth: var(--spring-smooth);
   --transition-fast:   var(--spring-fast);
 
-  /* Ambient Orbs — purple, sapphire, and indigo deep glow */
-  --orb-color-1:            oklch(34% 0.16 286);
-  --orb-opacity-1:          0.50;
-  --orb-color-2:            oklch(30% 0.14 245);
-  --orb-opacity-2:          0.40;
-  --orb-color-3:            oklch(28% 0.12 265);
-  --orb-opacity-3:          0.35;
-  --orb-color-4:            oklch(26% 0.10 255);
-  --orb-opacity-4:          0.28;
+  /* Ambient Orbs — vibrant purple, sapphire, and indigo glow */
+  --orb-color-1:            oklch(56% 0.22 286);
+  --orb-opacity-1:          0.45;
+  --orb-color-2:            oklch(52% 0.20 245);
+  --orb-opacity-2:          0.38;
+  --orb-color-3:            oklch(48% 0.18 265);
+  --orb-opacity-3:          0.32;
+  --orb-color-4:            oklch(44% 0.16 255);
+  --orb-opacity-4:          0.26;
 
-  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, oklch(12% 0.05 280), transparent);
-  --scene-gradient-2:       radial-gradient(ellipse 70% 70% at 86% 74%, oklch(13% 0.04 250), transparent);
+  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, oklch(18% 0.08 280), transparent);
+  --scene-gradient-2:       radial-gradient(ellipse 70% 70% at 86% 74%, oklch(16% 0.07 250), transparent);
 
   /* Card Glows */
   --card-glow-indigo:       rgba(var(--color-gold-rgb), 0.14);
