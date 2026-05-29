@@ -5241,7 +5241,7 @@ function initCrystalAnimations() {
           // Smooth crossfade based on active theme uniform (0.0 to 1.0)
           vec3 finalColor = mix(darkColor, lightColor, u_theme);
           
-          gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+          gl_FragColor = vec4(finalColor, 1.0);
         }
       `;
       
