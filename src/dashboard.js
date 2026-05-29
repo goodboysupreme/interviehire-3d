@@ -5125,22 +5125,29 @@ function initCrystalAnimations() {
   // 1. WebGL Fullscreen fluid background shader setup
   const canvas = document.getElementById('crystal-shader-canvas');
   if (canvas) {
+    // Guard against multiple initializations on the same canvas (e.g. DOM/Vite rebuild events)
+    if (canvas.dataset.initialized) return;
+    canvas.dataset.initialized = 'true';
+
     try {
       const container = canvas.parentElement;
       const scene = new THREE.Scene();
       
-      // Camera - Full screen plane OrthographicCamera
-      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      // Camera - Full screen plane OrthographicCamera (depth Z centered at -1 to 1 to prevent mesh clipping)
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 1);
       
-      // Renderer
+      // Renderer - initialize WebGL
       const renderer = new THREE.WebGLRenderer({
         canvas: canvas,
         antialias: true,
         alpha: true,
         powerPreference: "high-performance"
       });
-      renderer.setSize(container.clientWidth, container.clientHeight);
-      // Cap device pixel ratio for smooth performance (60 FPS focus)
+      
+      // Determine initial viewport dimensions safely via window metrics to prevent DOM size race conditions
+      const viewWidth = window.innerWidth;
+      const viewHeight = window.innerHeight;
+      renderer.setSize(viewWidth, viewHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       
       // Simple full-screen quad vertex shader
@@ -5195,17 +5202,20 @@ function initCrystalAnimations() {
           // Organic drag displacement based on normalized mouse coords
           uv += u_mouse * 0.04;
           
+          // Scale coordinates by 4.0 so the noise cycles across multiple cells and textures the screen
+          vec2 p = uv * 4.0;
+          
           // Warping Step 1
           vec2 q = vec2(0.0);
-          q.x = fbm(uv + 0.08 * u_time);
-          q.y = fbm(uv + vec2(1.0) + 0.06 * u_time);
+          q.x = fbm(p + 0.08 * u_time);
+          q.y = fbm(p + vec2(1.0) + 0.06 * u_time);
           
           // Warping Step 2
           vec2 r = vec2(0.0);
-          r.x = fbm(uv + 1.2 * q + vec2(1.7, 9.2) + 0.12 * u_time);
-          r.y = fbm(uv + 1.2 * q + vec2(8.3, 2.8) + 0.09 * u_time);
+          r.x = fbm(p + 1.2 * q + vec2(1.7, 9.2) + 0.12 * u_time);
+          r.y = fbm(p + 1.2 * q + vec2(8.3, 2.8) + 0.09 * u_time);
           
-          float f = fbm(uv + 1.1 * r);
+          float f = fbm(p + 1.1 * r);
           
           // Theme 1 (Dark Mode): Futuristic Purples and Vibrant Cobalt/Sapphire Blues
           vec3 darkBg = vec3(0.031, 0.024, 0.059);     // Deep midnight purple-slate
@@ -5242,7 +5252,7 @@ function initCrystalAnimations() {
       
       const uniforms = {
         u_time: { value: 0.0 },
-        u_resolution: { value: new THREE.Vector2(container.clientWidth, container.clientHeight) },
+        u_resolution: { value: new THREE.Vector2(viewWidth, viewHeight) },
         u_theme: { value: themeState.value },
         u_mouse: { value: new THREE.Vector2(0, 0) }
       };
@@ -5302,9 +5312,11 @@ function initCrystalAnimations() {
       renderShader();
       
       window.addEventListener('resize', () => {
-        renderer.setSize(container.clientWidth, container.clientHeight);
+        const newWidth = window.innerWidth;
+        const newHeight = window.innerHeight;
+        renderer.setSize(newWidth, newHeight);
         if (uniforms.u_resolution) {
-          uniforms.u_resolution.value.set(container.clientWidth, container.clientHeight);
+          uniforms.u_resolution.value.set(newWidth, newHeight);
         }
       });
       
@@ -5312,6 +5324,8 @@ function initCrystalAnimations() {
       
     } catch (err) {
       console.warn("Crystal shader failed to initialize, falling back to CSS static orbs:", err);
+      // Clean up initialization status on failure
+      canvas.removeAttribute('data-initialized');
     }
   }
 
