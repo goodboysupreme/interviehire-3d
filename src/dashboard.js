@@ -3294,10 +3294,16 @@ function initSourcing() {
     });
   }
 
-  // Add Collaborator inside sourcing
+  // Add Collaborator inside sourcing and job details
   const srcCollabBtn = document.getElementById('btn-src-collaborator');
   if (srcCollabBtn) {
     srcCollabBtn.addEventListener('click', () => {
+      openDrawer('member');
+    });
+  }
+  const jdCollabBtn = document.getElementById('btn-jd-collaborator');
+  if (jdCollabBtn) {
+    jdCollabBtn.addEventListener('click', () => {
       openDrawer('member');
     });
   }
