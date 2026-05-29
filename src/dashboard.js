@@ -1,4 +1,6 @@
-﻿// ==========================================
+import { gsap } from 'gsap';
+
+// ==========================================
 // AUDIO SYNTHESIZER ENGINE (Synced with main.js)
 // ==========================================
 class SoundEngine {
@@ -2978,6 +2980,10 @@ Return ONLY valid JSON:
     });
   }
 
+  // Initialize Crystal Dashboard Animations
+  if (document.querySelector('.scene')) {
+    initCrystalAnimations();
+  }
 });
 
 // ==========================================
@@ -5109,6 +5115,112 @@ Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdow
     modal.style.display = 'none';
     soundEngine.playChime([329.63, 392, 523.25], 0.15, 0.1);
   });
+}
+
+// ==========================================
+// CRYSTAL GLASS OVERDRIVE: DYNAMIC INTERACTIVE ANIMATIONS
+// ==========================================
+function initCrystalAnimations() {
+  // 1. Dynamic mouse-drifting background orbs
+  window.addEventListener('mousemove', (e) => {
+    const { clientX, clientY } = e;
+    const xPercent = (clientX / window.innerWidth - 0.5) * 60; // shift up to 60px
+    const yPercent = (clientY / window.innerHeight - 0.5) * 60;
+    
+    gsap.to('.orb-1', { x: xPercent * 0.9, y: yPercent * 0.9, duration: 1.8, ease: 'power2.out' });
+    gsap.to('.orb-2', { x: -xPercent * 0.7, y: -yPercent * 0.7, duration: 2.2, ease: 'power2.out' });
+    gsap.to('.orb-3', { x: xPercent * 0.6, y: -yPercent * 0.6, duration: 2.4, ease: 'power2.out' });
+    gsap.to('.orb-4', { x: -xPercent * 0.5, y: yPercent * 0.5, duration: 2.6, ease: 'power2.out' });
+  });
+
+  // 2. 3D Card Hover Tilt and Shine Spotlights
+  function applyTactileTiltEffects() {
+    const cards = document.querySelectorAll(
+      '.job-card, .card-metric, .panel-setting, .agent-card, .terminal-box, .table-card, .panel-preview, .sourcing-tab-card'
+    );
+    
+    cards.forEach(card => {
+      // Avoid duplicate listener bindings
+      if (card.dataset.tiltInitialized) return;
+      card.dataset.tiltInitialized = 'true';
+
+      // Set initial variables for gradient highlight (shine spotlight)
+      card.style.setProperty('--shine-x', '50%');
+      card.style.setProperty('--shine-y', '50%');
+
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left; 
+        const y = e.clientY - rect.top;  
+        
+        const xc = rect.width / 2;
+        const yc = rect.height / 2;
+        
+        // Tilt limit: 8 degrees for a subtle and high-end feel
+        const angleX = -(y - yc) / (rect.height / 8); 
+        const angleY = (x - xc) / (rect.width / 8);  
+        
+        gsap.to(card, {
+          rotationX: angleX,
+          rotationY: angleY,
+          ease: 'power1.out',
+          duration: 0.2,
+          transformPerspective: 800,
+          transformOrigin: 'center center'
+        });
+        
+        card.style.setProperty('--shine-x', `${(x / rect.width) * 100}%`);
+        card.style.setProperty('--shine-y', `${(y / rect.height) * 100}%`);
+      });
+      
+      card.addEventListener('mouseleave', () => {
+        gsap.to(card, {
+          rotationX: 0,
+          rotationY: 0,
+          ease: 'power2.out',
+          duration: 0.5
+        });
+        card.style.setProperty('--shine-x', '50%');
+        card.style.setProperty('--shine-y', '50%');
+      });
+    });
+  }
+
+  applyTactileTiltEffects();
+
+  // Create observer to automatically apply 3D tilt effects on dynamically loaded/rendered cards (like jobs lists)
+  const listObserver = new MutationObserver(() => {
+    applyTactileTiltEffects();
+  });
+  const container = document.getElementById('jobs-list-container');
+  if (container) {
+    listObserver.observe(container, { childList: true, subtree: true });
+  }
+
+  // 3. SNAPPY SPRING TABS SWITCHING
+  const views = document.querySelectorAll('.dashboard-view');
+  const viewObserver = new MutationObserver((mutations) => {
+    mutations.forEach(mutation => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        const view = mutation.target;
+        if (view.classList.contains('active-view')) {
+          // snappier iOS scale-up and slide-up transition using GSAP Back ease
+          gsap.fromTo(view, 
+            { opacity: 0, scale: 0.96, y: 15 },
+            { 
+              opacity: 1, 
+              scale: 1, 
+              y: 0, 
+              duration: 0.5, 
+              ease: "back.out(1.1)", // snaps with overshoot nicely
+              clearProps: "transform,scale,opacity"
+            }
+          );
+        }
+      }
+    });
+  });
+  views.forEach(view => viewObserver.observe(view, { attributes: true, attributeFilter: ['class'] }));
 }
 
 
