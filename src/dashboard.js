@@ -6650,7 +6650,7 @@ function initCrystalAnimations() {
       const fragmentShader = `
         uniform float u_time;
         uniform vec2 u_resolution;
-        uniform float u_theme; // 0.0 for dark (purple/blue), 1.0 for light (beige/orange/yellow)
+        uniform float u_theme; // 0.0 for dark (black/grey), 1.0 for light (off-white/grey)
         uniform vec2 u_mouse;
         
         varying vec2 vUv;
@@ -6704,25 +6704,25 @@ function initCrystalAnimations() {
           
           float f = fbm(p + 1.1 * r);
           
-          // Theme 1 (Dark Mode): Deep Subtle Purples and Midnight Blues (Darker for readability)
-          vec3 darkBg = vec3(0.008, 0.006, 0.018);     // Extremely dark midnight purple-slate
-          vec3 darkPurple = vec3(0.12, 0.04, 0.25);    // Subtle deep violet
-          vec3 darkBlue = vec3(0.03, 0.08, 0.22);      // Subtle deep sapphire
-          vec3 darkAccent = vec3(0.05, 0.02, 0.12);    // Subtle deep indigo
-          
-          vec3 darkColor = mix(darkBg, darkPurple, f * 0.6);
-          darkColor = mix(darkColor, darkBlue, r.x * 0.5);
-          darkColor = mix(darkColor, darkAccent, q.y * 0.3);
-          
-          // Theme 2 (Light Mode): Muted Soft Beige/Cream and Light Pastel Accents (Toned down for readability)
-          vec3 lightBg = vec3(0.975, 0.970, 0.955);     // Clean, pale warm cream
-          vec3 lightOrange = vec3(0.985, 0.925, 0.880); // Ultra pale, soft pastel peach
-          vec3 lightYellow = vec3(0.990, 0.965, 0.910); // Ultra pale, soft champagne
-          vec3 lightAccent = vec3(0.965, 0.945, 0.915); // Very soft beige
-          
-          vec3 lightColor = mix(lightBg, lightOrange, f * 0.35);
-          lightColor = mix(lightColor, lightYellow, r.y * 0.25);
-          lightColor = mix(lightColor, lightAccent, q.x * 0.2);
+          // Theme 1 (Dark Mode): Blackish grey tones
+          vec3 darkBg = vec3(0.0, 0.0, 0.0);
+          vec3 darkGrey1 = vec3(0.06, 0.06, 0.07);
+          vec3 darkGrey2 = vec3(0.04, 0.04, 0.045);
+          vec3 darkGrey3 = vec3(0.08, 0.08, 0.085);
+
+          vec3 darkColor = mix(darkBg, darkGrey1, f * 0.7);
+          darkColor = mix(darkColor, darkGrey2, r.x * 0.5);
+          darkColor = mix(darkColor, darkGrey3, q.y * 0.3);
+
+          // Theme 2 (Light Mode): Off-white with subtle grey hues
+          vec3 lightBg = vec3(0.98, 0.98, 0.975);
+          vec3 lightGrey1 = vec3(0.94, 0.94, 0.935);
+          vec3 lightGrey2 = vec3(0.96, 0.955, 0.95);
+          vec3 lightGrey3 = vec3(0.92, 0.92, 0.915);
+
+          vec3 lightColor = mix(lightBg, lightGrey1, f * 0.4);
+          lightColor = mix(lightColor, lightGrey2, r.y * 0.3);
+          lightColor = mix(lightColor, lightGrey3, q.x * 0.2);
           
           // Smooth crossfade based on active theme uniform (0.0 to 1.0)
           vec3 finalColor = mix(darkColor, lightColor, u_theme);
