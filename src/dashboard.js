@@ -1250,8 +1250,8 @@ function parseFuzzyDate(str) {
 function getDateRangeBounds() {
   const now = new Date();
   if (AppState.dateRange === 'custom') {
-    const from = document.getElementById('date-from')?.value;
-    const to = document.getElementById('date-to')?.value;
+    const from = document.getElementById('date-from')?.value || document.getElementById('jd-date-from')?.value || AppState.customDateFrom;
+    const to = document.getElementById('date-to')?.value || document.getElementById('jd-date-to')?.value || AppState.customDateTo;
     return { start: from ? new Date(from) : null, end: to ? new Date(to + 'T23:59:59') : null };
   }
   if (AppState.dateRange === 'all') return { start: null, end: null };
@@ -4158,6 +4158,13 @@ function initSourcing() {
       document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       AppState.dateRange = btn.getAttribute('data-range');
+      // sync job detail dropdown
+      const jdLabel = document.getElementById('jd-daterange-label');
+      if (jdLabel) jdLabel.textContent = btn.textContent;
+      const jdDrop = document.getElementById('jd-daterange-dropdown');
+      if (jdDrop) jdDrop.querySelectorAll('.jd-dr-preset').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-range') === AppState.dateRange);
+      });
       soundEngine.playClick();
       applyDateRangeGlobally();
     });
@@ -4174,6 +4181,54 @@ function initSourcing() {
         applyDateRangeGlobally();
       });
     });
+  }
+
+  // Job Detail Date Range dropdown
+  const jdDrBtn = document.getElementById('btn-jd-daterange');
+  const jdDrDrop = document.getElementById('jd-daterange-dropdown');
+  if (jdDrBtn && jdDrDrop) {
+    jdDrBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      jdDrDrop.classList.toggle('open');
+      soundEngine.playClick();
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#jd-date-range-wrap')) jdDrDrop.classList.remove('open');
+    });
+    jdDrDrop.querySelectorAll('.jd-dr-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        jdDrDrop.querySelectorAll('.jd-dr-preset').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        AppState.dateRange = btn.getAttribute('data-range');
+        document.getElementById('jd-daterange-label').textContent = btn.textContent;
+        // sync analytics bar
+        document.querySelectorAll('.date-preset').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-range') === AppState.dateRange);
+        });
+        soundEngine.playClick();
+        applyDateRangeGlobally();
+        jdDrDrop.classList.remove('open');
+      });
+    });
+    const jdDateFrom = document.getElementById('jd-date-from');
+    const jdDateTo = document.getElementById('jd-date-to');
+    if (jdDateFrom && jdDateTo) {
+      [jdDateFrom, jdDateTo].forEach(inp => {
+        inp.addEventListener('change', () => {
+          jdDrDrop.querySelectorAll('.jd-dr-preset').forEach(b => b.classList.remove('active'));
+          AppState.dateRange = 'custom';
+          AppState.customDateFrom = jdDateFrom.value;
+          AppState.customDateTo = jdDateTo.value;
+          document.getElementById('jd-daterange-label').textContent = 'Custom';
+          // sync analytics bar
+          document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+          if (document.getElementById('date-from')) document.getElementById('date-from').value = jdDateFrom.value;
+          if (document.getElementById('date-to')) document.getElementById('date-to').value = jdDateTo.value;
+          soundEngine.playClick();
+          applyDateRangeGlobally();
+        });
+      });
+    }
   }
 
   const btnLogout = document.querySelector('.btn-logout');

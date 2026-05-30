@@ -16,11 +16,11 @@
   --color-indigo-rgb:       59, 130, 246;
   --color-brand-purple-rgb: 139, 92, 246;
 
-  /* Base — near-black with subtle violet tint */
-  --color-bg:               oklch(4% 0.006 272);
-  --color-surface:          rgba(255, 255, 255, 0.04);
-  --color-surface-2:        rgba(255, 255, 255, 0.02);
-  --color-surface-solid:    oklch(7% 0.008 270);
+  /* Base — true black with faint violet tint */
+  --color-bg:               oklch(2% 0.004 272);
+  --color-surface:          rgba(255, 255, 255, 0.03);
+  --color-surface-2:        rgba(255, 255, 255, 0.015);
+  --color-surface-solid:    oklch(4% 0.006 270);
 
   /* Primary accent — Vibrant Violet */
   --color-gold:             oklch(58% 0.22 286);
@@ -46,13 +46,13 @@
   --color-text-primary:     oklch(94% 0.008 270);
   --color-text-muted:       oklch(68% 0.010 270);
   --color-text-faint:       oklch(48% 0.008 270);
-  --color-bg-dark:          oklch(4% 0.006 272);
+  --color-bg-dark:          oklch(2% 0.004 272);
 
-  /* Glass — white-alpha surfaces over dark bg */
-  --glass-bg:               rgba(255, 255, 255, 0.045);
-  --glass-bg-hover:         rgba(255, 255, 255, 0.065);
-  --glass-border:           rgba(255, 255, 255, 0.09);
-  --glass-border-hover:     rgba(255, 255, 255, 0.16);
+  /* Glass — white-alpha surfaces over true black */
+  --glass-bg:               rgba(255, 255, 255, 0.035);
+  --glass-bg-hover:         rgba(255, 255, 255, 0.055);
+  --glass-border:           rgba(255, 255, 255, 0.07);
+  --glass-border-hover:     rgba(255, 255, 255, 0.13);
   --glass-border-gold:      rgba(var(--color-gold-rgb), 0.30);
   --glass-shadow:           0 4px 24px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.08);
   --glass-shadow-hover:     0 12px 40px rgba(0,0,0,0.65), 0 2px 8px rgba(var(--color-gold-rgb),0.14), inset 0 1px 0 rgba(255,255,255,0.13);
@@ -85,18 +85,18 @@
   --transition-smooth: var(--spring-smooth);
   --transition-fast:   var(--spring-fast);
 
-  /* Ambient Orbs — subtle on near-black */
-  --orb-color-1:            oklch(50% 0.18 286);
-  --orb-opacity-1:          0.25;
-  --orb-color-2:            oklch(46% 0.16 245);
-  --orb-opacity-2:          0.20;
-  --orb-color-3:            oklch(42% 0.14 265);
-  --orb-opacity-3:          0.16;
-  --orb-color-4:            oklch(38% 0.12 255);
-  --orb-opacity-4:          0.12;
+  /* Ambient Orbs — very subtle on true black */
+  --orb-color-1:            oklch(44% 0.14 286);
+  --orb-opacity-1:          0.14;
+  --orb-color-2:            oklch(40% 0.12 245);
+  --orb-opacity-2:          0.10;
+  --orb-color-3:            oklch(36% 0.10 265);
+  --orb-opacity-3:          0.08;
+  --orb-color-4:            oklch(32% 0.08 255);
+  --orb-opacity-4:          0.06;
 
-  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, oklch(12% 0.05 280), transparent);
-  --scene-gradient-2:       radial-gradient(ellipse 70% 70% at 86% 74%, oklch(10% 0.04 250), transparent);
+  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, oklch(6% 0.03 280), transparent);
+  --scene-gradient-2:       radial-gradient(ellipse 70% 70% at 86% 74%, oklch(5% 0.02 250), transparent);
 
   /* Card Glows */
   --card-glow-indigo:       rgba(var(--color-gold-rgb), 0.14);
@@ -315,7 +315,7 @@ body { position: relative; color: var(--color-text-primary); }
    SIDEBAR
    ============================================================ */
 .sidebar {
-  background: rgba(5, 5, 8, 0.96);
+  background: rgba(2, 2, 4, 0.98);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   border-right: 1px solid var(--glass-border);
@@ -593,7 +593,7 @@ body { position: relative; color: var(--color-text-primary); }
    HEADER
    ============================================================ */
 .dashboard-header {
-  background: rgba(4, 4, 8, 0.82);
+  background: rgba(2, 2, 4, 0.92);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   border-bottom: 1px solid var(--glass-border);
@@ -5499,6 +5499,46 @@ body.light-theme .funnel-svg-tooltip {
 }
 .date-input:focus { border-color: var(--glass-border-gold); }
 .date-sep { color: var(--color-text-faint); font-size: 0.76rem; }
+
+/* Job Detail Date Range Dropdown */
+.jd-date-range-wrap { position: relative; }
+.jd-daterange-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 120;
+  min-width: 260px;
+  padding: 12px;
+  background: oklch(4% 0.006 270);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+  backdrop-filter: var(--glass-blur);
+}
+.jd-daterange-dropdown.open { display: block; }
+.jd-daterange-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.jd-dr-preset {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.jd-dr-preset:hover { background: rgba(255,255,255,0.04); color: var(--color-text-primary); }
+.jd-dr-preset.active { background: rgba(var(--color-gold-rgb), 0.12); border-color: rgba(var(--color-gold-rgb), 0.3); color: var(--color-gold); }
+.jd-daterange-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--glass-border);
+}
+.jd-daterange-custom label { font-size: 0.72rem; color: var(--color-text-faint); }
 
 /* ============================================================
    LIST VIEW ROWS
