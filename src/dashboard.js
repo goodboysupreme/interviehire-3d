@@ -2594,6 +2594,24 @@ function drawFunnelSVG(job, candidates) {
   funnelTooltipEl.style.display = 'none';
 
   const stageItems = document.querySelectorAll('#jd-funnel-stages .jd-stage-item');
+  const stagesContainer = document.getElementById('jd-funnel-stages');
+  if (stagesContainer && stageItems.length === n) {
+    stagesContainer.style.position = 'relative';
+    stagesContainer.style.gap = '0';
+    stagesContainer.style.height = H + 'px';
+    stageItems.forEach((item, i) => {
+      const segTop = ys[i];
+      const segBot = i < n - 1 ? ys[i + 1] : H - padB;
+      const segH = segBot - segTop;
+      item.style.position = 'absolute';
+      item.style.left = '0';
+      item.style.right = '0';
+      item.style.top = segTop + 'px';
+      item.style.height = segH + 'px';
+      item.style.display = 'flex';
+      item.style.alignItems = 'center';
+    });
+  }
 
   let activeSegIdx = -1;
 

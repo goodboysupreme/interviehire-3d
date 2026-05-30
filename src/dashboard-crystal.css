@@ -1637,22 +1637,26 @@ body.light-theme .theme-icon-sun { display: block; }
 }
 
 .jd-funnel-body { display: flex; gap: 20px; align-items: stretch; flex: 1; }
-.jd-funnel-stages { display: flex; flex-direction: column; gap: 8px; flex: 0 0 40%; justify-content: center; }
-.jd-funnel-chart-wrap { flex: 1; min-height: 280px; display: flex; align-items: center; justify-content: center; }
+.jd-funnel-stages { display: flex; flex-direction: column; gap: 8px; flex: 0 0 38%; position: relative; }
+.jd-funnel-chart-wrap { flex: 1; min-height: 280px; display: flex; align-items: stretch; justify-content: center; }
 #jd-funnel-svg { width: 100%; height: 100%; }
 
 .jd-stage-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
+  padding: 4px 12px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 0.82rem;
   transition: var(--spring-fast);
+  border-bottom: none;
+  box-sizing: border-box;
 }
-.jd-stage-item:hover { border-color: var(--glass-border-gold); transform: translateX(2px); }
+.jd-stage-item:first-child { border-radius: 8px 8px 0 0; }
+.jd-stage-item:last-child { border-radius: 0 0 8px 8px; border-bottom: 1px solid var(--glass-border); }
+.jd-stage-item:hover { border-color: var(--glass-border-gold); }
 .jd-stage-label { color: var(--color-text-muted); }
 .jd-stage-count { font-family: var(--font-display); font-weight: 700; }
 
@@ -3603,11 +3607,11 @@ body.light-theme .comp-box-original {
   }
   .jd-funnel-stages {
     flex: 0 0 auto;
-    flex-direction: row;
-    flex-wrap: wrap;
+    height: auto !important;
   }
-  .jd-stage-item {
-    flex: 1 1 calc(50% - 4px);
+  .jd-funnel-stages .jd-stage-item {
+    position: static !important;
+    height: auto !important;
   }
   .jd-funnel-chart-wrap {
     min-height: 320px;
