@@ -180,7 +180,15 @@ const AppState = {
       jobApplied: 'Full Stack Developer',
       status: 'Functional',
       score: '94%',
-      registeredOn: '04 Mar 2026, 10:15 AM'
+      registeredOn: '04 Mar 2026, 10:15 AM',
+      phone: '8869889654',
+      source: 'Direct Link',
+      attemptedAt: 'Mar 22, 2026 11:57 PM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 71,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 100
     },
     {
       id: 'CAN-7128-DF5',
@@ -189,7 +197,15 @@ const AppState = {
       jobApplied: 'Government Tender & Proposal Executive',
       status: 'Functional',
       score: '96%',
-      registeredOn: '11 Mar 2026, 02:40 PM'
+      registeredOn: '11 Mar 2026, 02:40 PM',
+      phone: '9876543210',
+      source: 'Scheduled',
+      attemptedAt: 'Mar 18, 2026 03:15 PM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 85,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 92
     },
     {
       id: 'CAN-3401-EA1',
@@ -198,7 +214,15 @@ const AppState = {
       jobApplied: 'Government Tender & Proposal Executive',
       status: 'Screening',
       score: '87%',
-      registeredOn: '12 Mar 2026, 09:12 AM'
+      registeredOn: '12 Mar 2026, 09:12 AM',
+      phone: '9999999999',
+      source: 'Direct Link',
+      attemptedAt: 'Mar 22, 2026 11:57 PM',
+      interviewStatus: 'Incomplete',
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
     },
     {
       id: 'CAN-9012-EA2',
@@ -207,7 +231,15 @@ const AppState = {
       jobApplied: 'Government Tender & Proposal Executive',
       status: 'Screening',
       score: '91%',
-      registeredOn: '13 Mar 2026, 11:05 AM'
+      registeredOn: '13 Mar 2026, 11:05 AM',
+      phone: '8869889654',
+      source: 'Scheduled',
+      attemptedAt: null,
+      interviewStatus: 'Slot Missed',
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
     },
     {
       id: 'CAN-4402-RA1',
@@ -216,7 +248,15 @@ const AppState = {
       jobApplied: 'Full Stack Developer',
       status: 'Resume',
       score: '—',
-      registeredOn: '28 May 2026, 09:00 AM'
+      registeredOn: '28 May 2026, 09:00 AM',
+      phone: '7012345678',
+      source: 'Career Page',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
     },
     {
       id: 'CAN-5501-RA2',
@@ -225,7 +265,15 @@ const AppState = {
       jobApplied: 'Government Tender & Proposal Executive',
       status: 'Resume',
       score: '—',
-      registeredOn: '28 May 2026, 10:30 AM'
+      registeredOn: '28 May 2026, 10:30 AM',
+      phone: '9988776655',
+      source: 'Bulk Upload',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
     },
     {
       id: 'CAN-5502-RA3',
@@ -234,7 +282,15 @@ const AppState = {
       jobApplied: 'Government Tender & Proposal Executive',
       status: 'Resume',
       score: '—',
-      registeredOn: '28 May 2026, 11:15 AM'
+      registeredOn: '28 May 2026, 11:15 AM',
+      phone: '8877665544',
+      source: 'ATS',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
     }
   ],
 
@@ -1795,6 +1851,116 @@ function openCandidateReport(candidateId) {
   soundEngine.playChime([392.00, 523.25, 659.25], 0.15, 0.08);
 }
 
+function openReportDrawerForCandidate(candidateId) {
+  const candidate = AppState.candidates.find(c => c.id === candidateId);
+  if (!candidate) return;
+
+  document.getElementById('report-name').textContent = candidate.name;
+  document.getElementById('report-email').textContent = candidate.email;
+  document.getElementById('report-job').textContent = candidate.jobApplied;
+  document.getElementById('report-score').textContent = candidate.score;
+  const initials = candidate.name.split(' ').map(n => n[0]).join('');
+  document.getElementById('report-avatar').textContent = initials;
+
+  const numericScore = parseFloat(candidate.score) || 80;
+  const rubrics = [
+    { label: 'Coding Proficiency', score: (numericScore / 10).toFixed(1) },
+    { label: 'System Design', score: ((numericScore - 4 - Math.random() * 4) / 10).toFixed(1) },
+    { label: 'Communication', score: ((numericScore + 2 - Math.random() * 4) / 10).toFixed(1) },
+    { label: 'Problem Solving', score: ((numericScore - 2 - Math.random() * 3) / 10).toFixed(1) },
+  ];
+
+  const rubricListEl = document.getElementById('report-rubric-list');
+  if (rubricListEl) {
+    rubricListEl.innerHTML = rubrics.map(r => `
+      <div class="rubric-item">
+        <div class="rubric-meta"><span>${r.label}</span><strong class="val">${r.score} / 10</strong></div>
+        <div class="bar-outer"><div class="bar-inner" style="width: ${r.score * 10}%;"></div></div>
+      </div>
+    `).join('');
+  }
+
+  const vetting = getCandidateVettingDetails(candidateId, candidate.name);
+
+  const transcriptFlow = document.getElementById('report-transcript-flow');
+  if (transcriptFlow) {
+    transcriptFlow.innerHTML = vetting.transcript.map(line => `
+      <div class="transcript-chat-line chat-speaker-${line.speaker.toLowerCase()}">
+        <span class="chat-speaker-badge">${line.speaker}:</span>
+        <span class="chat-text-bubble">${line.text}</span>
+      </div>
+    `).join('');
+  }
+
+  const caveatsBody = document.getElementById('report-caveats-body');
+  if (caveatsBody) {
+    const rubricRows = vetting.rubrics.map(r => `
+      <div class="rubric-row">
+        <span class="rubric-lbl">${r.label}</span>
+        <div class="rubric-bar-track"><div class="rubric-bar-fill indigo" style="width: ${r.score * 10}%"></div></div>
+        <span class="rubric-val">${r.score}/10</span>
+      </div>
+    `).join('');
+    const caveatTags = vetting.caveats.map(cav => `
+      <div class="caveat-tag ${cav.type}">
+        <span class="caveat-icon">${cav.type === 'warning' ? '⚠️' : '💡'}</span>
+        <span class="caveat-text">${cav.text}</span>
+      </div>
+    `).join('');
+    caveatsBody.innerHTML = `
+      <div class="rubrics-section"><span class="section-sub-title">AI Vetting Scorecard</span>${rubricRows}</div>
+      <div class="caveats-section"><span class="section-sub-title">AI Caveats & Flags</span><div class="caveats-list-tags">${caveatTags}</div></div>
+      <div class="pros-cons-grid">
+        <div class="pro-col"><span class="section-sub-title pros">Pros</span><ul>${vetting.pros.map(p => `<li><span class="list-bullet pro">✓</span>${p}</li>`).join('')}</ul></div>
+        <div class="con-col"><span class="section-sub-title cons">Cons</span><ul>${vetting.cons.map(cn => `<li><span class="list-bullet con">✗</span>${cn}</li>`).join('')}</ul></div>
+      </div>
+    `;
+  }
+
+  const actionsBody = document.getElementById('report-action-buttons');
+  if (actionsBody) {
+    actionsBody.innerHTML = `
+      <div class="jd-card-actions inline">
+        <button class="btn-stage-reject" data-candidate-id="${candidateId}">Reject</button>
+        <button class="btn-stage-advance" data-candidate-id="${candidateId}" data-next-stage="${candidate.status === 'Screening' ? 'Functional' : 'Hired'}">${candidate.status === 'Screening' ? 'Advance to Functional →' : 'Hire Candidate ✓'}</button>
+      </div>
+    `;
+    actionsBody.querySelector('.btn-stage-reject')?.addEventListener('click', () => {
+      updateCandidateStatus(candidateId, 'Rejected');
+      closeAllDrawers();
+    });
+    actionsBody.querySelector('.btn-stage-advance')?.addEventListener('click', () => {
+      const next = candidate.status === 'Screening' ? 'Functional' : 'Hired';
+      updateCandidateStatus(candidateId, next);
+      closeAllDrawers();
+    });
+  }
+
+  setupWaveformBars();
+  resetWaveformAudio();
+
+  const overlay = document.getElementById('drawer-backdrop');
+  overlay.classList.add('active');
+  const drawerReport = document.getElementById('drawer-report');
+  drawerReport.classList.add('active');
+  drawerReport.style.right = '0';
+
+  const tabs = drawerReport.querySelectorAll('.report-tab-btn');
+  const contents = drawerReport.querySelectorAll('.report-tab-content');
+  tabs.forEach(t => {
+    t.addEventListener('click', () => {
+      tabs.forEach(tb => tb.classList.remove('active'));
+      contents.forEach(ct => ct.classList.remove('active'));
+      t.classList.add('active');
+      const tabName = t.getAttribute('data-report-tab');
+      const target = document.getElementById(`rep-tab-${tabName}`);
+      if (target) target.classList.add('active');
+    });
+  });
+
+  soundEngine.playChime([392.00, 523.25, 659.25], 0.15, 0.08);
+}
+
 // ==========================================
 // JOB DETAIL VIEW
 // ==========================================
@@ -1872,6 +2038,36 @@ function renderFunnelStages(job) {
   const total = Math.max(job.pipeline.total, 1);
   const completed = job.pipeline.functional > 0 ? 1 : 0;
 
+  const jobCandidates = AppState.candidates.filter(
+    c => c.jobApplied === job.roleName || c.jobApplied === job.cardName
+  );
+
+  const sourceColors = {
+    'Career Page': '#6366f1',
+    'ATS': '#06b6d4',
+    'Bulk Upload': '#f59e0b',
+    'Scheduled': '#ec4899',
+    'Direct Link': '#10b981'
+  };
+
+  function getSourceBreakdown(candidates) {
+    const breakdown = {};
+    candidates.forEach(c => {
+      const src = c.source || 'Unknown';
+      breakdown[src] = (breakdown[src] || 0) + 1;
+    });
+    return breakdown;
+  }
+
+  const stageFilters = {
+    'Total Candidates': () => jobCandidates,
+    'Resume Analysis': () => jobCandidates.filter(c => c.status === 'Resume'),
+    'Recruiter Screening': () => jobCandidates.filter(c => c.status === 'Screening'),
+    'Functional Interview': () => jobCandidates.filter(c => c.status === 'Functional'),
+    'Completed': () => jobCandidates.filter(c => c.status === 'Functional' || c.status === 'Hired'),
+    'Qualified': () => jobCandidates.filter(c => c.status === 'Hired'),
+  };
+
   const stages = [
     { count: job.pipeline.total, label: 'Total Candidates', conv: null },
     { count: job.pipeline.resume,     label: 'Resume Analysis',      conv: Math.round((job.pipeline.resume / total) * 100) },
@@ -1940,6 +2136,7 @@ function drawFunnelSVG(job, candidates) {
   const total = Math.max(job.pipeline.total, 1);
   const completed = job.pipeline.functional > 0 ? 1 : 0;
 
+  const stageLabels = ['Total Candidates', 'Resume Analysis', 'Recruiter Screening', 'Functional Interview', 'Completed', 'Qualified'];
   const stageCounts = [
     job.pipeline.total,
     job.pipeline.resume || 0,
@@ -1957,7 +2154,6 @@ function drawFunnelSVG(job, candidates) {
     return Math.max((c / total) * maxHW, 9);
   });
 
-  // Pink (Scheduled) fraction — proportional to screening candidates
   const pinkFrac = Math.max(Math.min(job.pipeline.screening / total, 0.85), 0.15) || 0.6;
 
   const pts = stageCounts.map((_, i) => ({
@@ -1988,22 +2184,156 @@ function drawFunnelSVG(job, candidates) {
 
   const isLight = document.body.classList.contains('light-theme');
   const dividerStroke = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.065)';
-  
-  // Clean solid flat colors configured separately for light and dark themes
-  const pinkFill = isLight ? '#be185d' : '#ec4899';   // Deep rose for light, vibrant pink for dark
-  const greenFill = isLight ? '#047857' : '#10b981';  // Forest green for light, vibrant emerald for dark
+  const pinkFill = isLight ? '#be185d' : '#ec4899';
+  const greenFill = isLight ? '#047857' : '#10b981';
 
   const dividers = pts.slice(1, -1).map(p =>
     `<line x1="${p.lx - 14}" y1="${p.y}" x2="${p.rx + 14}" y2="${p.y}"
       stroke="${dividerStroke}" stroke-width="1" stroke-dasharray="4 3"/>`
   ).join('');
 
+  const sourceColors = {
+    'Career Page': '#6366f1', 'ATS': '#06b6d4', 'Bulk Upload': '#f59e0b',
+    'Scheduled': '#ec4899', 'Direct Link': '#10b981'
+  };
+  const stageStatusMap = {
+    'Total Candidates': null, 'Resume Analysis': 'Resume', 'Recruiter Screening': 'Screening',
+    'Functional Interview': 'Functional', 'Completed': 'Functional', 'Qualified': 'Hired'
+  };
+
+  function getBreakdownForStage(stageLabel) {
+    const status = stageStatusMap[stageLabel];
+    let stageCands;
+    if (stageLabel === 'Total Candidates') stageCands = candidates;
+    else if (stageLabel === 'Completed') stageCands = candidates.filter(c => c.status === 'Functional' || c.status === 'Hired');
+    else stageCands = candidates.filter(c => c.status === status);
+    const breakdown = {};
+    stageCands.forEach(c => { const src = c.source || 'Unknown'; breakdown[src] = (breakdown[src] || 0) + 1; });
+    return breakdown;
+  }
+
   svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  svgEl.innerHTML = `
-    ${dividers}
-    ${pinkSegs.map(d => `<path d="${d}" fill="${pinkFill}" opacity="0.9"/>`).join('')}
-    ${greenSegs.map(d => `<path d="${d}" fill="${greenFill}" opacity="0.9"/>`).join('')}
-  `;
+  svgEl.setAttribute('pointer-events', 'all');
+  svgEl.style.cursor = 'pointer';
+
+  while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+
+  pts.slice(1, -1).forEach(p => {
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', p.lx - 14);
+    line.setAttribute('y1', p.y);
+    line.setAttribute('x2', p.rx + 14);
+    line.setAttribute('y2', p.y);
+    line.setAttribute('stroke', dividerStroke);
+    line.setAttribute('stroke-width', '1');
+    line.setAttribute('stroke-dasharray', '4 3');
+    line.setAttribute('pointer-events', 'none');
+    svgEl.appendChild(line);
+  });
+
+  for (let i = 0; i < n - 1; i++) {
+    const g = document.createElementNS(svgNS, 'g');
+    g.setAttribute('data-stage-idx', String(i));
+    g.setAttribute('pointer-events', 'all');
+    g.style.cursor = 'pointer';
+
+    const pinkPath = document.createElementNS(svgNS, 'path');
+    pinkPath.setAttribute('d', pinkSegs[i]);
+    pinkPath.setAttribute('fill', pinkFill);
+    pinkPath.setAttribute('opacity', '0.9');
+    pinkPath.setAttribute('pointer-events', 'all');
+    g.appendChild(pinkPath);
+
+    const greenPath = document.createElementNS(svgNS, 'path');
+    greenPath.setAttribute('d', greenSegs[i]);
+    greenPath.setAttribute('fill', greenFill);
+    greenPath.setAttribute('opacity', '0.9');
+    greenPath.setAttribute('pointer-events', 'all');
+    g.appendChild(greenPath);
+
+    svgEl.appendChild(g);
+  }
+
+  let funnelTooltipEl = document.getElementById('funnel-svg-tooltip');
+  if (!funnelTooltipEl) {
+    funnelTooltipEl = document.createElement('div');
+    funnelTooltipEl.id = 'funnel-svg-tooltip';
+    funnelTooltipEl.className = 'funnel-svg-tooltip';
+    document.body.appendChild(funnelTooltipEl);
+  }
+  funnelTooltipEl.style.display = 'none';
+
+  const stageItems = document.querySelectorAll('#jd-funnel-stages .jd-stage-item');
+
+  let activeSegIdx = -1;
+
+  function showTooltip(idx, clientX, clientY) {
+    if (activeSegIdx === idx) {
+      funnelTooltipEl.style.left = (clientX + 14) + 'px';
+      funnelTooltipEl.style.top = (clientY - 10) + 'px';
+      return;
+    }
+    activeSegIdx = idx;
+    const label = stageLabels[idx];
+    const count = stageCounts[idx];
+    const breakdown = getBreakdownForStage(label);
+    const rows = Object.entries(breakdown).map(([src, cnt]) => {
+      const color = sourceColors[src] || '#888';
+      return '<div class="funnel-tooltip-row"><span class="funnel-tooltip-dot" style="background:' + color + '"></span><span>' + src + '</span><strong>' + cnt + '</strong></div>';
+    }).join('');
+
+    funnelTooltipEl.innerHTML = '<div class="funnel-tooltip-title">' + label + ' <span>(' + count + ')</span></div>' + (rows || '<div class="funnel-tooltip-row"><span style="color:var(--color-text-faint)">No candidates</span></div>');
+    funnelTooltipEl.style.display = 'block';
+    funnelTooltipEl.style.left = (clientX + 14) + 'px';
+    funnelTooltipEl.style.top = (clientY - 10) + 'px';
+
+    svgEl.querySelectorAll('g[data-stage-idx]').forEach(g => {
+      const gi = parseInt(g.getAttribute('data-stage-idx'));
+      const paths = g.querySelectorAll('path');
+      if (gi === idx) {
+        paths.forEach(p => { p.setAttribute('opacity', '1'); p.style.filter = 'brightness(1.25)'; });
+      } else {
+        paths.forEach(p => { p.setAttribute('opacity', '0.9'); p.style.filter = ''; });
+      }
+    });
+    stageItems.forEach((si, si_i) => {
+      if (si_i === idx) si.classList.add('funnel-hover-active');
+      else si.classList.remove('funnel-hover-active');
+    });
+  }
+
+  function hideTooltip() {
+    activeSegIdx = -1;
+    funnelTooltipEl.style.display = 'none';
+    svgEl.querySelectorAll('g[data-stage-idx] path').forEach(p => {
+      p.setAttribute('opacity', '0.9');
+      p.style.filter = '';
+    });
+    stageItems.forEach(si => si.classList.remove('funnel-hover-active'));
+  }
+
+  svgEl.addEventListener('mousemove', function(e) {
+    const target = e.target;
+    const g = target.closest ? target.closest('g[data-stage-idx]') : null;
+    if (!g && target.tagName === 'path') {
+      const parent = target.parentElement;
+      if (parent && parent.tagName.toLowerCase() === 'g' && parent.hasAttribute('data-stage-idx')) {
+        showTooltip(parseInt(parent.getAttribute('data-stage-idx')), e.clientX, e.clientY);
+        return;
+      }
+    }
+    if (g) {
+      showTooltip(parseInt(g.getAttribute('data-stage-idx')), e.clientX, e.clientY);
+    } else {
+      hideTooltip();
+    }
+  });
+
+  svgEl.addEventListener('mouseleave', function() {
+    hideTooltip();
+  });
 }
 
 function drawScoreDistributionSVG(job, candidates) {
@@ -4165,9 +4495,36 @@ function renderColumnsSelectorDropdowns() {
 const resumeTextCache = {};
 const resumeAnalysisCache = {};
 
+function generateAutoResumeAnalysis(candidateName) {
+  const scores = {
+    technical: (6 + Math.random() * 4).toFixed(1),
+    experience: (5 + Math.random() * 5).toFixed(1),
+    communication: (6 + Math.random() * 4).toFixed(1),
+    cultureFit: (6 + Math.random() * 4).toFixed(1),
+  };
+  const matchScore = Math.round(50 + Math.random() * 45);
+  const recs = ['Advance', 'Hold', 'Reject'];
+  const rec = matchScore >= 75 ? 'Advance' : matchScore >= 55 ? 'Hold' : 'Reject';
+  return {
+    matchScore,
+    summary: `${candidateName} demonstrates solid foundational skills relevant to this role. Resume shows consistent career progression with applicable domain experience.`,
+    experienceYears: `${Math.floor(1 + Math.random() * 6)} years`,
+    skills: {
+      detected: ['Communication', 'Project Management', 'Research'],
+      matched: ['Proposal Writing', 'Compliance'],
+      missing: ['SAP Ariba', 'GeM Portal']
+    },
+    scorecard: scores,
+    recommendation: rec,
+    recommendationReason: rec === 'Advance' ? 'Strong match across key competencies.' : rec === 'Hold' ? 'Some skill gaps but has transferable experience.' : 'Significant gaps in required skills.'
+  };
+}
+
 function renderResumeStagePaneForJob(candidates, job, container) {
   container.innerHTML = candidates.map(c => {
     const initials = c.name.split(' ').map(n => n[0]).join('');
+    const hasCached = !!resumeAnalysisCache[c.id];
+
     return `
       <div class="resume-analysis-card" data-cid="${c.id}">
         <div class="jd-card-header">
@@ -4176,18 +4533,18 @@ function renderResumeStagePaneForJob(candidates, job, container) {
             <span class="cand-name">${c.name}</span>
             <span class="cand-email">${c.email}</span>
           </div>
-          <span class="score-badge ra-score-badge" id="badge-${c.id}">${c.score}</span>
+          <span class="score-badge ra-score-badge ${hasCached ? '' : 'ra-hidden'}" id="badge-${c.id}"></span>
         </div>
-        <div class="ra-input-section" id="ra-input-${c.id}">
+        <div class="ra-input-section" id="ra-input-${c.id}" ${hasCached ? 'class="ra-hidden"' : ''}>
           <div class="ra-upload-zone" id="ra-zone-${c.id}">
-            <input type="file" id="ra-file-${c.id}" class="ra-file-input" accept=".pdf,.docx,.txt" />
-            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-            <p class="ra-zone-title">Drop resume here</p>
-            <p class="ra-zone-sub">PDF · DOCX · TXT — or click to browse</p>
+            <input type="file" id="ra-file-${c.id}" accept=".pdf,.doc,.docx,.txt" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p class="ra-zone-text">Drop resume here or <span class="ra-zone-link">browse</span></p>
+            <p class="ra-zone-hint">.pdf, .doc, .docx, .txt</p>
           </div>
           <div class="ra-file-preview ra-hidden" id="ra-preview-${c.id}"></div>
-          <a class="ra-paste-toggle" id="ra-paste-toggle-${c.id}" href="#">✎ No file? Paste resume text</a>
-          <textarea class="ra-paste-area ra-hidden" id="ra-paste-${c.id}" placeholder="Paste the candidate's resume text here..."></textarea>
+          <a href="#" class="ra-paste-toggle" id="ra-paste-toggle-${c.id}">No file? Paste resume text</a>
+          <textarea class="ra-paste-area ra-hidden" id="ra-paste-${c.id}" placeholder="Paste the candidate's resume text here..." rows="5"></textarea>
           <button class="btn-analyse-resume" id="ra-btn-${c.id}">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             Analyse with Lina
@@ -4201,6 +4558,7 @@ function renderResumeStagePaneForJob(candidates, job, container) {
       </div>
     `;
   }).join('');
+
   bindResumeAnalysisEvents(job);
 }
 
@@ -4407,123 +4765,86 @@ function renderJobDetailPanes(job) {
         </div>
       `;
     } else {
-      screeningList.innerHTML = screeningCands.map(c => {
-        const activeTab = activeCandidateSubTabs[c.id] || 'transcript';
-        const vetting = getCandidateVettingDetails(c.id, c.name);
-        
-        let tabContentHTML = '';
-        if (activeTab === 'transcript') {
-          tabContentHTML = `
-            <div class="tab-pane-content active animate-fade-in">
-              <div class="screening-audio-player" data-player-id="${c.id}">
-                <button class="btn-player-play" data-play-id="${c.id}">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="play-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="pause-icon" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-                </button>
-                <div class="player-wave-bars" data-wave-id="${c.id}">
-                  ${Array.from({length: 28}, () => `<div class="player-wave-bar" style="height: ${Math.floor(Math.random() * 70 + 20)}%"></div>`).join('')}
-                </div>
-                <span class="player-time" data-time-id="${c.id}">0:00 / 0:15</span>
-              </div>
-              <div class="transcript-box compact">
-                <span class="transcript-label">AI Interview Transcript:</span>
-                <div class="transcript-chat-flow">
-                  ${vetting.transcript.map(line => `
-                    <div class="transcript-chat-line chat-speaker-${line.speaker.toLowerCase()}">
-                      <span class="chat-speaker-badge">${line.speaker}:</span>
-                      <span class="chat-text-bubble">${line.text}</span>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-            </div>
-          `;
-        } else if (activeTab === 'scores') {
-          const rubricRows = vetting.rubrics.map(r => `
-            <div class="rubric-row">
-              <span class="rubric-lbl">${r.label}</span>
-              <div class="rubric-bar-track">
-                <div class="rubric-bar-fill indigo" style="width: ${r.score * 10}%"></div>
-              </div>
-              <span class="rubric-val">${r.score}/10</span>
-            </div>
-          `).join('');
+      const statusIcon = (status) => {
+        if (status === 'Completed') return '<span class="status-chip completed"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Completed</span>';
+        if (status === 'Incomplete') return '<span class="status-chip incomplete"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg> Incomplete</span>';
+        if (status === 'Slot Missed') return '<span class="status-chip slot-missed"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg> Slot Missed</span>';
+        return '<span class="status-chip">—</span>';
+      };
 
-          const caveatTags = vetting.caveats.map(cav => `
-            <div class="caveat-tag ${cav.type}">
-              <span class="caveat-icon">${cav.type === 'warning' ? '⚠️' : '💡'}</span>
-              <span class="caveat-text">${cav.text}</span>
-            </div>
-          `).join('');
-
-          const prosList = vetting.pros.map(p => `<li><span class="list-bullet pro">✓</span>${p}</li>`).join('');
-          const consList = vetting.cons.map(cn => `<li><span class="list-bullet con">✗</span>${cn}</li>`).join('');
-
-          tabContentHTML = `
-            <div class="tab-pane-content active animate-fade-in scores-caveats-pane">
-              <div class="pane-grid-half">
-                <div class="rubrics-section">
-                  <span class="section-sub-title">AI Vetting Scorecard</span>
-                  ${rubricRows}
-                </div>
-                <div class="caveats-section">
-                  <span class="section-sub-title">AI Caveats & Flags</span>
-                  <div class="caveats-list-tags">
-                    ${caveatTags}
-                  </div>
-                </div>
-              </div>
-              <div class="pros-cons-grid">
-                <div class="pro-col">
-                  <span class="section-sub-title pros">Pros</span>
-                  <ul>${prosList}</ul>
-                </div>
-                <div class="con-col">
-                  <span class="section-sub-title cons">Cons</span>
-                  <ul>${consList}</ul>
-                </div>
-              </div>
-            </div>
-          `;
-        } else if (activeTab === 'actions') {
-          tabContentHTML = `
-            <div class="tab-pane-content active animate-fade-in actions-tab-pane">
-              <div class="recruiter-notes-wrap">
-                <span class="notes-label">Recruiter Notes & Vetting Summary:</span>
-                <p class="candidate-summary-quote">"${vetting.summary}"</p>
-                <textarea class="recruiter-notes-textarea" placeholder="Add custom notes on notice buyout or communication flags..."></textarea>
-              </div>
-              <div class="jd-card-actions inline">
-                <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
-                <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Functional">Advance to Functional →</button>
-              </div>
-            </div>
-          `;
-        }
-
-        return `
-          <div class="jd-candidate-row-card compact" data-candidate-id="${c.id}">
-            <div class="jd-card-header compact">
-              <div class="avatar-details-group">
-                <div class="user-avatar-mini" style="background-color: var(--color-indigo-dim); border-color: var(--color-indigo); color: var(--color-indigo-light);">${c.name.split(' ').map(n=>n[0]).join('')}</div>
-                <div class="user-details-compact">
-                  <span class="cand-name">${c.name}</span>
-                  <span class="cand-email">${c.email}</span>
-                </div>
-              </div>
-              <div class="card-subtabs-row" data-cand-id="${c.id}">
-                <button class="subtab-btn ${activeTab === 'transcript' ? 'active' : ''}" data-tab="transcript">Transcript & Audio</button>
-                <button class="subtab-btn ${activeTab === 'scores' ? 'active' : ''}" data-tab="scores">Scores & Caveats</button>
-                <button class="subtab-btn ${activeTab === 'actions' ? 'active' : ''}" data-tab="actions">Actions & Notes</button>
-              </div>
-              <span class="score-badge indigo">${c.score} match</span>
-            </div>
-            <div class="jd-card-body-compact">
-              ${tabContentHTML}
+      screeningList.innerHTML = `
+        <div class="stage-table-container">
+          <div class="stage-table-filters">
+            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg> Interview Status</span>
+            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg> Recruiter Screening</span>
+            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Recruiter Screening Score</span>
+            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line></svg> Source</span>
+            <div class="stage-table-actions-bar">
+              <button class="btn-bulk-actions">Bulk Actions <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+              <button class="btn-columns-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg> Columns</button>
+              <button class="btn-export-table"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Export</button>
             </div>
           </div>
-        `;
-      }).join('');
+          <table class="stage-data-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" class="table-checkbox-all" /></th>
+                <th>Candidate</th>
+                <th>Phone</th>
+                <th>Interview Status</th>
+                <th>Recruiter Screening</th>
+                <th>Recruiter Screening Score <span class="sort-arrows">⇅</span></th>
+                <th>Match Count <span class="sort-arrows">⇅</span></th>
+                <th>Report</th>
+                <th>Source</th>
+                <th>Attempted At <span class="sort-arrows">⇅</span></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${screeningCands.map(c => {
+                const initials = c.name.split(' ').map(n=>n[0]).join('');
+                const hasReport = c.interviewStatus === 'Incomplete' || c.interviewStatus === 'Completed';
+                const sourceIcon = c.source === 'Direct Link' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>';
+                const actionLabel = c.interviewStatus === 'Slot Missed' ? 'Reschedule' : 'Schedule';
+                const actionClass = c.interviewStatus === 'Slot Missed' ? 'btn-reschedule' : 'btn-schedule';
+                return `
+                  <tr data-candidate-id="${c.id}">
+                    <td><input type="checkbox" class="table-checkbox-row" /></td>
+                    <td>
+                      <div class="table-candidate-cell">
+                        <span class="cand-name-link">${c.name} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
+                        <button class="btn-remarks">Remarks</button>
+                        <span class="cand-email-sub">${c.email}</span>
+                      </div>
+                    </td>
+                    <td>${c.phone || '—'}</td>
+                    <td>${statusIcon(c.interviewStatus)}</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>${hasReport ? `<a href="#" class="report-link" data-cand-id="${c.id}">Report <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : '—'}</td>
+                    <td><span class="source-badge">${sourceIcon} ${c.source || '—'}</span></td>
+                    <td>${c.attemptedAt || '—'}</td>
+                    <td><button class="${actionClass}" data-candidate-id="${c.id}">${c.interviewStatus === 'Slot Missed' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> ' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg> '}${actionLabel}</button></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+          <div class="stage-table-footer">
+            <span class="table-selection-info">0 of ${screeningCands.length} row(s) selected.</span>
+            <div class="table-pagination">
+              <span>Rows per page</span>
+              <select class="rows-per-page"><option>25</option></select>
+              <span>Page 1 of 1</span>
+              <div class="pagination-btns">
+                <button disabled>«</button><button disabled>‹</button><button disabled>›</button><button disabled>»</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
     }
   }
 
@@ -4539,112 +4860,105 @@ function renderJobDetailPanes(job) {
         </div>
       `;
     } else {
-      functionalList.innerHTML = functionalCands.map(c => {
-        const review = CandidateReviews[c.id] || CandidateReviews['CAN-8234-EA1'];
-        const activeTab = activeCandidateSubTabs[c.id] || 'code';
-        const vetting = getCandidateVettingDetails(c.id, c.name);
+      const cheatColor = (prob) => {
+        if (prob === 'Low') return 'cheat-low';
+        if (prob === 'Medium') return 'cheat-medium';
+        if (prob === 'High') return 'cheat-high';
+        return '';
+      };
+      const scoreColor = (score) => {
+        if (score == null) return '';
+        if (score >= 80) return 'score-green';
+        if (score >= 60) return 'score-yellow';
+        return 'score-red';
+      };
+      const screeningBadge = (val) => {
+        if (!val) return '—';
+        const cls = val === 'Good fit' ? 'fit-good' : val === 'Moderate fit' ? 'fit-moderate' : 'fit-poor';
+        return `<span class="screening-fit-badge ${cls}">${val}</span>`;
+      };
 
-        let tabContentHTML = '';
-        if (activeTab === 'code') {
-          tabContentHTML = `
-            <div class="tab-pane-content active animate-fade-in code-review-pane compact">
-              <div class="code-header">
-                <span class="file-name">${review.file}</span>
-                <span class="reviewer-tag">Code Evaluator: ${review.reviewer}</span>
-              </div>
-              <pre class="code-box"><code>${review.code}</code></pre>
-              <div class="review-comment">
-                <strong>Feedback summary:</strong>
-                <p>${review.comment}</p>
-              </div>
-            </div>
-          `;
-        } else if (activeTab === 'scores') {
-          const rubricRows = vetting.rubrics.map(r => `
-            <div class="rubric-row">
-              <span class="rubric-lbl">${r.label}</span>
-              <div class="rubric-bar-track">
-                <div class="rubric-bar-fill gold" style="width: ${r.score * 10}%"></div>
-              </div>
-              <span class="rubric-val">${r.score}/10</span>
-            </div>
-          `).join('');
-
-          const caveatTags = vetting.caveats.map(cav => `
-            <div class="caveat-tag ${cav.type}">
-              <span class="caveat-icon">${cav.type === 'warning' ? '⚠️' : '💡'}</span>
-              <span class="caveat-text">${cav.text}</span>
-            </div>
-          `).join('');
-
-          const prosList = vetting.pros.map(p => `<li><span class="list-bullet pro">✓</span>${p}</li>`).join('');
-          const consList = vetting.cons.map(cn => `<li><span class="list-bullet con">✗</span>${cn}</li>`).join('');
-
-          tabContentHTML = `
-            <div class="tab-pane-content active animate-fade-in scores-caveats-pane">
-              <div class="pane-grid-half">
-                <div class="rubrics-section">
-                  <span class="section-sub-title">AI Functional Scorecard</span>
-                  ${rubricRows}
-                </div>
-                <div class="caveats-section">
-                  <span class="section-sub-title">Vetting Warnings & Info</span>
-                  <div class="caveats-list-tags">
-                    ${caveatTags}
-                  </div>
-                </div>
-              </div>
-              <div class="pros-cons-grid">
-                <div class="pro-col">
-                  <span class="section-sub-title pros">Pros</span>
-                  <ul>${prosList}</ul>
-                </div>
-                <div class="con-col">
-                  <span class="section-sub-title cons">Cons</span>
-                  <ul>${consList}</ul>
-                </div>
-              </div>
-            </div>
-          `;
-        } else if (activeTab === 'actions') {
-          tabContentHTML = `
-            <div class="tab-pane-content active animate-fade-in actions-tab-pane">
-              <div class="recruiter-notes-wrap">
-                <span class="notes-label">Vetting Assessment:</span>
-                <p class="candidate-summary-quote">"${vetting.summary}"</p>
-                <textarea class="recruiter-notes-textarea" placeholder="Add feedback comments or executive vetting notes..."></textarea>
-              </div>
-              <div class="jd-card-actions inline">
-                <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
-                <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Hired">Hire Candidate ✓</button>
-              </div>
-            </div>
-          `;
-        }
-
-        return `
-          <div class="jd-candidate-row-card compact" data-candidate-id="${c.id}">
-            <div class="jd-card-header compact">
-              <div class="avatar-details-group">
-                <div class="user-avatar-mini" style="background-color: var(--color-gold-dim); border-color: var(--color-gold); color: var(--color-gold-light);">${c.name.split(' ').map(n=>n[0]).join('')}</div>
-                <div class="user-details-compact">
-                  <span class="cand-name">${c.name}</span>
-                  <span class="cand-email">${c.email}</span>
-                </div>
-              </div>
-              <div class="card-subtabs-row" data-cand-id="${c.id}">
-                <button class="subtab-btn ${activeTab === 'code' ? 'active' : ''}" data-tab="code">Code Evaluation</button>
-                <button class="subtab-btn ${activeTab === 'scores' ? 'active' : ''}" data-tab="scores">Scores & Caveats</button>
-                <button class="subtab-btn ${activeTab === 'actions' ? 'active' : ''}" data-tab="actions">Actions & Notes</button>
-              </div>
-              <span class="score-badge gold">${c.score} match</span>
-            </div>
-            <div class="jd-card-body-compact">
-              ${tabContentHTML}
+      functionalList.innerHTML = `
+        <div class="stage-table-container">
+          <div class="stage-table-filters">
+            <span class="filter-chip active-filter">Interview Status <span class="filter-chip-val">Completed</span></span>
+            <span class="filter-chip active-filter">Cheat Probability <span class="filter-chip-val">Low</span></span>
+            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Interview Score</span>
+            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg> Recruiter Screening</span>
+            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg> Actions</span>
+            <button class="btn-filter-reset"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Reset</button>
+            <div class="stage-table-actions-bar">
+              <button class="btn-bulk-actions">Bulk Reschedule <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+              <button class="btn-columns-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg> Columns</button>
+              <button class="btn-export-table"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Export</button>
             </div>
           </div>
-        `;
-      }).join('');
+          <table class="stage-data-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" class="table-checkbox-all" /></th>
+                <th>Candidate</th>
+                <th>Phone</th>
+                <th>Interview Status</th>
+                <th>Report</th>
+                <th>Interview score <span class="sort-arrows">⇅</span></th>
+                <th>Cheat Probability</th>
+                <th>Source</th>
+                <th>Recruiter Screening</th>
+                <th>Recruiter Screening Score <span class="sort-arrows">⇅</span></th>
+                <th>Score</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${functionalCands.map(c => {
+                const initials = c.name.split(' ').map(n=>n[0]).join('');
+                const sourceIcon = c.source === 'Direct Link' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>';
+                return `
+                  <tr data-candidate-id="${c.id}">
+                    <td><input type="checkbox" class="table-checkbox-row" /></td>
+                    <td>
+                      <div class="table-candidate-cell">
+                        <span class="cand-name-link">${c.name} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
+                        <button class="btn-remarks">Remarks</button>
+                        <span class="cand-email-sub">${c.email}</span>
+                      </div>
+                    </td>
+                    <td>${c.phone || '—'}</td>
+                    <td><span class="status-chip completed"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Completed</span></td>
+                    <td><a href="#" class="report-link report-new" data-cand-id="${c.id}">Report <span class="new-badge">New</span> <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a></td>
+                    <td><span class="interview-score-dot ${scoreColor(c.interviewScore)}"></span> ${c.interviewScore != null ? c.interviewScore : '—'}</td>
+                    <td><span class="cheat-prob-badge ${cheatColor(c.cheatProbability)}">${c.cheatProbability ? '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg> ' + c.cheatProbability : '—'}</span></td>
+                    <td><span class="source-badge">${sourceIcon} ${c.source || '—'}</span></td>
+                    <td>${screeningBadge(c.recruiterScreening)}</td>
+                    <td>${c.recruiterScreeningScore != null ? c.recruiterScreeningScore : '—'}</td>
+                    <td>${c.score}</td>
+                    <td>
+                      <select class="action-select-status">
+                        <option value="">Select Sta...</option>
+                        <option value="advance">Advance</option>
+                        <option value="reject">Reject</option>
+                        <option value="hold">Hold</option>
+                      </select>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+          <div class="stage-table-footer">
+            <span class="table-selection-info">0 of ${functionalCands.length} row(s) selected.</span>
+            <div class="table-pagination">
+              <span>Rows per page</span>
+              <select class="rows-per-page"><option>25</option></select>
+              <span>Page 1 of 1</span>
+              <div class="pagination-btns">
+                <button disabled>«</button><button disabled>‹</button><button disabled>›</button><button disabled>»</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
     }
   }
 
@@ -4684,6 +4998,14 @@ function renderJobDetailPanes(job) {
       btn.addEventListener('click', () => {
         const candId = btn.getAttribute('data-play-id');
         toggleCardPlayer(candId);
+      });
+    });
+
+    pane.querySelectorAll('.report-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const candId = link.getAttribute('data-cand-id');
+        openReportDrawerForCandidate(candId);
       });
     });
   }
@@ -5677,32 +5999,33 @@ function initCrystalAnimations() {
   });
 
   // 2. 3D Card Hover Tilt and Shine Spotlights
+  const isCrystalTheme = !!document.getElementById('crystal-shader-canvas');
+
   function applyTactileTiltEffects() {
+    if (isCrystalTheme) return;
+
     const cards = document.querySelectorAll(
       '.job-card, .card-metric, .panel-setting, .agent-card, .terminal-box, .table-card, .panel-preview, .sourcing-tab-card'
     );
-    
+
     cards.forEach(card => {
-      // Avoid duplicate listener bindings
       if (card.dataset.tiltInitialized) return;
       card.dataset.tiltInitialized = 'true';
 
-      // Set initial variables for gradient highlight (shine spotlight)
       card.style.setProperty('--shine-x', '50%');
       card.style.setProperty('--shine-y', '50%');
 
       card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left; 
-        const y = e.clientY - rect.top;  
-        
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
         const xc = rect.width / 2;
         const yc = rect.height / 2;
-        
-        // Tilt limit: 8 degrees for a subtle and high-end feel
-        const angleX = -(y - yc) / (rect.height / 8); 
-        const angleY = (x - xc) / (rect.width / 8);  
-        
+
+        const angleX = -(y - yc) / (rect.height / 8);
+        const angleY = (x - xc) / (rect.width / 8);
+
         gsap.to(card, {
           rotationX: angleX,
           rotationY: angleY,
@@ -5711,11 +6034,11 @@ function initCrystalAnimations() {
           transformPerspective: 800,
           transformOrigin: 'center center'
         });
-        
+
         card.style.setProperty('--shine-x', `${(x / rect.width) * 100}%`);
         card.style.setProperty('--shine-y', `${(y / rect.height) * 100}%`);
       });
-      
+
       card.addEventListener('mouseleave', () => {
         gsap.to(card, {
           rotationX: 0,
@@ -5731,7 +6054,6 @@ function initCrystalAnimations() {
 
   applyTactileTiltEffects();
 
-  // Create observer to automatically apply 3D tilt effects on dynamically loaded/rendered cards (like jobs lists)
   const listObserver = new MutationObserver(() => {
     applyTactileTiltEffects();
   });
