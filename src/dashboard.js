@@ -966,8 +966,7 @@ function renderAnalyticsTable() {
     
     headers.innerHTML = headerHtml;
 
-    // Filter Candidates by search
-    let list = [...AppState.candidates];
+    let list = filterCandidatesByDateRange(AppState.candidates);
     if (searchVal) {
       list = list.filter(c => c.name.toLowerCase().includes(searchVal) || c.email.toLowerCase().includes(searchVal) || c.jobApplied.toLowerCase().includes(searchVal));
     }
@@ -1237,58 +1236,92 @@ function updateTeamCounters() {
 }
 
 // 4. Update Summary Metrics (Analytics View Header Stats)
-function updateSummaryMetrics() {
-  let totalApplicants = 0;
-  let resumeCount = 0;
-  let screeningCount = 0;
-  let functionalCount = 0;
+function parseFuzzyDate(str) {
+  if (!str) return null;
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) return d;
+  const m = str.match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{4})/i);
+  if (m) return new Date(`${m[2]} ${m[1]}, ${m[3]}`);
+  const m2 = str.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),?\s+(\d{4})/i);
+  if (m2) return new Date(`${m2[1]} ${m2[2]}, ${m2[3]}`);
+  return null;
+}
 
-  AppState.jobs.forEach(job => {
-    totalApplicants += job.pipeline.total || 0;
-    resumeCount += job.pipeline.resume || 0;
-    screeningCount += job.pipeline.screening || 0;
-    functionalCount += job.pipeline.functional || 0;
+function getDateRangeBounds() {
+  const now = new Date();
+  if (AppState.dateRange === 'custom') {
+    const from = document.getElementById('date-from')?.value;
+    const to = document.getElementById('date-to')?.value;
+    return { start: from ? new Date(from) : null, end: to ? new Date(to + 'T23:59:59') : null };
+  }
+  if (AppState.dateRange === 'all') return { start: null, end: null };
+  const days = { '7d': 7, '30d': 30, '90d': 90 }[AppState.dateRange] || 7;
+  const start = new Date(now); start.setDate(start.getDate() - days);
+  return { start, end: now };
+}
+
+function filterCandidatesByDateRange(candidates) {
+  const { start, end } = getDateRangeBounds();
+  if (!start && !end) return candidates;
+  return candidates.filter(c => {
+    const d = parseFuzzyDate(c.registeredOn);
+    if (!d) return true;
+    if (start && d < start) return false;
+    if (end && d > end) return false;
+    return true;
   });
+}
+
+function updateSummaryMetrics() {
+  const filtered = filterCandidatesByDateRange(AppState.candidates);
+
+  const totalApplicants = filtered.length;
+  const resumeCount = filtered.filter(c => c.status === 'Resume').length;
+  const screeningCount = filtered.filter(c => c.status === 'Screening').length;
+  const functionalCount = filtered.filter(c => c.status === 'Functional').length;
 
   document.getElementById('stat-total-applicants').textContent = totalApplicants;
   document.getElementById('stat-resume-analysis').textContent = resumeCount;
   document.getElementById('stat-recruiter-screening').textContent = screeningCount;
   document.getElementById('stat-functional-interview').textContent = functionalCount;
-  
-  // Sync individual pills under stats cards
-  // Total applicants card pills:
+
+  const bySource = { 'Career Page': 0, 'Bulk Upload': 0, 'Scheduled': 0, 'Direct Link': 0, 'ATS': 0 };
+  filtered.forEach(c => { if (bySource[c.source] !== undefined) bySource[c.source]++; });
+
   const appPills = document.querySelectorAll('.card-metric:nth-child(1) .m-pill .v');
   if (appPills.length >= 4) {
-    appPills[0].textContent = 0; // Career Page
-    appPills[1].textContent = 0; // Bulk Upload
-    appPills[2].textContent = screeningCount; // Scheduled screening
-    appPills[3].textContent = totalApplicants - screeningCount; // Direct Link / Rest
+    appPills[0].textContent = bySource['Career Page'];
+    appPills[1].textContent = bySource['Bulk Upload'];
+    appPills[2].textContent = bySource['Scheduled'];
+    appPills[3].textContent = bySource['Direct Link'];
   }
-  
-  // Resume analysis card pills:
+
   const resPills = document.querySelectorAll('.card-metric:nth-child(2) .m-pill .v');
   if (resPills.length >= 3) {
-    resPills[0].textContent = resumeCount; // Analysed
-    resPills[1].textContent = 0; // Shortlisted
-    resPills[2].textContent = 0; // Waitlisted
+    const analysed = filtered.filter(c => c.status === 'Resume' && c.score !== '—').length;
+    resPills[0].textContent = analysed;
+    resPills[1].textContent = filtered.filter(c => c.status === 'Screening' || c.status === 'Functional').length;
+    resPills[2].textContent = 0;
   }
 
-  // Recruiter screening card pills:
   const scrPills = document.querySelectorAll('.card-metric:nth-child(3) .m-pill .v');
   if (scrPills.length >= 4) {
-    scrPills[0].textContent = screeningCount > 0 ? screeningCount - 1 : 0; // Attempted
-    scrPills[1].textContent = screeningCount > 0 ? 1 : 0; // Scheduled
-    scrPills[2].textContent = 0; // Shortlisted
-    scrPills[3].textContent = 0; // Waitlisted
+    const attempted = filtered.filter(c => c.status === 'Screening' && c.interviewStatus === 'Completed').length;
+    const scheduled = filtered.filter(c => c.status === 'Screening' && c.interviewStatus !== 'Completed').length;
+    scrPills[0].textContent = attempted;
+    scrPills[1].textContent = scheduled;
+    scrPills[2].textContent = 0;
+    scrPills[3].textContent = 0;
   }
 
-  // Functional interview card pills:
   const funPills = document.querySelectorAll('.card-metric:nth-child(4) .m-pill .v');
   if (funPills.length >= 4) {
-    funPills[0].textContent = functionalCount > 0 ? functionalCount - 1 : 0; // Attempted
-    funPills[1].textContent = functionalCount > 0 ? 1 : 0; // Scheduled
-    funPills[2].textContent = 0; // Shortlisted
-    funPills[3].textContent = 0; // Waitlisted
+    const attempted = filtered.filter(c => c.status === 'Functional' && c.interviewStatus === 'Completed').length;
+    const scheduled = filtered.filter(c => c.status === 'Functional' && c.interviewStatus !== 'Completed').length;
+    funPills[0].textContent = attempted;
+    funPills[1].textContent = scheduled;
+    funPills[2].textContent = 0;
+    funPills[3].textContent = 0;
   }
 }
 
@@ -5605,7 +5638,34 @@ function renderJobDetailPanes(job) {
     pane.querySelectorAll('.btn-bulk-actions').forEach(btn => {
       btn.addEventListener('click', () => {
         soundEngine.playClick();
-        showPremiumToast("Bulk action: select candidates using checkboxes first.", "info");
+        const container = btn.closest('.stage-table-container');
+        const checked = container?.querySelectorAll('.table-checkbox-row:checked') || [];
+        if (checked.length === 0) {
+          showPremiumToast("Select candidates using checkboxes first.", "info");
+          return;
+        }
+        const candIds = [];
+        const names = [];
+        checked.forEach(cb => {
+          const row = cb.closest('tr');
+          const cid = row?.getAttribute('data-candidate-id');
+          const name = row?.querySelector('.cand-name-link')?.textContent?.trim();
+          if (cid) candIds.push(cid);
+          if (name) names.push(name);
+        });
+        const label = names.length <= 3 ? names.join(', ') : `${names.slice(0, 2).join(', ')} +${names.length - 2} more`;
+        openScheduleModal(label, 'reschedule', (date, time) => {
+          candIds.forEach(cid => {
+            const cand = AppState.candidates.find(c => c.id === cid);
+            if (cand) {
+              cand.attemptedAt = `${date} ${time}`;
+              cand.interviewStatus = 'Not Started';
+            }
+          });
+          saveStateToLocalStorage();
+          renderJobDetailPanes(job);
+          showPremiumToast(`Bulk rescheduled ${candIds.length} candidate(s) to ${date} at ${time}.`, 'success');
+        });
       });
     });
 
