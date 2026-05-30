@@ -16,11 +16,11 @@
   --color-indigo-rgb:       59, 130, 246;
   --color-brand-purple-rgb: 139, 92, 246;
 
-  /* Base — true black with faint violet tint */
-  --color-bg:               oklch(2% 0.004 272);
-  --color-surface:          rgba(255, 255, 255, 0.03);
-  --color-surface-2:        rgba(255, 255, 255, 0.015);
-  --color-surface-solid:    oklch(4% 0.006 270);
+  /* Base — modern black */
+  --color-bg:               #000000;
+  --color-surface:          rgba(255, 255, 255, 0.04);
+  --color-surface-2:        rgba(255, 255, 255, 0.02);
+  --color-surface-solid:    #0a0a0a;
 
   /* Primary accent — Vibrant Violet */
   --color-gold:             oklch(58% 0.22 286);
@@ -41,12 +41,12 @@
   --color-warning:          oklch(76% 0.16 60);
   --color-warning-dim:      rgba(245, 158, 11, 0.12);
 
-  /* Text — white with violet-blue undertone */
-  --color-text:             oklch(94% 0.008 270);
-  --color-text-primary:     oklch(94% 0.008 270);
-  --color-text-muted:       oklch(68% 0.010 270);
-  --color-text-faint:       oklch(48% 0.008 270);
-  --color-bg-dark:          oklch(2% 0.004 272);
+  /* Text — clean white */
+  --color-text:             #f0f0f0;
+  --color-text-primary:     #f0f0f0;
+  --color-text-muted:       #a0a0a0;
+  --color-text-faint:       #666666;
+  --color-bg-dark:          #000000;
 
   /* Glass — white-alpha surfaces over true black */
   --glass-bg:               rgba(255, 255, 255, 0.035);
@@ -95,8 +95,8 @@
   --orb-color-4:            oklch(32% 0.08 255);
   --orb-opacity-4:          0.06;
 
-  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, oklch(6% 0.03 280), transparent);
-  --scene-gradient-2:       radial-gradient(ellipse 70% 70% at 86% 74%, oklch(5% 0.02 250), transparent);
+  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, rgba(20, 10, 40, 0.4), transparent);
+  --scene-gradient-2:       radial-gradient(ellipse 70% 70% at 86% 74%, rgba(10, 15, 35, 0.3), transparent);
 
   /* Card Glows */
   --card-glow-indigo:       rgba(var(--color-gold-rgb), 0.14);
@@ -115,11 +115,11 @@ body.light-theme {
   --color-indigo-rgb:       18, 117, 168;
   --color-brand-purple-rgb: 80, 60, 180;
 
-  /* Pale violet-white background */
-  --color-bg:               oklch(97% 0.008 276);
-  --color-surface:          rgba(var(--color-gold-rgb), 0.045);
-  --color-surface-2:        rgba(var(--color-gold-rgb), 0.025);
-  --color-surface-solid:    oklch(99% 0.006 276);
+  /* Modern white background */
+  --color-bg:               #ffffff;
+  --color-surface:          rgba(0, 0, 0, 0.03);
+  --color-surface-2:        rgba(0, 0, 0, 0.015);
+  --color-surface-solid:    #fafafa;
 
   --color-gold:             oklch(46% 0.18 278);
   --color-gold-light:       oklch(52% 0.16 278);
@@ -132,21 +132,21 @@ body.light-theme {
   --color-indigo-glow:      rgba(var(--color-indigo-rgb), 0.16);
   --color-indigo-light:     oklch(52% 0.18 210);
 
-  /* Text: violet-tinted near-black */
-  --color-text:             oklch(12% 0.016 278);
-  --color-text-primary:     oklch(12% 0.016 278);
-  --color-text-muted:       oklch(40% 0.014 276);
-  --color-text-faint:       oklch(60% 0.010 276);
-  --color-bg-dark:          oklch(97% 0.008 276);
+  /* Text: clean dark */
+  --color-text:             #0a0a0a;
+  --color-text-primary:     #0a0a0a;
+  --color-text-muted:       #555555;
+  --color-text-faint:       #999999;
+  --color-bg-dark:          #ffffff;
 
-  /* Frosted violet-white glass */
-  --glass-bg:               rgba(248, 246, 255, 0.72);
-  --glass-bg-hover:         rgba(248, 246, 255, 0.90);
-  --glass-border:           rgba(var(--color-gold-rgb), 0.14);
-  --glass-border-hover:     rgba(var(--color-gold-rgb), 0.28);
+  /* Clean white glass */
+  --glass-bg:               rgba(255, 255, 255, 0.80);
+  --glass-bg-hover:         rgba(255, 255, 255, 0.95);
+  --glass-border:           rgba(0, 0, 0, 0.08);
+  --glass-border-hover:     rgba(0, 0, 0, 0.16);
   --glass-border-gold:      rgba(var(--color-gold-rgb), 0.22);
-  --glass-shadow:           0 4px 24px rgba(40,20,100,0.07), 0 1px 2px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9);
-  --glass-shadow-hover:     0 12px 40px rgba(40,20,100,0.12), 0 2px 8px rgba(var(--color-gold-rgb),0.08), inset 0 1px 0 rgba(255,255,255,0.95);
+  --glass-shadow:           0 4px 24px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --glass-shadow-hover:     0 12px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
   --color-card-bg:          var(--glass-bg);
   --color-card-border:      var(--glass-border);
 
@@ -163,8 +163,8 @@ body.light-theme {
   --orb-color-4:            oklch(70% 0.10 260);
   --orb-opacity-4:          0.06;
 
-  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, oklch(88% 0.05 278 / 0.16), transparent);
-  --scene-gradient-2:       radial-gradient(ellipse 60% 60% at 80% 80%, oklch(86% 0.04 315 / 0.12), transparent);
+  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, rgba(100, 80, 200, 0.04), transparent);
+  --scene-gradient-2:       radial-gradient(ellipse 60% 60% at 80% 80%, rgba(60, 130, 246, 0.03), transparent);
 
   /* Card Glows - Light: muted */
   --card-glow-indigo:       oklch(46% 0.18 278 / 0.08);
@@ -179,12 +179,12 @@ body.light-theme {
 
 /* Light theme component overrides */
 body.light-theme .dashboard-header {
-  background: rgba(248, 246, 255, 0.88);
-  border-bottom-color: rgba(var(--color-gold-rgb), 0.10);
+  background: rgba(255, 255, 255, 0.90);
+  border-bottom-color: rgba(0, 0, 0, 0.06);
 }
 body.light-theme .sidebar {
-  background: rgba(248, 246, 255, 0.95);
-  border-right-color: rgba(var(--color-gold-rgb), 0.10);
+  background: rgba(250, 250, 250, 0.98);
+  border-right-color: rgba(0, 0, 0, 0.06);
 }
 body.light-theme .user-profile { border-top-color: rgba(var(--color-gold-rgb), 0.08); }
 body.light-theme .card-plan { background: rgba(var(--color-gold-rgb),0.04); border-color: rgba(var(--color-gold-rgb),0.12); }
@@ -211,8 +211,8 @@ body.light-theme .orb-pink   { opacity: 0.08; }
 body.light-theme .terminal-box { background: rgba(8,10,20,0.92) !important; }
 body.light-theme .terminal-box .term-log { color: #a3a3a3; }
 body.light-theme .terminal-box .term-log code { color: oklch(80% 0.22 292); }
-body.light-theme .kanban-column { background: rgba(250,246,255,0.72); border-color: rgba(var(--color-gold-rgb),0.10); }
-body.light-theme .kanban-card { background: rgba(255,255,255,0.85); border-color: rgba(var(--color-gold-rgb),0.10); }
+body.light-theme .kanban-column { background: rgba(245,245,245,0.80); border-color: rgba(0,0,0,0.06); }
+body.light-theme .kanban-card { background: rgba(255,255,255,0.90); border-color: rgba(0,0,0,0.08); }
 body.light-theme .spotlight-box { background: rgba(255,255,255,0.96); border-color: rgba(var(--color-gold-rgb),0.10); box-shadow: 0 30px 80px rgba(80,20,140,0.12); }
 body.light-theme .bar-outer { background: rgba(var(--color-gold-rgb),0.08); }
 body.light-theme .waveform-box { background: rgba(var(--color-gold-rgb),0.03); }
@@ -315,7 +315,7 @@ body { position: relative; color: var(--color-text-primary); }
    SIDEBAR
    ============================================================ */
 .sidebar {
-  background: rgba(2, 2, 4, 0.98);
+  background: rgba(0, 0, 0, 0.98);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   border-right: 1px solid var(--glass-border);
@@ -593,7 +593,7 @@ body { position: relative; color: var(--color-text-primary); }
    HEADER
    ============================================================ */
 .dashboard-header {
-  background: rgba(2, 2, 4, 0.92);
+  background: rgba(0, 0, 0, 0.92);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   border-bottom: 1px solid var(--glass-border);
