@@ -838,10 +838,8 @@ body.light-theme .theme-icon-sun { display: block; }
 }
 .job-card:hover {
   border-color: var(--glass-border-gold);
-  transform: translateY(-4px);
   box-shadow: var(--glass-shadow-hover), var(--glass-glow-gold-hover);
 }
-.job-card:active { transform: translateY(-2px); }
 
 .job-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
 .job-card-title-area { display: flex; flex-direction: column; gap: 4px; }
@@ -900,7 +898,7 @@ body.light-theme .theme-icon-sun { display: block; }
   min-width: 80px;
   transition: var(--spring-fast);
 }
-.pipeline-step:hover { transform: scale(1.04); }
+.pipeline-step:hover { }
 .pipeline-step.step-total   { border-color: rgba(168,85,247,0.22); background: rgba(168,85,247,0.04); }
 .pipeline-step.step-resume  { border-color: rgba(251,146,60,0.22); background: rgba(251,146,60,0.04); }
 .pipeline-step.step-screening { border-color: rgba(var(--color-indigo-rgb),0.22); background: rgba(var(--color-indigo-rgb),0.04); }
