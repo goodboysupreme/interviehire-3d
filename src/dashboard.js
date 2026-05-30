@@ -2213,27 +2213,31 @@ function drawFunnelSVG(job, candidates) {
   }
 
   svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  svgEl.innerHTML = `
-    ${dividers}
-    ${pinkSegs.map((d, i) => `<path d="${d}" fill="${pinkFill}" opacity="0.9" class="funnel-seg" data-stage-idx="${i}" style="cursor:pointer"/>`).join('')}
-    ${greenSegs.map((d, i) => `<path d="${d}" fill="${greenFill}" opacity="0.9" class="funnel-seg" data-stage-idx="${i}" style="cursor:pointer"/>`).join('')}
-  `;
 
-  let funnelTooltipEl = document.getElementById('funnel-svg-tooltip');
-  if (!funnelTooltipEl) {
-    funnelTooltipEl = document.createElement('div');
-    funnelTooltipEl.id = 'funnel-svg-tooltip';
-    funnelTooltipEl.className = 'funnel-svg-tooltip';
-    const funnelCard = svgEl.closest('.jd-funnel-card');
-    if (funnelCard) {
-      funnelCard.style.position = 'relative';
-      funnelCard.appendChild(funnelTooltipEl);
-    }
+  const segGroups = [];
+  for (let i = 0; i < n - 1; i++) {
+    segGroups.push(`
+      <g class="funnel-seg-group" data-stage-idx="${i}" style="cursor:pointer">
+        <path d="${pinkSegs[i]}" fill="${pinkFill}" opacity="0.9"/>
+        <path d="${greenSegs[i]}" fill="${greenFill}" opacity="0.9"/>
+      </g>
+    `);
   }
 
-  svgEl.querySelectorAll('.funnel-seg').forEach(seg => {
-    seg.addEventListener('mouseenter', (e) => {
-      const idx = parseInt(seg.getAttribute('data-stage-idx'));
+  svgEl.innerHTML = `${dividers}${segGroups.join('')}`;
+
+  let funnelTooltipEl = document.getElementById('funnel-svg-tooltip');
+  if (funnelTooltipEl) funnelTooltipEl.remove();
+  funnelTooltipEl = document.createElement('div');
+  funnelTooltipEl.id = 'funnel-svg-tooltip';
+  funnelTooltipEl.className = 'funnel-svg-tooltip';
+  document.body.appendChild(funnelTooltipEl);
+
+  const stageItems = document.querySelectorAll('#jd-funnel-stages .jd-stage-item');
+
+  svgEl.querySelectorAll('.funnel-seg-group').forEach(group => {
+    group.addEventListener('mouseenter', (e) => {
+      const idx = parseInt(group.getAttribute('data-stage-idx'));
       const label = stageLabels[idx];
       const count = stageCounts[idx];
       const breakdown = getBreakdownForStage(label);
@@ -2244,30 +2248,22 @@ function drawFunnelSVG(job, candidates) {
 
       funnelTooltipEl.innerHTML = `<div class="funnel-tooltip-title">${label} <span>(${count})</span></div>${rows || '<div class="funnel-tooltip-row"><span style="color:var(--color-text-faint)">No candidates</span></div>'}`;
       funnelTooltipEl.style.display = 'block';
+      funnelTooltipEl.style.left = `${e.clientX + 14}px`;
+      funnelTooltipEl.style.top = `${e.clientY - 10}px`;
 
-      const rect = svgEl.closest('.jd-funnel-chart-wrap').getBoundingClientRect();
-      const cardRect = svgEl.closest('.jd-funnel-card').getBoundingClientRect();
-      funnelTooltipEl.style.left = `${e.clientX - cardRect.left + 12}px`;
-      funnelTooltipEl.style.top = `${e.clientY - cardRect.top - 10}px`;
+      group.querySelectorAll('path').forEach(p => { p.setAttribute('opacity', '1'); p.style.filter = 'brightness(1.25)'; });
+      if (stageItems[idx]) stageItems[idx].classList.add('funnel-hover-active');
     });
 
-    seg.addEventListener('mousemove', (e) => {
-      const cardRect = svgEl.closest('.jd-funnel-card').getBoundingClientRect();
-      funnelTooltipEl.style.left = `${e.clientX - cardRect.left + 12}px`;
-      funnelTooltipEl.style.top = `${e.clientY - cardRect.top - 10}px`;
+    group.addEventListener('mousemove', (e) => {
+      funnelTooltipEl.style.left = `${e.clientX + 14}px`;
+      funnelTooltipEl.style.top = `${e.clientY - 10}px`;
     });
 
-    seg.addEventListener('mouseleave', () => {
+    group.addEventListener('mouseleave', () => {
       funnelTooltipEl.style.display = 'none';
-    });
-
-    seg.addEventListener('mouseenter', () => {
-      seg.setAttribute('opacity', '1');
-      seg.setAttribute('filter', 'brightness(1.2)');
-    });
-    seg.addEventListener('mouseleave', () => {
-      seg.setAttribute('opacity', '0.9');
-      seg.removeAttribute('filter');
+      group.querySelectorAll('path').forEach(p => { p.setAttribute('opacity', '0.9'); p.style.filter = ''; });
+      stageItems.forEach(si => si.classList.remove('funnel-hover-active'));
     });
   });
 }
