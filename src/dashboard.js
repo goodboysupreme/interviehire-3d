@@ -4883,16 +4883,16 @@ function bindResumeAnalysisEvents(job) {
 function handleResumeFile(cid, file) {
   const preview = document.getElementById(`ra-preview-${cid}`);
   const zone = document.getElementById(`ra-zone-${cid}`);
-  const reader = new FileReader();
-  reader.onload = e => {
-    resumeTextCache[cid] = e.target.result;
+  const isPDF = file.name.toLowerCase().endsWith('.pdf');
+
+  function showFileChip(note) {
     zone?.classList.add('has-file');
     if (preview) {
       preview.classList.remove('ra-hidden');
       preview.innerHTML = `
         <div class="ra-file-chip">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span>${file.name}</span>
+          <span>${file.name}${note ? ` (${note})` : ''}</span>
           <button class="ra-remove-file" data-rcid="${cid}">×</button>
         </div>`;
       preview.querySelector('.ra-remove-file')?.addEventListener('click', () => {
@@ -4904,31 +4904,97 @@ function handleResumeFile(cid, file) {
         if (fi) fi.value = '';
       });
     }
+  }
+
+  if (isPDF) {
+    resumeTextCache[cid] = null;
+    showFileChip('PDF — will use AI profile');
+    showPremiumToast('PDF text extraction not available — analysis will use auto-generated profile.', 'info');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    if (isGarbageText(text)) {
+      resumeTextCache[cid] = null;
+      showFileChip('binary — will use AI profile');
+      showPremiumToast('File appears to be binary — analysis will use auto-generated profile.', 'info');
+    } else {
+      resumeTextCache[cid] = text;
+      showFileChip();
+    }
   };
   reader.readAsText(file);
 }
 
 function generateSyntheticResume(candidate, job) {
-  const skills = {
-    'Full Stack Developer': ['JavaScript', 'React', 'Node.js', 'PostgreSQL', 'TypeScript', 'REST APIs', 'Git', 'Docker', 'AWS', 'MongoDB', 'GraphQL', 'Redis'],
-    'Government Tender & Proposal Executive': ['Proposal Writing', 'RFP Analysis', 'Compliance', 'GeM Portal', 'SAP Ariba', 'Tender Management', 'Government Procurement', 'Documentation', 'MS Office', 'Contract Negotiation']
+  const allSkills = {
+    'Full Stack Developer': {
+      core: ['JavaScript', 'React', 'Node.js', 'PostgreSQL', 'TypeScript', 'REST APIs', 'Git', 'Docker', 'AWS', 'MongoDB', 'GraphQL', 'Redis', 'Express.js', 'Next.js', 'CI/CD', 'Kubernetes'],
+      companies: ['Infosys', 'TCS', 'Wipro', 'Flipkart', 'Razorpay', 'Swiggy', 'Paytm', 'Zoho'],
+      tasks: ['Built responsive web dashboards serving 50K+ daily users', 'Implemented RESTful microservices reducing API latency by 40%', 'Led migration from monolith to microservices architecture', 'Designed and maintained CI/CD pipelines with GitHub Actions', 'Optimized database queries resulting in 3x faster page loads', 'Mentored 3 junior developers on React best practices']
+    },
+    'Government Tender & Proposal Executive': {
+      core: ['Proposal Writing', 'RFP Analysis', 'Compliance', 'GeM Portal', 'SAP Ariba', 'Tender Management', 'Government Procurement', 'Documentation', 'MS Office', 'Contract Negotiation', 'Bid Management', 'CPPP Portal', 'Public Procurement', 'Financial Proposals'],
+      companies: ['L&T', 'BHEL', 'NTPC', 'Tata Projects', 'Adani Group', 'GMR Group', 'HCL Infra'],
+      tasks: ['Managed end-to-end tender lifecycle for 20+ government contracts', 'Drafted technical and financial proposals worth INR 50Cr+', 'Ensured 100% compliance with GeM and CPPP portal requirements', 'Coordinated with legal and finance teams for bid documentation', 'Won 15 government contracts through competitive bidding process', 'Maintained vendor database with 200+ suppliers']
+    }
   };
-  const jobSkills = skills[job.roleName] || skills['Full Stack Developer'];
-  const numSkills = 5 + Math.floor(Math.random() * 5);
-  const picked = jobSkills.sort(() => 0.5 - Math.random()).slice(0, numSkills);
+  const profile = allSkills[job.roleName] || allSkills['Full Stack Developer'];
+  const shuffled = [...profile.core].sort(() => 0.5 - Math.random());
+  const numSkills = 6 + Math.floor(Math.random() * 5);
+  const picked = shuffled.slice(0, numSkills);
   const yrs = 1 + Math.floor(Math.random() * 7);
-  return `RESUME\nName: ${candidate.name}\nEmail: ${candidate.email}\nPhone: ${candidate.phone}\n\nProfessional Summary:\nExperienced professional with ${yrs} years in ${job.roleName.toLowerCase()} roles. Proven track record in delivering results in fast-paced environments.\n\nSkills: ${picked.join(', ')}\n\nExperience:\n- ${job.roleName} at TechCorp Solutions (${yrs} years)\n  - Led team of ${2 + Math.floor(Math.random() * 6)} on key projects\n  - Delivered ${3 + Math.floor(Math.random() * 8)} major projects on time\n\nEducation:\n- B.Tech Computer Science, University of Delhi (2018-2022)`;
+  const company1 = profile.companies[Math.floor(Math.random() * profile.companies.length)];
+  const company2 = profile.companies.filter(c => c !== company1)[Math.floor(Math.random() * (profile.companies.length - 1))];
+  const tasks = [...profile.tasks].sort(() => 0.5 - Math.random()).slice(0, 3);
+  const tasks2 = [...profile.tasks].sort(() => 0.5 - Math.random()).slice(0, 2);
+
+  return `RESUME
+
+Name: ${candidate.name}
+Email: ${candidate.email}
+Phone: ${candidate.phone}
+
+PROFESSIONAL SUMMARY
+Results-driven professional with ${yrs} years of experience in ${job.roleName.toLowerCase()} roles. Strong background in ${picked.slice(0, 3).join(', ')} with a proven ability to deliver high-quality outcomes under deadline pressure.
+
+TECHNICAL SKILLS
+${picked.join(' | ')}
+
+WORK EXPERIENCE
+
+${job.roleName} — ${company1} (${Math.max(yrs - 2, 1)} years, current)
+${tasks.map(t => '  - ' + t).join('\n')}
+
+Associate ${job.roleName} — ${company2} (2 years)
+${tasks2.map(t => '  - ' + t).join('\n')}
+
+EDUCATION
+B.Tech in Computer Science — Indian Institute of Technology, Delhi (2018-2022)
+CGPA: ${(7 + Math.random() * 2.5).toFixed(1)}/10
+
+CERTIFICATIONS
+- AWS Certified Solutions Architect (2024)
+- Google Project Management Certificate (2023)`;
+}
+
+function isGarbageText(text) {
+  if (!text || text.length < 20) return true;
+  const printable = text.replace(/[^\x20-\x7E\n\r\t]/g, '');
+  return printable.length / text.length < 0.7;
 }
 
 async function runResumeAnalysis(cid, job) {
   const pasteArea = document.getElementById(`ra-paste-${cid}`);
   const btn = document.getElementById(`ra-btn-${cid}`);
   let resumeText = ((resumeTextCache[cid] || '') + '\n' + (pasteArea?.value || '')).trim();
-  if (!resumeText) {
-    const candidate = AppState.candidates.find(c => c.id === cid);
+  const candidate = AppState.candidates.find(c => c.id === cid);
+  if (!resumeText || isGarbageText(resumeText)) {
     if (candidate) {
       resumeText = generateSyntheticResume(candidate, job);
-      showPremiumToast('No resume uploaded — using auto-generated profile for analysis.', 'info');
+      showPremiumToast('Using auto-generated candidate profile for analysis.', 'info');
     } else {
       showPremiumToast('Upload a resume or paste text first.', 'error');
       return;
