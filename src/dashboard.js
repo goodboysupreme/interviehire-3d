@@ -82,6 +82,11 @@ const AppState = {
   jobsSortKey: 'id',
   jobsSortAsc: true,
   analyticsSubtab: 'jobs-data',
+  stageFilters: {
+    screening: { interviewStatus: [], cheatProb: [], recruiterScreening: [], scoreMin: null, scoreMax: null },
+    functional: { interviewStatus: [], cheatProb: [], recruiterScreening: [], scoreMin: null, scoreMax: null, actions: [] }
+  },
+  dateRange: 'all',
   
   jobs: [
     {
@@ -95,10 +100,10 @@ const AppState = {
       createdBy: 'Devasri',
       description: "We are seeking a detail-oriented Government Tender & Proposal Executive to manage and lead the preparation, review, and submission of bids, tenders, and proposals for public sector opportunities. Key duties include analyzing RFP guidelines, checking compliance matrices, and writing clear technical and operational responses.",
       pipeline: {
-        total: 3,
-        resume: 0,
-        screening: 2,
-        functional: 1
+        total: 10,
+        resume: 3,
+        screening: 3,
+        functional: 4
       },
       questions: [
         {
@@ -138,10 +143,10 @@ const AppState = {
       createdBy: 'Devasri',
       description: "We are hiring a Full Stack Developer to design, build, and support high-performance web applications. You will work with React on the frontend, Node.js and Express on the backend, and PostgreSQL for storage. Responsibilities include building responsive dashboards, optimizing latency, and ensuring data consistency across endpoints.",
       pipeline: {
-        total: 1,
-        resume: 0,
-        screening: 0,
-        functional: 1
+        total: 10,
+        resume: 4,
+        screening: 3,
+        functional: 3
       },
       questions: [
         {
@@ -285,6 +290,210 @@ const AppState = {
       registeredOn: '28 May 2026, 11:15 AM',
       phone: '8877665544',
       source: 'ATS',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-6601-FK1',
+      name: 'Meera Kapoor',
+      email: 'meera.kapoor@outlook.com',
+      jobApplied: 'Full Stack Developer',
+      status: 'Functional',
+      score: '88%',
+      registeredOn: '02 Apr 2026, 03:20 PM',
+      phone: '9123456789',
+      source: 'Career Page',
+      attemptedAt: 'Apr 15, 2026 10:30 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 78,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 88
+    },
+    {
+      id: 'CAN-6602-FK2',
+      name: 'Vikram Singh',
+      email: 'vikram.singh@techmail.com',
+      jobApplied: 'Full Stack Developer',
+      status: 'Screening',
+      score: '72%',
+      registeredOn: '05 Apr 2026, 09:45 AM',
+      phone: '9234567890',
+      source: 'ATS',
+      attemptedAt: 'Apr 18, 2026 02:00 PM',
+      interviewStatus: 'Incomplete',
+      cheatProbability: 'Medium',
+      interviewScore: null,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 65
+    },
+    {
+      id: 'CAN-6603-FK3',
+      name: 'Ananya Reddy',
+      email: 'ananya.r@devstudio.in',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '10 Apr 2026, 01:30 PM',
+      phone: '9345678901',
+      source: 'Bulk Upload',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-7701-GT1',
+      name: 'Kavya Nair',
+      email: 'kavya.nair@govwork.in',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Functional',
+      score: '82%',
+      registeredOn: '15 Mar 2026, 04:10 PM',
+      phone: '9456789012',
+      source: 'Scheduled',
+      attemptedAt: 'Mar 28, 2026 09:00 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 69,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 85
+    },
+    {
+      id: 'CAN-7702-GT2',
+      name: 'Rahul Gupta',
+      email: 'rahul.gupta@bidpro.com',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Screening',
+      score: '78%',
+      registeredOn: '18 Mar 2026, 10:00 AM',
+      phone: '9567890123',
+      source: 'Career Page',
+      attemptedAt: 'Apr 02, 2026 11:15 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'High',
+      interviewScore: 42,
+      recruiterScreening: 'Poor fit',
+      recruiterScreeningScore: 38
+    },
+    {
+      id: 'CAN-7703-GT3',
+      name: 'Neha Patil',
+      email: 'neha.patil@tenderex.co',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '20 Apr 2026, 08:30 AM',
+      phone: '9678901234',
+      source: 'Direct Link',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-8801-FK4',
+      name: 'Shreya Joshi',
+      email: 'shreya.j@codecraft.io',
+      jobApplied: 'Full Stack Developer',
+      status: 'Screening',
+      score: '85%',
+      registeredOn: '22 Apr 2026, 11:00 AM',
+      phone: '9789012345',
+      source: 'Scheduled',
+      attemptedAt: 'May 01, 2026 03:45 PM',
+      interviewStatus: 'Slot Missed',
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 70
+    },
+    {
+      id: 'CAN-8802-FK5',
+      name: 'Karthik Iyer',
+      email: 'karthik.i@fullstack.dev',
+      jobApplied: 'Full Stack Developer',
+      status: 'Functional',
+      score: '91%',
+      registeredOn: '25 Apr 2026, 09:15 AM',
+      phone: '9890123456',
+      source: 'ATS',
+      attemptedAt: 'May 10, 2026 10:00 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 83,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 95
+    },
+    {
+      id: 'CAN-9901-GT4',
+      name: 'Amit Saxena',
+      email: 'amit.sax@procure.gov',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Screening',
+      score: '68%',
+      registeredOn: '01 May 2026, 02:20 PM',
+      phone: '9901234567',
+      source: 'Bulk Upload',
+      attemptedAt: 'May 15, 2026 04:30 PM',
+      interviewStatus: 'Incomplete',
+      cheatProbability: 'Medium',
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-9902-FK6',
+      name: 'Divya Menon',
+      email: 'divya.m@webworks.co',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '05 May 2026, 10:45 AM',
+      phone: '8012345678',
+      source: 'Career Page',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-9903-GT5',
+      name: 'Pooja Deshmukh',
+      email: 'pooja.d@tenders.in',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '08 May 2026, 03:00 PM',
+      phone: '8123456789',
+      source: 'ATS',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-1001-FK7',
+      name: 'Siddharth Rao',
+      email: 'sid.rao@devhub.in',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '12 May 2026, 08:00 AM',
+      phone: '8234567890',
+      source: 'Direct Link',
       attemptedAt: null,
       interviewStatus: null,
       cheatProbability: null,
@@ -605,6 +814,58 @@ function renderJobCards() {
   });
 }
 
+function renderJobListView() {
+  const container = document.getElementById('jobs-board-container');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const filteredJobs = AppState.jobs.filter(job => {
+    if (AppState.jobsFilter !== 'all' && job.status !== AppState.jobsFilter) return false;
+    if (AppState.globalSearch) {
+      const query = AppState.globalSearch.toLowerCase();
+      return job.roleName.toLowerCase().includes(query) || job.id.toLowerCase().includes(query);
+    }
+    return true;
+  });
+
+  if (filteredJobs.length === 0) {
+    container.innerHTML = '<div class="empty-state card-glass" style="padding:32px;text-align:center;"><p class="type-caption">No jobs match your filters.</p></div>';
+    return;
+  }
+
+  const header = document.createElement('div');
+  header.className = 'job-list-row job-list-header';
+  header.innerHTML = `
+    <span class="jl-col jl-title">Job Title</span>
+    <span class="jl-col jl-status">Status</span>
+    <span class="jl-col jl-created">Created</span>
+    <span class="jl-col jl-total">Total</span>
+    <span class="jl-col jl-resume">Resume</span>
+    <span class="jl-col jl-screening">Screening</span>
+    <span class="jl-col jl-functional">Functional</span>
+    <span class="jl-col jl-action"></span>`;
+  container.appendChild(header);
+
+  filteredJobs.forEach(job => {
+    const row = document.createElement('div');
+    row.className = 'job-list-row';
+    const p = job.pipeline || { total: 0, resume: 0, screening: 0, functional: 0 };
+    const statusLabel = (job.status || 'published').charAt(0).toUpperCase() + (job.status || 'published').slice(1);
+    row.innerHTML = `
+      <span class="jl-col jl-title">${job.cardName || job.roleName}</span>
+      <span class="jl-col jl-status"><span class="status-badge ${job.status || 'published'}"><span class="status-badge-dot"></span>${statusLabel}</span></span>
+      <span class="jl-col jl-created">${job.created || '-'}</span>
+      <span class="jl-col jl-total">${p.total}</span>
+      <span class="jl-col jl-resume">${p.resume || '-'}</span>
+      <span class="jl-col jl-screening">${p.screening || '-'}</span>
+      <span class="jl-col jl-functional">${p.functional || '-'}</span>
+      <span class="jl-col jl-action"><button class="btn-jd-ghost btn-sm" style="font-size:0.72rem;">View</button></span>`;
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', () => navigateToJobDetail(job.id));
+    container.appendChild(row);
+  });
+}
+
 // Update counts displayed on filter tabs
 function updateJobsCounters() {
   const allCount = AppState.jobs.length;
@@ -705,8 +966,7 @@ function renderAnalyticsTable() {
     
     headers.innerHTML = headerHtml;
 
-    // Filter Candidates by search
-    let list = [...AppState.candidates];
+    let list = filterCandidatesByDateRange(AppState.candidates);
     if (searchVal) {
       list = list.filter(c => c.name.toLowerCase().includes(searchVal) || c.email.toLowerCase().includes(searchVal) || c.jobApplied.toLowerCase().includes(searchVal));
     }
@@ -976,58 +1236,117 @@ function updateTeamCounters() {
 }
 
 // 4. Update Summary Metrics (Analytics View Header Stats)
-function updateSummaryMetrics() {
-  let totalApplicants = 0;
-  let resumeCount = 0;
-  let screeningCount = 0;
-  let functionalCount = 0;
+function parseFuzzyDate(str) {
+  if (!str) return null;
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) return d;
+  const m = str.match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{4})/i);
+  if (m) return new Date(`${m[2]} ${m[1]}, ${m[3]}`);
+  const m2 = str.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),?\s+(\d{4})/i);
+  if (m2) return new Date(`${m2[1]} ${m2[2]}, ${m2[3]}`);
+  return null;
+}
 
-  AppState.jobs.forEach(job => {
-    totalApplicants += job.pipeline.total || 0;
-    resumeCount += job.pipeline.resume || 0;
-    screeningCount += job.pipeline.screening || 0;
-    functionalCount += job.pipeline.functional || 0;
+function getDateRangeBounds() {
+  const now = new Date();
+  if (AppState.dateRange === 'custom') {
+    const from = document.getElementById('date-from')?.value || document.getElementById('jd-date-from')?.value || AppState.customDateFrom;
+    const to = document.getElementById('date-to')?.value || document.getElementById('jd-date-to')?.value || AppState.customDateTo;
+    return { start: from ? new Date(from) : null, end: to ? new Date(to + 'T23:59:59') : null };
+  }
+  if (AppState.dateRange === 'all') return { start: null, end: null };
+  const days = { '7d': 7, '30d': 30, '90d': 90 }[AppState.dateRange] || 7;
+  const start = new Date(now); start.setDate(start.getDate() - days);
+  return { start, end: now };
+}
+
+function applyDateRangeGlobally() {
+  const { start, end } = getDateRangeBounds();
+  const rangeLabel = AppState.dateRange === 'all' ? 'All Time' :
+    AppState.dateRange === 'custom' ? 'Custom range' :
+    AppState.dateRange === '7d' ? 'Last 7 days' :
+    AppState.dateRange === '30d' ? 'Last 30 days' : 'Last 90 days';
+
+  recalculateJobPipelines();
+  updateSummaryMetrics();
+  renderAnalyticsTable();
+  renderJobCards();
+
+  const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+  if (activeJob) {
+    const jobCandidates = filterCandidatesByDateRange(
+      AppState.candidates.filter(c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName)
+    );
+    drawFunnelSVG(activeJob, jobCandidates);
+    drawScoreDistributionSVG(activeJob, jobCandidates);
+    renderJobDetailPanes(activeJob);
+  }
+
+  showPremiumToast(`${rangeLabel} — showing ${filterCandidatesByDateRange(AppState.candidates).length} of ${AppState.candidates.length} candidates.`, 'success');
+}
+
+function filterCandidatesByDateRange(candidates) {
+  const { start, end } = getDateRangeBounds();
+  if (!start && !end) return candidates;
+  return candidates.filter(c => {
+    const d = parseFuzzyDate(c.registeredOn);
+    if (!d) return true;
+    if (start && d < start) return false;
+    if (end && d > end) return false;
+    return true;
   });
+}
+
+function updateSummaryMetrics() {
+  const filtered = filterCandidatesByDateRange(AppState.candidates);
+
+  const totalApplicants = filtered.length;
+  const resumeCount = filtered.filter(c => c.status === 'Resume').length;
+  const screeningCount = filtered.filter(c => c.status === 'Screening').length;
+  const functionalCount = filtered.filter(c => c.status === 'Functional').length;
 
   document.getElementById('stat-total-applicants').textContent = totalApplicants;
   document.getElementById('stat-resume-analysis').textContent = resumeCount;
   document.getElementById('stat-recruiter-screening').textContent = screeningCount;
   document.getElementById('stat-functional-interview').textContent = functionalCount;
-  
-  // Sync individual pills under stats cards
-  // Total applicants card pills:
+
+  const bySource = { 'Career Page': 0, 'Bulk Upload': 0, 'Scheduled': 0, 'Direct Link': 0, 'ATS': 0 };
+  filtered.forEach(c => { if (bySource[c.source] !== undefined) bySource[c.source]++; });
+
   const appPills = document.querySelectorAll('.card-metric:nth-child(1) .m-pill .v');
   if (appPills.length >= 4) {
-    appPills[0].textContent = 0; // Career Page
-    appPills[1].textContent = 0; // Bulk Upload
-    appPills[2].textContent = screeningCount; // Scheduled screening
-    appPills[3].textContent = totalApplicants - screeningCount; // Direct Link / Rest
+    appPills[0].textContent = bySource['Career Page'];
+    appPills[1].textContent = bySource['Bulk Upload'];
+    appPills[2].textContent = bySource['Scheduled'];
+    appPills[3].textContent = bySource['Direct Link'];
   }
-  
-  // Resume analysis card pills:
+
   const resPills = document.querySelectorAll('.card-metric:nth-child(2) .m-pill .v');
   if (resPills.length >= 3) {
-    resPills[0].textContent = resumeCount; // Analysed
-    resPills[1].textContent = 0; // Shortlisted
-    resPills[2].textContent = 0; // Waitlisted
+    const analysed = filtered.filter(c => c.status === 'Resume' && c.score !== '—').length;
+    resPills[0].textContent = analysed;
+    resPills[1].textContent = filtered.filter(c => c.status === 'Screening' || c.status === 'Functional').length;
+    resPills[2].textContent = 0;
   }
 
-  // Recruiter screening card pills:
   const scrPills = document.querySelectorAll('.card-metric:nth-child(3) .m-pill .v');
   if (scrPills.length >= 4) {
-    scrPills[0].textContent = screeningCount > 0 ? screeningCount - 1 : 0; // Attempted
-    scrPills[1].textContent = screeningCount > 0 ? 1 : 0; // Scheduled
-    scrPills[2].textContent = 0; // Shortlisted
-    scrPills[3].textContent = 0; // Waitlisted
+    const attempted = filtered.filter(c => c.status === 'Screening' && c.interviewStatus === 'Completed').length;
+    const scheduled = filtered.filter(c => c.status === 'Screening' && c.interviewStatus !== 'Completed').length;
+    scrPills[0].textContent = attempted;
+    scrPills[1].textContent = scheduled;
+    scrPills[2].textContent = 0;
+    scrPills[3].textContent = 0;
   }
 
-  // Functional interview card pills:
   const funPills = document.querySelectorAll('.card-metric:nth-child(4) .m-pill .v');
   if (funPills.length >= 4) {
-    funPills[0].textContent = functionalCount > 0 ? functionalCount - 1 : 0; // Attempted
-    funPills[1].textContent = functionalCount > 0 ? 1 : 0; // Scheduled
-    funPills[2].textContent = 0; // Shortlisted
-    funPills[3].textContent = 0; // Waitlisted
+    const attempted = filtered.filter(c => c.status === 'Functional' && c.interviewStatus === 'Completed').length;
+    const scheduled = filtered.filter(c => c.status === 'Functional' && c.interviewStatus !== 'Completed').length;
+    funPills[0].textContent = attempted;
+    funPills[1].textContent = scheduled;
+    funPills[2].textContent = 0;
+    funPills[3].textContent = 0;
   }
 }
 
@@ -1434,10 +1753,10 @@ function triggerExcelExport(dataType) {
 // ==========================================
 
 function recalculateJobPipelines() {
+  const dateFiltered = filterCandidatesByDateRange(AppState.candidates);
   AppState.jobs.forEach(job => {
-    // Find all candidates for this job
-    const jobCandidates = AppState.candidates.filter(c => c.jobApplied === job.roleName || c.jobApplied === job.cardName);
-    
+    const jobCandidates = dateFiltered.filter(c => c.jobApplied === job.roleName || c.jobApplied === job.cardName);
+
     job.pipeline.total = jobCandidates.length;
     job.pipeline.resume = jobCandidates.filter(c => c.status === 'Resume').length;
     job.pipeline.screening = jobCandidates.filter(c => c.status === 'Screening').length;
@@ -2013,7 +2332,7 @@ function navigateToJobDetail(jobId) {
   document.querySelectorAll('.jd-pane').forEach(p => p.classList.remove('active'));
   document.getElementById('jd-pane-overview').classList.add('active');
 
-  const jobCandidates = AppState.candidates.filter(
+  const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
     c => c.jobApplied === job.roleName || c.jobApplied === job.cardName
   );
 
@@ -2128,9 +2447,12 @@ function drawFunnelSVG(job, candidates) {
   const svgEl = document.getElementById('jd-funnel-svg');
   if (!svgEl) return;
 
-  const W = 460, H = 400;
+  const wrap = svgEl.parentElement;
+  const rect = wrap ? wrap.getBoundingClientRect() : { width: 460, height: 400 };
+  const W = Math.max(rect.width || 460, 200);
+  const H = Math.max(rect.height || 400, 200);
   const cx = W / 2;
-  const maxHW = 148;
+  const maxHW = W * 0.32;
   const padT = 10, padB = 10;
 
   const total = Math.max(job.pipeline.total, 1);
@@ -2154,48 +2476,20 @@ function drawFunnelSVG(job, candidates) {
     return Math.max((c / total) * maxHW, 9);
   });
 
-  const pinkFrac = Math.max(Math.min(job.pipeline.screening / total, 0.85), 0.15) || 0.6;
-
   const pts = stageCounts.map((_, i) => ({
     y: ys[i],
     lx: cx - hws[i],
     rx: cx + hws[i],
-    mx: cx - hws[i] + (2 * hws[i] * pinkFrac),
   }));
-
-  const pinkSegs = [], greenSegs = [];
-  for (let i = 0; i < n - 1; i++) {
-    const p = pts[i], q = pts[i + 1];
-    const midY = (p.y + q.y) / 2;
-
-    pinkSegs.push(
-      `M ${p.lx} ${p.y} L ${p.mx} ${p.y}` +
-      ` C ${p.mx} ${midY} ${q.mx} ${midY} ${q.mx} ${q.y}` +
-      ` L ${q.lx} ${q.y}` +
-      ` C ${q.lx} ${midY} ${p.lx} ${midY} ${p.lx} ${p.y} Z`
-    );
-    greenSegs.push(
-      `M ${p.mx} ${p.y} L ${p.rx} ${p.y}` +
-      ` C ${p.rx} ${midY} ${q.rx} ${midY} ${q.rx} ${q.y}` +
-      ` L ${q.mx} ${q.y}` +
-      ` C ${q.mx} ${midY} ${p.mx} ${midY} ${p.mx} ${p.y} Z`
-    );
-  }
 
   const isLight = document.body.classList.contains('light-theme');
   const dividerStroke = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.065)';
-  const pinkFill = isLight ? '#be185d' : '#ec4899';
-  const greenFill = isLight ? '#047857' : '#10b981';
-
-  const dividers = pts.slice(1, -1).map(p =>
-    `<line x1="${p.lx - 14}" y1="${p.y}" x2="${p.rx + 14}" y2="${p.y}"
-      stroke="${dividerStroke}" stroke-width="1" stroke-dasharray="4 3"/>`
-  ).join('');
 
   const sourceColors = {
     'Career Page': '#6366f1', 'ATS': '#06b6d4', 'Bulk Upload': '#f59e0b',
     'Scheduled': '#ec4899', 'Direct Link': '#10b981'
   };
+  const sourceOrder = ['Career Page', 'ATS', 'Bulk Upload', 'Scheduled', 'Direct Link'];
   const stageStatusMap = {
     'Total Candidates': null, 'Resume Analysis': 'Resume', 'Recruiter Screening': 'Screening',
     'Functional Interview': 'Functional', 'Completed': 'Functional', 'Qualified': 'Hired'
@@ -2210,6 +2504,21 @@ function drawFunnelSVG(job, candidates) {
     const breakdown = {};
     stageCands.forEach(c => { const src = c.source || 'Unknown'; breakdown[src] = (breakdown[src] || 0) + 1; });
     return breakdown;
+  }
+
+  function getSourceFractions(stageIdx) {
+    const label = stageLabels[stageIdx];
+    const breakdown = getBreakdownForStage(label);
+    const stageTotal = Object.values(breakdown).reduce((a, b) => a + b, 0) || 1;
+    const fracs = [];
+    sourceOrder.forEach(src => {
+      if (breakdown[src]) fracs.push({ source: src, frac: breakdown[src] / stageTotal, color: sourceColors[src] });
+    });
+    Object.keys(breakdown).forEach(src => {
+      if (!sourceOrder.includes(src)) fracs.push({ source: src, frac: breakdown[src] / stageTotal, color: '#888' });
+    });
+    if (fracs.length === 0) fracs.push({ source: 'None', frac: 1, color: 'rgba(255,255,255,0.08)' });
+    return fracs;
   }
 
   svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
@@ -2239,19 +2548,38 @@ function drawFunnelSVG(job, candidates) {
     g.setAttribute('pointer-events', 'all');
     g.style.cursor = 'pointer';
 
-    const pinkPath = document.createElementNS(svgNS, 'path');
-    pinkPath.setAttribute('d', pinkSegs[i]);
-    pinkPath.setAttribute('fill', pinkFill);
-    pinkPath.setAttribute('opacity', '0.9');
-    pinkPath.setAttribute('pointer-events', 'all');
-    g.appendChild(pinkPath);
+    const p = pts[i], q = pts[i + 1];
+    const midY = (p.y + q.y) / 2;
+    const topW = p.rx - p.lx;
+    const botW = q.rx - q.lx;
+    const fracs = getSourceFractions(i);
 
-    const greenPath = document.createElementNS(svgNS, 'path');
-    greenPath.setAttribute('d', greenSegs[i]);
-    greenPath.setAttribute('fill', greenFill);
-    greenPath.setAttribute('opacity', '0.9');
-    greenPath.setAttribute('pointer-events', 'all');
-    g.appendChild(greenPath);
+    let topOffset = 0;
+    let botOffset = 0;
+    fracs.forEach(({ frac, color }) => {
+      const topSlice = topW * frac;
+      const botSlice = botW * frac;
+      const tl = p.lx + topOffset;
+      const tr = tl + topSlice;
+      const bl = q.lx + botOffset;
+      const br = bl + botSlice;
+
+      const d =
+        `M ${tl} ${p.y} L ${tr} ${p.y}` +
+        ` C ${tr} ${midY} ${br} ${midY} ${br} ${q.y}` +
+        ` L ${bl} ${q.y}` +
+        ` C ${bl} ${midY} ${tl} ${midY} ${tl} ${p.y} Z`;
+
+      const path = document.createElementNS(svgNS, 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill', color);
+      path.setAttribute('opacity', '0.9');
+      path.setAttribute('pointer-events', 'all');
+      g.appendChild(path);
+
+      topOffset += topSlice;
+      botOffset += botSlice;
+    });
 
     svgEl.appendChild(g);
   }
@@ -2266,6 +2594,24 @@ function drawFunnelSVG(job, candidates) {
   funnelTooltipEl.style.display = 'none';
 
   const stageItems = document.querySelectorAll('#jd-funnel-stages .jd-stage-item');
+  const stagesContainer = document.getElementById('jd-funnel-stages');
+  if (stagesContainer && stageItems.length === n) {
+    stagesContainer.style.position = 'relative';
+    stagesContainer.style.gap = '0';
+    stagesContainer.style.height = H + 'px';
+    stageItems.forEach((item, i) => {
+      const segTop = ys[i];
+      const segBot = i < n - 1 ? ys[i + 1] : H - padB;
+      const segH = segBot - segTop;
+      item.style.position = 'absolute';
+      item.style.left = '0';
+      item.style.right = '0';
+      item.style.top = segTop + 'px';
+      item.style.height = segH + 'px';
+      item.style.display = 'flex';
+      item.style.alignItems = 'center';
+    });
+  }
 
   let activeSegIdx = -1;
 
@@ -2355,7 +2701,10 @@ function drawScoreDistributionSVG(job, candidates) {
   const totalC = Math.max(candidates.length, 1);
   const percs = counts.map(c => (c / totalC) * 100);
 
-  const W = 380, H = 195;
+  const wrap = svgEl.parentElement;
+  const sRect = wrap ? wrap.getBoundingClientRect() : { width: 380, height: 220 };
+  const W = Math.max(sRect.width || 380, 200);
+  const H = Math.max(sRect.height || 220, 150);
   const padL = 42, padR = 12, padT = 18, padB = 36;
   const chartW = W - padL - padR;
   const chartH = H - padT - padB;
@@ -2367,7 +2716,7 @@ function drawScoreDistributionSVG(job, candidates) {
   const labelFill = isLight ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.3)';
   const valFill = isLight ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.65)';
   const bucketFill = isLight ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.35)';
-  const barFill = isLight ? '#4f46e5' : '#6366f1';
+  const bucketColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#10b981'];
 
   const yTicks = [0, 25, 50, 75, 100];
   const yLines = yTicks.map(v => {
@@ -2384,7 +2733,7 @@ function drawScoreDistributionSVG(job, candidates) {
     const x = padL + i * gap + (gap - barW) / 2;
     const y = padT + chartH - barH;
     return `
-      <rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${barFill}" rx="3" opacity="0.9"/>
+      <rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${bucketColors[i]}" rx="3" opacity="0.9"/>
       ${p > 0 ? `<text x="${x + barW / 2}" y="${y - 4}" text-anchor="middle"
         fill="${valFill}" font-size="9.5" font-family="sans-serif">${Math.round(p)}%</text>` : ''}
       <text x="${x + barW / 2}" y="${H - padB + 14}" text-anchor="middle"
@@ -3023,12 +3372,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Global click outside to hide column popups
   document.addEventListener('click', () => {
     const popToggle = document.getElementById('pop-columns-toggle');
     const popTeam = document.getElementById('pop-columns-team');
     if (popToggle) popToggle.style.display = 'none';
     if (popTeam) popTeam.style.display = 'none';
+    document.querySelectorAll('.stage-filter-dropdown').forEach(d => d.remove());
   });
 
   // Kanban view switching setup
@@ -3051,9 +3400,9 @@ document.addEventListener('DOMContentLoaded', () => {
       btnViewBoard.classList.add('active');
       btnViewCards.classList.remove('active');
       jobsListContainer.style.display = 'none';
-      jobsBoardContainer.style.display = 'grid';
+      jobsBoardContainer.style.display = 'block';
       soundEngine.playClick();
-      renderKanbanBoard();
+      renderJobListView();
     });
   }
 
@@ -3128,7 +3477,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (AppState.activeTab === 'job-detail' && AppState.activeJobId) {
       const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
       if (activeJob) {
-        const jobCandidates = AppState.candidates.filter(
+        const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
           c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName
         );
         drawFunnelSVG(activeJob, jobCandidates);
@@ -3558,6 +3907,23 @@ function initSlidingPills() {
   
   // Recalculate on window resize
   window.addEventListener('resize', updateAllSlidingPills);
+
+  let chartResizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(chartResizeTimer);
+    chartResizeTimer = setTimeout(() => {
+      if (AppState.activeTab === 'job-detail' && AppState.activeJobId) {
+        const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+        if (activeJob) {
+          const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
+            c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName
+          );
+          drawFunnelSVG(activeJob, jobCandidates);
+          drawScoreDistributionSVG(activeJob, jobCandidates);
+        }
+      }
+    }, 150);
+  });
   
   // Also watch for DOM changes (like when views are rendered dynamically or hidden/shown)
   const observer = new MutationObserver((mutations) => {
@@ -3802,6 +4168,101 @@ function initSourcing() {
     btnUpgradeSourcing.addEventListener('click', () => {
       soundEngine.playClick();
       showPremiumToast("ATS Integration is an Enterprise level feature. Please upgrade your plan.", "error");
+    });
+  }
+
+  document.querySelectorAll('.date-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      AppState.dateRange = btn.getAttribute('data-range');
+      // sync job detail dropdown
+      const jdLabel = document.getElementById('jd-daterange-label');
+      if (jdLabel) jdLabel.textContent = btn.textContent;
+      const jdDrop = document.getElementById('jd-daterange-dropdown');
+      if (jdDrop) jdDrop.querySelectorAll('.jd-dr-preset').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-range') === AppState.dateRange);
+      });
+      soundEngine.playClick();
+      applyDateRangeGlobally();
+    });
+  });
+
+  const dateFrom = document.getElementById('date-from');
+  const dateTo = document.getElementById('date-to');
+  if (dateFrom && dateTo) {
+    [dateFrom, dateTo].forEach(inp => {
+      inp.addEventListener('change', () => {
+        document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+        AppState.dateRange = 'custom';
+        soundEngine.playClick();
+        applyDateRangeGlobally();
+      });
+    });
+  }
+
+  // Job Detail Date Range dropdown
+  const jdDrBtn = document.getElementById('btn-jd-daterange');
+  const jdDrDrop = document.getElementById('jd-daterange-dropdown');
+  if (jdDrBtn && jdDrDrop) {
+    jdDrBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      jdDrDrop.classList.toggle('open');
+      soundEngine.playClick();
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#jd-date-range-wrap')) jdDrDrop.classList.remove('open');
+    });
+    jdDrDrop.querySelectorAll('.jd-dr-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        jdDrDrop.querySelectorAll('.jd-dr-preset').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        AppState.dateRange = btn.getAttribute('data-range');
+        document.getElementById('jd-daterange-label').textContent = btn.textContent;
+        // sync analytics bar
+        document.querySelectorAll('.date-preset').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-range') === AppState.dateRange);
+        });
+        soundEngine.playClick();
+        applyDateRangeGlobally();
+        jdDrDrop.classList.remove('open');
+      });
+    });
+    const jdDateFrom = document.getElementById('jd-date-from');
+    const jdDateTo = document.getElementById('jd-date-to');
+    if (jdDateFrom && jdDateTo) {
+      [jdDateFrom, jdDateTo].forEach(inp => {
+        inp.addEventListener('change', () => {
+          jdDrDrop.querySelectorAll('.jd-dr-preset').forEach(b => b.classList.remove('active'));
+          AppState.dateRange = 'custom';
+          AppState.customDateFrom = jdDateFrom.value;
+          AppState.customDateTo = jdDateTo.value;
+          document.getElementById('jd-daterange-label').textContent = 'Custom';
+          // sync analytics bar
+          document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+          if (document.getElementById('date-from')) document.getElementById('date-from').value = jdDateFrom.value;
+          if (document.getElementById('date-to')) document.getElementById('date-to').value = jdDateTo.value;
+          soundEngine.playClick();
+          applyDateRangeGlobally();
+        });
+      });
+    }
+  }
+
+  const btnLogout = document.querySelector('.btn-logout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast("You have been logged out.", "success");
+      setTimeout(() => { window.location.reload(); }, 1200);
+    });
+  }
+
+  const btnUpgrade = document.querySelector('.btn-upgrade');
+  if (btnUpgrade) {
+    btnUpgrade.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast("Plan upgrade flow coming soon. Contact sales for Enterprise access.", "info");
     });
   }
 }
@@ -4595,16 +5056,16 @@ function bindResumeAnalysisEvents(job) {
 function handleResumeFile(cid, file) {
   const preview = document.getElementById(`ra-preview-${cid}`);
   const zone = document.getElementById(`ra-zone-${cid}`);
-  const reader = new FileReader();
-  reader.onload = e => {
-    resumeTextCache[cid] = e.target.result;
+  const isPDF = file.name.toLowerCase().endsWith('.pdf');
+
+  function showFileChip(note) {
     zone?.classList.add('has-file');
     if (preview) {
       preview.classList.remove('ra-hidden');
       preview.innerHTML = `
         <div class="ra-file-chip">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span>${file.name}</span>
+          <span>${file.name}${note ? ` (${note})` : ''}</span>
           <button class="ra-remove-file" data-rcid="${cid}">×</button>
         </div>`;
       preview.querySelector('.ra-remove-file')?.addEventListener('click', () => {
@@ -4616,15 +5077,102 @@ function handleResumeFile(cid, file) {
         if (fi) fi.value = '';
       });
     }
+  }
+
+  if (isPDF) {
+    resumeTextCache[cid] = null;
+    showFileChip('PDF — will use AI profile');
+    showPremiumToast('PDF text extraction not available — analysis will use auto-generated profile.', 'info');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    if (isGarbageText(text)) {
+      resumeTextCache[cid] = null;
+      showFileChip('binary — will use AI profile');
+      showPremiumToast('File appears to be binary — analysis will use auto-generated profile.', 'info');
+    } else {
+      resumeTextCache[cid] = text;
+      showFileChip();
+    }
   };
   reader.readAsText(file);
+}
+
+function generateSyntheticResume(candidate, job) {
+  const allSkills = {
+    'Full Stack Developer': {
+      core: ['JavaScript', 'React', 'Node.js', 'PostgreSQL', 'TypeScript', 'REST APIs', 'Git', 'Docker', 'AWS', 'MongoDB', 'GraphQL', 'Redis', 'Express.js', 'Next.js', 'CI/CD', 'Kubernetes'],
+      companies: ['Infosys', 'TCS', 'Wipro', 'Flipkart', 'Razorpay', 'Swiggy', 'Paytm', 'Zoho'],
+      tasks: ['Built responsive web dashboards serving 50K+ daily users', 'Implemented RESTful microservices reducing API latency by 40%', 'Led migration from monolith to microservices architecture', 'Designed and maintained CI/CD pipelines with GitHub Actions', 'Optimized database queries resulting in 3x faster page loads', 'Mentored 3 junior developers on React best practices']
+    },
+    'Government Tender & Proposal Executive': {
+      core: ['Proposal Writing', 'RFP Analysis', 'Compliance', 'GeM Portal', 'SAP Ariba', 'Tender Management', 'Government Procurement', 'Documentation', 'MS Office', 'Contract Negotiation', 'Bid Management', 'CPPP Portal', 'Public Procurement', 'Financial Proposals'],
+      companies: ['L&T', 'BHEL', 'NTPC', 'Tata Projects', 'Adani Group', 'GMR Group', 'HCL Infra'],
+      tasks: ['Managed end-to-end tender lifecycle for 20+ government contracts', 'Drafted technical and financial proposals worth INR 50Cr+', 'Ensured 100% compliance with GeM and CPPP portal requirements', 'Coordinated with legal and finance teams for bid documentation', 'Won 15 government contracts through competitive bidding process', 'Maintained vendor database with 200+ suppliers']
+    }
+  };
+  const profile = allSkills[job.roleName] || allSkills['Full Stack Developer'];
+  const shuffled = [...profile.core].sort(() => 0.5 - Math.random());
+  const numSkills = 6 + Math.floor(Math.random() * 5);
+  const picked = shuffled.slice(0, numSkills);
+  const yrs = 1 + Math.floor(Math.random() * 7);
+  const company1 = profile.companies[Math.floor(Math.random() * profile.companies.length)];
+  const company2 = profile.companies.filter(c => c !== company1)[Math.floor(Math.random() * (profile.companies.length - 1))];
+  const tasks = [...profile.tasks].sort(() => 0.5 - Math.random()).slice(0, 3);
+  const tasks2 = [...profile.tasks].sort(() => 0.5 - Math.random()).slice(0, 2);
+
+  return `RESUME
+
+Name: ${candidate.name}
+Email: ${candidate.email}
+Phone: ${candidate.phone}
+
+PROFESSIONAL SUMMARY
+Results-driven professional with ${yrs} years of experience in ${job.roleName.toLowerCase()} roles. Strong background in ${picked.slice(0, 3).join(', ')} with a proven ability to deliver high-quality outcomes under deadline pressure.
+
+TECHNICAL SKILLS
+${picked.join(' | ')}
+
+WORK EXPERIENCE
+
+${job.roleName} — ${company1} (${Math.max(yrs - 2, 1)} years, current)
+${tasks.map(t => '  - ' + t).join('\n')}
+
+Associate ${job.roleName} — ${company2} (2 years)
+${tasks2.map(t => '  - ' + t).join('\n')}
+
+EDUCATION
+B.Tech in Computer Science — Indian Institute of Technology, Delhi (2018-2022)
+CGPA: ${(7 + Math.random() * 2.5).toFixed(1)}/10
+
+CERTIFICATIONS
+- AWS Certified Solutions Architect (2024)
+- Google Project Management Certificate (2023)`;
+}
+
+function isGarbageText(text) {
+  if (!text || text.length < 20) return true;
+  const printable = text.replace(/[^\x20-\x7E\n\r\t]/g, '');
+  return printable.length / text.length < 0.7;
 }
 
 async function runResumeAnalysis(cid, job) {
   const pasteArea = document.getElementById(`ra-paste-${cid}`);
   const btn = document.getElementById(`ra-btn-${cid}`);
-  const resumeText = (resumeTextCache[cid] || '') + '\n' + (pasteArea?.value || '');
-  if (!resumeText.trim()) { showPremiumToast('Upload a resume or paste text first.', 'error'); return; }
+  let resumeText = ((resumeTextCache[cid] || '') + '\n' + (pasteArea?.value || '')).trim();
+  const candidate = AppState.candidates.find(c => c.id === cid);
+  if (!resumeText || isGarbageText(resumeText)) {
+    if (candidate) {
+      resumeText = generateSyntheticResume(candidate, job);
+      showPremiumToast('Using auto-generated candidate profile for analysis.', 'info');
+    } else {
+      showPremiumToast('Upload a resume or paste text first.', 'error');
+      return;
+    }
+  }
 
   const origHTML = btn.innerHTML;
   btn.disabled = true;
@@ -4725,10 +5273,153 @@ function renderAnalysisResult(cid, result) {
   });
 }
 
+function openScheduleModal(candidateName, mode, callback) {
+  const existing = document.getElementById('schedule-modal-overlay');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'schedule-modal-overlay';
+  overlay.className = 'schedule-modal-overlay';
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  const dateStr = tomorrow.toISOString().split('T')[0];
+  overlay.innerHTML = `
+    <div class="schedule-modal">
+      <h3>${mode === 'reschedule' ? 'Reschedule' : 'Schedule'} Interview — ${candidateName}</h3>
+      <div class="schedule-form-group">
+        <label>Date</label>
+        <input type="date" id="sched-date" value="${dateStr}" />
+      </div>
+      <div class="schedule-form-group">
+        <label>Time</label>
+        <input type="time" id="sched-time" value="10:00" />
+      </div>
+      <div class="schedule-form-group">
+        <label>Duration</label>
+        <select id="sched-duration" style="padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--glass-border);border-radius:8px;color:var(--color-text-primary);font-size:0.82rem;outline:none;">
+          <option value="15">15 minutes</option>
+          <option value="30" selected>30 minutes</option>
+          <option value="45">45 minutes</option>
+          <option value="60">60 minutes</option>
+        </select>
+      </div>
+      <div class="schedule-modal-actions">
+        <button class="btn-schedule-cancel" id="sched-cancel">Cancel</button>
+        <button class="btn-schedule-confirm" id="sched-confirm">Confirm</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.getElementById('sched-cancel').addEventListener('click', () => overlay.remove());
+  document.getElementById('sched-confirm').addEventListener('click', () => {
+    const date = document.getElementById('sched-date').value;
+    const time = document.getElementById('sched-time').value;
+    overlay.remove();
+    if (callback) callback(date, time);
+    showPremiumToast(`Interview ${mode === 'reschedule' ? 'rescheduled' : 'scheduled'} for ${candidateName} on ${date} at ${time}.`, 'success');
+    soundEngine.playChime([523.25, 659.25], 0.15, 0.08);
+  });
+}
+
+function buildFilterDropdown(chip, type, candidates, stageKey) {
+  const existing = chip.querySelector('.stage-filter-dropdown');
+  if (existing) { existing.remove(); chip.classList.remove('active-filter'); return; }
+  document.querySelectorAll('.stage-filter-dropdown').forEach(d => { d.remove(); d.closest?.('.filter-chip')?.classList.remove('active-filter'); });
+
+  const dd = document.createElement('div');
+  dd.className = 'stage-filter-dropdown';
+  dd.addEventListener('click', e => e.stopPropagation());
+
+  const filters = AppState.stageFilters[stageKey];
+
+  if (type === 'interviewStatus') {
+    const statuses = ['Completed', 'Incomplete', 'Evaluating', 'Attempting', 'Not Started', 'Slot Missed'];
+    const counts = {};
+    statuses.forEach(s => { counts[s] = candidates.filter(c => c.interviewStatus === s).length; });
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Interview Status" /></div>
+      <div class="sfd-items">${statuses.map(s => `<label class="sfd-item"><input type="checkbox" value="${s}" ${filters.interviewStatus.includes(s) ? 'checked' : ''} /><span class="sfd-item-label">${s}</span><span class="sfd-item-count">${counts[s]}</span></label>`).join('')}</div>
+      <div class="sfd-footer"><button class="sfd-clear-btn">Clear filters</button></div>`;
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+      filters.interviewStatus = [...dd.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+      if (activeJob) renderJobDetailPanes(activeJob);
+    }));
+    dd.querySelector('.sfd-clear-btn').addEventListener('click', () => { filters.interviewStatus = []; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'cheatProb') {
+    const levels = ['High', 'Medium', 'Low'];
+    const counts = {};
+    levels.forEach(l => { counts[l] = candidates.filter(c => c.cheatProbability === l).length; });
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cheat Probability" /></div>
+      <div class="sfd-items">${levels.map(l => `<label class="sfd-item"><input type="checkbox" value="${l}" ${filters.cheatProb.includes(l) ? 'checked' : ''} /><span class="sfd-item-label">${l}</span><span class="sfd-item-count">${counts[l]}</span></label>`).join('')}</div>
+      <div class="sfd-footer"><button class="sfd-clear-btn">Clear filters</button></div>`;
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+      filters.cheatProb = [...dd.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob);
+    }));
+    dd.querySelector('.sfd-clear-btn').addEventListener('click', () => { filters.cheatProb = []; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'recruiterScreening') {
+    const vals = ['Good fit', 'Moderate fit', 'Poor fit'];
+    const counts = {};
+    vals.forEach(v => { counts[v] = candidates.filter(c => c.recruiterScreening === v).length; });
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Recruiter Screening" /></div>
+      <div class="sfd-items">${vals.map(v => `<label class="sfd-item"><input type="checkbox" value="${v}" ${filters.recruiterScreening.includes(v) ? 'checked' : ''} /><span class="sfd-item-label">${v}</span><span class="sfd-item-count">${counts[v]}</span></label>`).join('')}</div>
+      <div class="sfd-footer"><button class="sfd-clear-btn">Clear filters</button></div>`;
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+      filters.recruiterScreening = [...dd.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob);
+    }));
+    dd.querySelector('.sfd-clear-btn').addEventListener('click', () => { filters.recruiterScreening = []; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'interviewScore') {
+    dd.innerHTML = `
+      <div class="sfd-range-row">
+        <label>Interview score</label>
+        <input type="number" class="sfd-range-input" id="sfd-score-min" value="${filters.scoreMin ?? 0}" min="0" max="100" />
+        <span class="sfd-range-sep">to</span>
+        <input type="number" class="sfd-range-input" id="sfd-score-max" value="${filters.scoreMax ?? 100}" min="0" max="100" />
+      </div>
+      <div class="sfd-actions-row">
+        <button class="sfd-btn-clear">Clear</button>
+        <button class="sfd-btn-apply">Apply</button>
+      </div>`;
+    dd.querySelector('.sfd-btn-apply').addEventListener('click', () => {
+      filters.scoreMin = parseInt(dd.querySelector('#sfd-score-min').value) || 0;
+      filters.scoreMax = parseInt(dd.querySelector('#sfd-score-max').value) || 100;
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob);
+    });
+    dd.querySelector('.sfd-btn-clear').addEventListener('click', () => { filters.scoreMin = null; filters.scoreMax = null; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'actions') {
+    const acts = ['Shortlisted', 'Rejected', 'Waitlisted', 'Panel Shortlisted', 'Panel Rejected', 'Panel Waitlisted', 'Pending Action'];
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Actions" /></div>
+      <div class="sfd-items">${acts.map(a => `<label class="sfd-item"><input type="checkbox" value="${a}" /><span class="sfd-item-label">${a}</span><span class="sfd-item-count">0</span></label>`).join('')}</div>`;
+  }
+
+  chip.appendChild(dd);
+  chip.classList.add('active-filter');
+}
+
+function applyStageFilters(candidates, stageKey) {
+  const f = AppState.stageFilters[stageKey];
+  if (!f) return candidates;
+  let filtered = candidates;
+  if (f.interviewStatus.length > 0) filtered = filtered.filter(c => f.interviewStatus.includes(c.interviewStatus));
+  if (f.cheatProb.length > 0) filtered = filtered.filter(c => f.cheatProb.includes(c.cheatProbability));
+  if (f.recruiterScreening.length > 0) filtered = filtered.filter(c => f.recruiterScreening.includes(c.recruiterScreening));
+  if (f.scoreMin != null) filtered = filtered.filter(c => c.interviewScore != null && c.interviewScore >= f.scoreMin);
+  if (f.scoreMax != null) filtered = filtered.filter(c => c.interviewScore != null && c.interviewScore <= f.scoreMax);
+  return filtered;
+}
+
+function hasActiveFilters(stageKey) {
+  const f = AppState.stageFilters[stageKey];
+  return f && (f.interviewStatus.length > 0 || f.cheatProb.length > 0 || f.recruiterScreening.length > 0 || f.scoreMin != null || f.scoreMax != null);
+}
+
 function renderJobDetailPanes(job) {
   const searchVal = document.getElementById('jd-candidate-search').value.trim().toLowerCase();
   
-  const jobCandidates = AppState.candidates.filter(c => {
+  const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(c => {
     const matchesJob = c.jobApplied === job.roleName || c.jobApplied === job.cardName;
     if (!matchesJob) return false;
     if (searchVal) {
@@ -4772,13 +5463,17 @@ function renderJobDetailPanes(job) {
         return '<span class="status-chip">—</span>';
       };
 
+      const allScreeningCands = screeningCands;
+      const displayScreeningCands = applyStageFilters(screeningCands, 'screening');
+      const sf = AppState.stageFilters.screening;
       screeningList.innerHTML = `
         <div class="stage-table-container">
           <div class="stage-table-filters">
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg> Interview Status</span>
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg> Recruiter Screening</span>
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Recruiter Screening Score</span>
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line></svg> Source</span>
+            <span class="filter-chip" data-filter="interviewStatus" data-stage="screening">${sf.interviewStatus.length ? '⊗' : '⊕'} Interview Status ${sf.interviewStatus.length ? `<span class="filter-chip-val">${sf.interviewStatus.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="cheatProb" data-stage="screening">${sf.cheatProb.length ? '⊗' : '⊕'} Cheat Probability ${sf.cheatProb.length ? `<span class="filter-chip-val">${sf.cheatProb.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="recruiterScreening" data-stage="screening">⊕ Recruiter Screening ${sf.recruiterScreening.length ? `<span class="filter-chip-val">${sf.recruiterScreening.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="interviewScore" data-stage="screening">⊕ Interview Score</span>
+            ${hasActiveFilters('screening') ? '<button class="btn-filter-reset" data-stage="screening">✕ Reset</button>' : ''}
             <div class="stage-table-actions-bar">
               <button class="btn-bulk-actions">Bulk Actions <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
               <button class="btn-columns-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg> Columns</button>
@@ -4802,7 +5497,8 @@ function renderJobDetailPanes(job) {
               </tr>
             </thead>
             <tbody>
-              ${screeningCands.map(c => {
+              ${displayScreeningCands.length === 0 ? '<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
+              ${displayScreeningCands.map(c => {
                 const initials = c.name.split(' ').map(n=>n[0]).join('');
                 const hasReport = c.interviewStatus === 'Incomplete' || c.interviewStatus === 'Completed';
                 const sourceIcon = c.source === 'Direct Link' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>';
@@ -4833,7 +5529,7 @@ function renderJobDetailPanes(job) {
             </tbody>
           </table>
           <div class="stage-table-footer">
-            <span class="table-selection-info">0 of ${screeningCands.length} row(s) selected.</span>
+            <span class="table-selection-info">0 of ${displayScreeningCands.length} row(s) selected.</span>
             <div class="table-pagination">
               <span>Rows per page</span>
               <select class="rows-per-page"><option>25</option></select>
@@ -4878,15 +5574,18 @@ function renderJobDetailPanes(job) {
         return `<span class="screening-fit-badge ${cls}">${val}</span>`;
       };
 
+      const allFunctionalCands = functionalCands;
+      const displayFunctionalCands = applyStageFilters(functionalCands, 'functional');
+      const ff = AppState.stageFilters.functional;
       functionalList.innerHTML = `
         <div class="stage-table-container">
           <div class="stage-table-filters">
-            <span class="filter-chip active-filter">Interview Status <span class="filter-chip-val">Completed</span></span>
-            <span class="filter-chip active-filter">Cheat Probability <span class="filter-chip-val">Low</span></span>
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Interview Score</span>
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg> Recruiter Screening</span>
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg> Actions</span>
-            <button class="btn-filter-reset"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Reset</button>
+            <span class="filter-chip" data-filter="interviewStatus" data-stage="functional">${ff.interviewStatus.length ? '⊗' : '⊕'} Interview Status ${ff.interviewStatus.length ? `<span class="filter-chip-val">${ff.interviewStatus.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="cheatProb" data-stage="functional">${ff.cheatProb.length ? '⊗' : '⊕'} Cheat Probability ${ff.cheatProb.length ? `<span class="filter-chip-val">${ff.cheatProb.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="interviewScore" data-stage="functional">⊕ Interview Score</span>
+            <span class="filter-chip" data-filter="recruiterScreening" data-stage="functional">⊕ Recruiter Screening ${ff.recruiterScreening.length ? `<span class="filter-chip-val">${ff.recruiterScreening.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="actions" data-stage="functional">⊕ Actions</span>
+            ${hasActiveFilters('functional') ? '<button class="btn-filter-reset" data-stage="functional">✕ Reset</button>' : ''}
             <div class="stage-table-actions-bar">
               <button class="btn-bulk-actions">Bulk Reschedule <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
               <button class="btn-columns-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg> Columns</button>
@@ -4911,7 +5610,8 @@ function renderJobDetailPanes(job) {
               </tr>
             </thead>
             <tbody>
-              ${functionalCands.map(c => {
+              ${displayFunctionalCands.length === 0 ? '<tr><td colspan="12" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
+              ${displayFunctionalCands.map(c => {
                 const initials = c.name.split(' ').map(n=>n[0]).join('');
                 const sourceIcon = c.source === 'Direct Link' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>';
                 return `
@@ -4947,7 +5647,7 @@ function renderJobDetailPanes(job) {
             </tbody>
           </table>
           <div class="stage-table-footer">
-            <span class="table-selection-info">0 of ${functionalCands.length} row(s) selected.</span>
+            <span class="table-selection-info">0 of ${displayFunctionalCands.length} row(s) selected.</span>
             <div class="table-pagination">
               <span>Rows per page</span>
               <select class="rows-per-page"><option>25</option></select>
@@ -5008,6 +5708,125 @@ function renderJobDetailPanes(job) {
         openReportDrawerForCandidate(candId);
       });
     });
+
+    pane.querySelectorAll('.table-checkbox-all').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const table = cb.closest('table');
+        const rows = table.querySelectorAll('.table-checkbox-row');
+        rows.forEach(r => { r.checked = cb.checked; });
+        const info = cb.closest('.stage-table-container').querySelector('.table-selection-info');
+        if (info) info.textContent = `${cb.checked ? rows.length : 0} of ${rows.length} row(s) selected.`;
+        soundEngine.playClick();
+      });
+    });
+
+    pane.querySelectorAll('.table-checkbox-row').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const table = cb.closest('table');
+        const rows = table.querySelectorAll('.table-checkbox-row');
+        const checked = table.querySelectorAll('.table-checkbox-row:checked').length;
+        const info = cb.closest('.stage-table-container').querySelector('.table-selection-info');
+        if (info) info.textContent = `${checked} of ${rows.length} row(s) selected.`;
+      });
+    });
+
+    const jobCands = AppState.candidates.filter(c => c.jobApplied === job.roleName || c.jobApplied === job.cardName);
+    pane.querySelectorAll('.filter-chip[data-filter]').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundEngine.playClick();
+        const filterType = chip.getAttribute('data-filter');
+        const stageKey = chip.getAttribute('data-stage');
+        buildFilterDropdown(chip, filterType, jobCands, stageKey);
+      });
+    });
+
+    pane.querySelectorAll('.btn-filter-reset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        soundEngine.playClick();
+        const stageKey = btn.getAttribute('data-stage');
+        if (stageKey && AppState.stageFilters[stageKey]) {
+          AppState.stageFilters[stageKey] = { interviewStatus: [], cheatProb: [], recruiterScreening: [], scoreMin: null, scoreMax: null, actions: [] };
+          renderJobDetailPanes(job);
+        }
+      });
+    });
+
+    pane.querySelectorAll('.btn-bulk-actions').forEach(btn => {
+      btn.addEventListener('click', () => {
+        soundEngine.playClick();
+        const container = btn.closest('.stage-table-container');
+        const checked = container?.querySelectorAll('.table-checkbox-row:checked') || [];
+        if (checked.length === 0) {
+          showPremiumToast("Select candidates using checkboxes first.", "info");
+          return;
+        }
+        const candIds = [];
+        const names = [];
+        checked.forEach(cb => {
+          const row = cb.closest('tr');
+          const cid = row?.getAttribute('data-candidate-id');
+          const name = row?.querySelector('.cand-name-link')?.textContent?.trim();
+          if (cid) candIds.push(cid);
+          if (name) names.push(name);
+        });
+        const label = names.length <= 3 ? names.join(', ') : `${names.slice(0, 2).join(', ')} +${names.length - 2} more`;
+        openScheduleModal(label, 'reschedule', (date, time) => {
+          candIds.forEach(cid => {
+            const cand = AppState.candidates.find(c => c.id === cid);
+            if (cand) {
+              cand.attemptedAt = `${date} ${time}`;
+              cand.interviewStatus = 'Not Started';
+            }
+          });
+          saveStateToLocalStorage();
+          renderJobDetailPanes(job);
+          showPremiumToast(`Bulk rescheduled ${candIds.length} candidate(s) to ${date} at ${time}.`, 'success');
+        });
+      });
+    });
+
+    pane.querySelectorAll('.btn-export-table').forEach(btn => {
+      btn.addEventListener('click', () => {
+        soundEngine.playClick();
+        triggerExcelExport('candidates');
+      });
+    });
+
+    pane.querySelectorAll('.btn-reschedule, .btn-schedule').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundEngine.playClick();
+        const name = btn.closest('tr')?.querySelector('.cand-name-link')?.textContent?.trim() || 'Candidate';
+        const mode = btn.classList.contains('btn-reschedule') ? 'reschedule' : 'schedule';
+        const candId = btn.getAttribute('data-candidate-id');
+        openScheduleModal(name, mode, (date, time) => {
+          const cand = AppState.candidates.find(c => c.id === candId);
+          if (cand) {
+            cand.interviewStatus = mode === 'reschedule' ? 'Incomplete' : 'Not Started';
+            cand.attemptedAt = `${date} ${time}`;
+            saveStateToLocalStorage();
+            renderJobDetailPanes(job);
+          }
+        });
+      });
+    });
+
+    pane.querySelectorAll('.action-select-status').forEach(sel => {
+      sel.addEventListener('change', () => {
+        soundEngine.playClick();
+        const candId = sel.getAttribute('data-cand-id');
+        const newVal = sel.value;
+        if (candId && newVal) {
+          const cand = AppState.candidates.find(c => c.id === candId);
+          if (cand) {
+            if (newVal === 'advance') updateCandidateStatus(candId, 'Hired');
+            else if (newVal === 'reject') updateCandidateStatus(candId, 'Rejected');
+            else showPremiumToast(`${cand.name} placed on hold.`, 'info');
+          }
+        }
+      });
+    });
   }
   renderQuestionsPane(job);
 }
@@ -5045,12 +5864,12 @@ function updateCandidateStatus(candId, newStatus) {
     renderFunnelStages(activeJob);
     renderFunnelInsights(activeJob);
     
-    const jobCandidates = AppState.candidates.filter(
+    const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
       c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName
     );
     drawFunnelSVG(activeJob, jobCandidates);
     drawScoreDistributionSVG(activeJob, jobCandidates);
-    
+
     renderJobDetailPanes(activeJob);
   }
   
@@ -5462,23 +6281,38 @@ function renderQuestionsPane(job) {
       
       soundEngine.playChime([392, 440], 0.1, 0.1);
 
+      const numQ = document.getElementById('cfg-num-questions')?.value || '5';
+      const qTypes = document.getElementById('cfg-question-types')?.value || 'mixed';
+      const qDiff = document.getElementById('cfg-difficulty')?.value || 'mixed';
+      const qDuration = document.getElementById('cfg-duration')?.value || '30';
+      const qFollowups = document.getElementById('cfg-followups')?.value || '2';
+
+      const typeInstruction = qTypes === 'mixed'
+        ? 'Include a mix of technical, behavioral, and situational questions.'
+        : `Generate only ${qTypes} questions.`;
+      const diffInstruction = qDiff === 'mixed'
+        ? 'Include a mix of beginner, intermediate, and advanced difficulty levels.'
+        : `All questions should be ${qDiff} difficulty.`;
+
       const systemPrompt = `You are a senior hiring manager and domain expert.
-Your task is to generate a set of 3 to 5 high-quality interview questions based on the given job description.
+Your task is to generate exactly ${numQ} high-quality interview questions based on the given job description.
+The interview is planned for ${qDuration} minutes.
 
 Requirements:
-- Include different types of questions: technical, behavioral, and situational.
+- ${typeInstruction}
+- ${diffInstruction}
 - For each question, provide:
   1. "type": either "technical", "behavioral", or "situational".
   2. "question": a clear, direct, and professional question.
   3. "difficulty": either "beginner", "intermediate", or "advanced".
   4. "rubric": a brief evaluation rubric (what a good answer should include).
-  5. "follow_ups": a list of 2 suggested follow-up questions.
+  5. "follow_ups": a list of ${qFollowups} suggested follow-up questions.
 - Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdown or add explanations.`;
 
       try {
         const responseText = await callDeepSeekAPI([
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate questions for this job description:\n\n${desc}` }
+          { role: "user", content: `Generate ${numQ} interview questions for this job description:\n\n${desc}` }
         ], true);
 
         const cleanText = sanitizeJSONResponse(responseText);
@@ -5816,7 +6650,7 @@ function initCrystalAnimations() {
       const fragmentShader = `
         uniform float u_time;
         uniform vec2 u_resolution;
-        uniform float u_theme; // 0.0 for dark (purple/blue), 1.0 for light (beige/orange/yellow)
+        uniform float u_theme; // 0.0 for dark (black/grey), 1.0 for light (off-white/grey)
         uniform vec2 u_mouse;
         
         varying vec2 vUv;
@@ -5870,25 +6704,25 @@ function initCrystalAnimations() {
           
           float f = fbm(p + 1.1 * r);
           
-          // Theme 1 (Dark Mode): Deep Subtle Purples and Midnight Blues (Darker for readability)
-          vec3 darkBg = vec3(0.008, 0.006, 0.018);     // Extremely dark midnight purple-slate
-          vec3 darkPurple = vec3(0.12, 0.04, 0.25);    // Subtle deep violet
-          vec3 darkBlue = vec3(0.03, 0.08, 0.22);      // Subtle deep sapphire
-          vec3 darkAccent = vec3(0.05, 0.02, 0.12);    // Subtle deep indigo
-          
-          vec3 darkColor = mix(darkBg, darkPurple, f * 0.6);
-          darkColor = mix(darkColor, darkBlue, r.x * 0.5);
-          darkColor = mix(darkColor, darkAccent, q.y * 0.3);
-          
-          // Theme 2 (Light Mode): Muted Soft Beige/Cream and Light Pastel Accents (Toned down for readability)
-          vec3 lightBg = vec3(0.975, 0.970, 0.955);     // Clean, pale warm cream
-          vec3 lightOrange = vec3(0.985, 0.925, 0.880); // Ultra pale, soft pastel peach
-          vec3 lightYellow = vec3(0.990, 0.965, 0.910); // Ultra pale, soft champagne
-          vec3 lightAccent = vec3(0.965, 0.945, 0.915); // Very soft beige
-          
-          vec3 lightColor = mix(lightBg, lightOrange, f * 0.35);
-          lightColor = mix(lightColor, lightYellow, r.y * 0.25);
-          lightColor = mix(lightColor, lightAccent, q.x * 0.2);
+          // Theme 1 (Dark Mode): Blackish grey tones
+          vec3 darkBg = vec3(0.0, 0.0, 0.0);
+          vec3 darkGrey1 = vec3(0.06, 0.06, 0.07);
+          vec3 darkGrey2 = vec3(0.04, 0.04, 0.045);
+          vec3 darkGrey3 = vec3(0.08, 0.08, 0.085);
+
+          vec3 darkColor = mix(darkBg, darkGrey1, f * 0.7);
+          darkColor = mix(darkColor, darkGrey2, r.x * 0.5);
+          darkColor = mix(darkColor, darkGrey3, q.y * 0.3);
+
+          // Theme 2 (Light Mode): Off-white with subtle grey hues
+          vec3 lightBg = vec3(0.98, 0.98, 0.975);
+          vec3 lightGrey1 = vec3(0.94, 0.94, 0.935);
+          vec3 lightGrey2 = vec3(0.96, 0.955, 0.95);
+          vec3 lightGrey3 = vec3(0.92, 0.92, 0.915);
+
+          vec3 lightColor = mix(lightBg, lightGrey1, f * 0.4);
+          lightColor = mix(lightColor, lightGrey2, r.y * 0.3);
+          lightColor = mix(lightColor, lightGrey3, q.x * 0.2);
           
           // Smooth crossfade based on active theme uniform (0.0 to 1.0)
           vec3 finalColor = mix(darkColor, lightColor, u_theme);

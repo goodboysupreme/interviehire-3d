@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   }
 
   const payload = {
-    model: 'deepseek-chat',
+    model: 'deepseek-reasoner',
     messages,
     temperature: 0.7,
     max_tokens: 3000,
