@@ -2447,9 +2447,12 @@ function drawFunnelSVG(job, candidates) {
   const svgEl = document.getElementById('jd-funnel-svg');
   if (!svgEl) return;
 
-  const W = 460, H = 400;
+  const wrap = svgEl.parentElement;
+  const rect = wrap ? wrap.getBoundingClientRect() : { width: 460, height: 400 };
+  const W = Math.max(rect.width || 460, 200);
+  const H = Math.max(rect.height || 400, 200);
   const cx = W / 2;
-  const maxHW = 148;
+  const maxHW = W * 0.32;
   const padT = 10, padB = 10;
 
   const total = Math.max(job.pipeline.total, 1);
@@ -2680,7 +2683,10 @@ function drawScoreDistributionSVG(job, candidates) {
   const totalC = Math.max(candidates.length, 1);
   const percs = counts.map(c => (c / totalC) * 100);
 
-  const W = 380, H = 195;
+  const wrap = svgEl.parentElement;
+  const sRect = wrap ? wrap.getBoundingClientRect() : { width: 380, height: 220 };
+  const W = Math.max(sRect.width || 380, 200);
+  const H = Math.max(sRect.height || 220, 150);
   const padL = 42, padR = 12, padT = 18, padB = 36;
   const chartW = W - padL - padR;
   const chartH = H - padT - padB;
@@ -3883,6 +3889,23 @@ function initSlidingPills() {
   
   // Recalculate on window resize
   window.addEventListener('resize', updateAllSlidingPills);
+
+  let chartResizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(chartResizeTimer);
+    chartResizeTimer = setTimeout(() => {
+      if (AppState.activeTab === 'job-detail' && AppState.activeJobId) {
+        const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+        if (activeJob) {
+          const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
+            c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName
+          );
+          drawFunnelSVG(activeJob, jobCandidates);
+          drawScoreDistributionSVG(activeJob, jobCandidates);
+        }
+      }
+    }, 150);
+  });
   
   // Also watch for DOM changes (like when views are rendered dynamically or hidden/shown)
   const observer = new MutationObserver((mutations) => {
