@@ -16,11 +16,11 @@
   --color-indigo-rgb:       59, 130, 246;
   --color-brand-purple-rgb: 139, 92, 246;
 
-  /* Base — midnight purple-slate */
-  --color-bg:               oklch(6% 0.015 272);
-  --color-surface:          rgba(255, 255, 255, 0.045);
-  --color-surface-2:        rgba(255, 255, 255, 0.025);
-  --color-surface-solid:    oklch(9% 0.018 270);
+  /* Base — near-black with subtle violet tint */
+  --color-bg:               oklch(4% 0.006 272);
+  --color-surface:          rgba(255, 255, 255, 0.04);
+  --color-surface-2:        rgba(255, 255, 255, 0.02);
+  --color-surface-solid:    oklch(7% 0.008 270);
 
   /* Primary accent — Vibrant Violet */
   --color-gold:             oklch(58% 0.22 286);
@@ -46,7 +46,7 @@
   --color-text-primary:     oklch(94% 0.008 270);
   --color-text-muted:       oklch(68% 0.010 270);
   --color-text-faint:       oklch(48% 0.008 270);
-  --color-bg-dark:          oklch(6% 0.015 272);
+  --color-bg-dark:          oklch(4% 0.006 272);
 
   /* Glass — white-alpha surfaces over dark bg */
   --glass-bg:               rgba(255, 255, 255, 0.045);
@@ -85,18 +85,18 @@
   --transition-smooth: var(--spring-smooth);
   --transition-fast:   var(--spring-fast);
 
-  /* Ambient Orbs — vibrant purple, sapphire, and indigo glow */
-  --orb-color-1:            oklch(56% 0.22 286);
-  --orb-opacity-1:          0.45;
-  --orb-color-2:            oklch(52% 0.20 245);
-  --orb-opacity-2:          0.38;
-  --orb-color-3:            oklch(48% 0.18 265);
-  --orb-opacity-3:          0.32;
-  --orb-color-4:            oklch(44% 0.16 255);
-  --orb-opacity-4:          0.26;
+  /* Ambient Orbs — subtle on near-black */
+  --orb-color-1:            oklch(50% 0.18 286);
+  --orb-opacity-1:          0.25;
+  --orb-color-2:            oklch(46% 0.16 245);
+  --orb-opacity-2:          0.20;
+  --orb-color-3:            oklch(42% 0.14 265);
+  --orb-opacity-3:          0.16;
+  --orb-color-4:            oklch(38% 0.12 255);
+  --orb-opacity-4:          0.12;
 
-  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, oklch(18% 0.08 280), transparent);
-  --scene-gradient-2:       radial-gradient(ellipse 70% 70% at 86% 74%, oklch(16% 0.07 250), transparent);
+  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, oklch(12% 0.05 280), transparent);
+  --scene-gradient-2:       radial-gradient(ellipse 70% 70% at 86% 74%, oklch(10% 0.04 250), transparent);
 
   /* Card Glows */
   --card-glow-indigo:       rgba(var(--color-gold-rgb), 0.14);
@@ -592,7 +592,7 @@ body { position: relative; color: var(--color-text-primary); }
    HEADER
    ============================================================ */
 .dashboard-header {
-  background: rgba(7, 8, 15, 0.7);
+  background: rgba(4, 4, 8, 0.82);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   border-bottom: 1px solid var(--glass-border);
@@ -2051,6 +2051,37 @@ body.light-theme .theme-icon-sun { display: block; }
 .pipeline-check-item { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.88rem; }
 .pipeline-check-item input { accent-color: var(--color-gold); }
 
+.drawer-interview-config {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.drawer-config-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+.drawer-config-item select {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.76rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  outline: none;
+}
+.drawer-config-item select:focus {
+  border-color: var(--glass-border-gold);
+}
+
 /* Report drawer */
 .candidate-profile-summary {
   background: rgba(0,0,0,0.2);
@@ -2810,6 +2841,41 @@ body.light-theme .btn-stage-advance:hover {
 #jd-raw-description:focus {
   border-color: var(--glass-border-gold);
   box-shadow: 0 0 0 2px rgba(var(--color-gold-rgb), 0.12);
+}
+
+.jd-gen-config {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.jd-config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+}
+.jd-config-label {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+.jd-config-select {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  outline: none;
+  min-width: 80px;
+}
+.jd-config-select:focus {
+  border-color: var(--glass-border-gold);
 }
 
 .jd-questions-list-section {
@@ -5361,6 +5427,102 @@ body.light-theme .funnel-svg-tooltip {
 }
 
 /* ============================================================
+   DATE RANGE BAR
+   ============================================================ */
+.date-range-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.date-range-presets {
+  display: flex;
+  gap: 6px;
+}
+.date-preset {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.date-preset:hover { background: rgba(255,255,255,0.04); color: var(--color-text-primary); }
+.date-preset.active { background: rgba(var(--color-gold-rgb), 0.12); border-color: rgba(var(--color-gold-rgb), 0.3); color: var(--color-gold); }
+.date-range-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.date-input {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--glass-border);
+  background: rgba(0,0,0,0.2);
+  color: var(--color-text-primary);
+  font-size: 0.76rem;
+  font-family: var(--font-body);
+  outline: none;
+  cursor: pointer;
+}
+.date-input:focus { border-color: var(--glass-border-gold); }
+.date-sep { color: var(--color-text-faint); font-size: 0.76rem; }
+
+/* ============================================================
+   LIST VIEW ROWS
+   ============================================================ */
+.job-list-row {
+  display: grid;
+  grid-template-columns: 2fr 0.8fr 0.8fr 0.5fr 0.5fr 0.6fr 0.7fr 0.5fr;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--glass-border);
+  transition: background 0.15s ease;
+}
+.job-list-row:not(.job-list-header):hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.job-list-header {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-faint);
+  font-weight: 600;
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px 10px 0 0;
+}
+.jl-col {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.82rem;
+  color: var(--color-text-primary);
+}
+.job-list-header .jl-col {
+  color: var(--color-text-faint);
+}
+.jl-title {
+  font-weight: 500;
+}
+.jl-total, .jl-resume, .jl-screening, .jl-functional {
+  text-align: center;
+}
+.jl-action {
+  text-align: right;
+}
+
+/* ============================================================
    CHANGE 3 & 7: STAGE DATA TABLE
    ============================================================ */
 .stage-table-container {
@@ -5412,6 +5574,43 @@ body.light-theme .funnel-svg-tooltip {
   font-size: 0.7rem;
   font-weight: 600;
   margin-left: 2px;
+}
+
+.filter-chip-cheat {
+  position: relative;
+}
+.cheat-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 50;
+  min-width: 120px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.cheat-dd-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.cheat-dd-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.cheat-dd-item input {
+  accent-color: var(--color-gold);
 }
 
 .btn-filter-reset {
@@ -5622,6 +5821,10 @@ body.light-theme .funnel-svg-tooltip {
   align-items: center;
   gap: 4px;
   font-size: 0.8rem;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .interview-score-dot {

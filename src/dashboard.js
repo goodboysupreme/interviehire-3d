@@ -605,6 +605,58 @@ function renderJobCards() {
   });
 }
 
+function renderJobListView() {
+  const container = document.getElementById('jobs-board-container');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const filteredJobs = AppState.jobs.filter(job => {
+    if (AppState.jobsFilter !== 'all' && job.status !== AppState.jobsFilter) return false;
+    if (AppState.globalSearch) {
+      const query = AppState.globalSearch.toLowerCase();
+      return job.roleName.toLowerCase().includes(query) || job.id.toLowerCase().includes(query);
+    }
+    return true;
+  });
+
+  if (filteredJobs.length === 0) {
+    container.innerHTML = '<div class="empty-state card-glass" style="padding:32px;text-align:center;"><p class="type-caption">No jobs match your filters.</p></div>';
+    return;
+  }
+
+  const header = document.createElement('div');
+  header.className = 'job-list-row job-list-header';
+  header.innerHTML = `
+    <span class="jl-col jl-title">Job Title</span>
+    <span class="jl-col jl-status">Status</span>
+    <span class="jl-col jl-created">Created</span>
+    <span class="jl-col jl-total">Total</span>
+    <span class="jl-col jl-resume">Resume</span>
+    <span class="jl-col jl-screening">Screening</span>
+    <span class="jl-col jl-functional">Functional</span>
+    <span class="jl-col jl-action"></span>`;
+  container.appendChild(header);
+
+  filteredJobs.forEach(job => {
+    const row = document.createElement('div');
+    row.className = 'job-list-row';
+    const p = job.pipeline || { total: 0, resume: 0, screening: 0, functional: 0 };
+    const statusLabel = (job.status || 'published').charAt(0).toUpperCase() + (job.status || 'published').slice(1);
+    row.innerHTML = `
+      <span class="jl-col jl-title">${job.cardName || job.roleName}</span>
+      <span class="jl-col jl-status"><span class="status-badge ${job.status || 'published'}"><span class="status-badge-dot"></span>${statusLabel}</span></span>
+      <span class="jl-col jl-created">${job.created || '-'}</span>
+      <span class="jl-col jl-total">${p.total}</span>
+      <span class="jl-col jl-resume">${p.resume || '-'}</span>
+      <span class="jl-col jl-screening">${p.screening || '-'}</span>
+      <span class="jl-col jl-functional">${p.functional || '-'}</span>
+      <span class="jl-col jl-action"><button class="btn-jd-ghost btn-sm" style="font-size:0.72rem;">View</button></span>`;
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', () => navigateToJobDetail(job.id));
+    container.appendChild(row);
+  });
+}
+
 // Update counts displayed on filter tabs
 function updateJobsCounters() {
   const allCount = AppState.jobs.length;
@@ -2154,48 +2206,20 @@ function drawFunnelSVG(job, candidates) {
     return Math.max((c / total) * maxHW, 9);
   });
 
-  const pinkFrac = Math.max(Math.min(job.pipeline.screening / total, 0.85), 0.15) || 0.6;
-
   const pts = stageCounts.map((_, i) => ({
     y: ys[i],
     lx: cx - hws[i],
     rx: cx + hws[i],
-    mx: cx - hws[i] + (2 * hws[i] * pinkFrac),
   }));
-
-  const pinkSegs = [], greenSegs = [];
-  for (let i = 0; i < n - 1; i++) {
-    const p = pts[i], q = pts[i + 1];
-    const midY = (p.y + q.y) / 2;
-
-    pinkSegs.push(
-      `M ${p.lx} ${p.y} L ${p.mx} ${p.y}` +
-      ` C ${p.mx} ${midY} ${q.mx} ${midY} ${q.mx} ${q.y}` +
-      ` L ${q.lx} ${q.y}` +
-      ` C ${q.lx} ${midY} ${p.lx} ${midY} ${p.lx} ${p.y} Z`
-    );
-    greenSegs.push(
-      `M ${p.mx} ${p.y} L ${p.rx} ${p.y}` +
-      ` C ${p.rx} ${midY} ${q.rx} ${midY} ${q.rx} ${q.y}` +
-      ` L ${q.mx} ${q.y}` +
-      ` C ${q.mx} ${midY} ${p.mx} ${midY} ${p.mx} ${p.y} Z`
-    );
-  }
 
   const isLight = document.body.classList.contains('light-theme');
   const dividerStroke = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.065)';
-  const pinkFill = isLight ? '#be185d' : '#ec4899';
-  const greenFill = isLight ? '#047857' : '#10b981';
-
-  const dividers = pts.slice(1, -1).map(p =>
-    `<line x1="${p.lx - 14}" y1="${p.y}" x2="${p.rx + 14}" y2="${p.y}"
-      stroke="${dividerStroke}" stroke-width="1" stroke-dasharray="4 3"/>`
-  ).join('');
 
   const sourceColors = {
     'Career Page': '#6366f1', 'ATS': '#06b6d4', 'Bulk Upload': '#f59e0b',
     'Scheduled': '#ec4899', 'Direct Link': '#10b981'
   };
+  const sourceOrder = ['Career Page', 'ATS', 'Bulk Upload', 'Scheduled', 'Direct Link'];
   const stageStatusMap = {
     'Total Candidates': null, 'Resume Analysis': 'Resume', 'Recruiter Screening': 'Screening',
     'Functional Interview': 'Functional', 'Completed': 'Functional', 'Qualified': 'Hired'
@@ -2210,6 +2234,21 @@ function drawFunnelSVG(job, candidates) {
     const breakdown = {};
     stageCands.forEach(c => { const src = c.source || 'Unknown'; breakdown[src] = (breakdown[src] || 0) + 1; });
     return breakdown;
+  }
+
+  function getSourceFractions(stageIdx) {
+    const label = stageLabels[stageIdx];
+    const breakdown = getBreakdownForStage(label);
+    const stageTotal = Object.values(breakdown).reduce((a, b) => a + b, 0) || 1;
+    const fracs = [];
+    sourceOrder.forEach(src => {
+      if (breakdown[src]) fracs.push({ source: src, frac: breakdown[src] / stageTotal, color: sourceColors[src] });
+    });
+    Object.keys(breakdown).forEach(src => {
+      if (!sourceOrder.includes(src)) fracs.push({ source: src, frac: breakdown[src] / stageTotal, color: '#888' });
+    });
+    if (fracs.length === 0) fracs.push({ source: 'None', frac: 1, color: 'rgba(255,255,255,0.08)' });
+    return fracs;
   }
 
   svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
@@ -2239,19 +2278,38 @@ function drawFunnelSVG(job, candidates) {
     g.setAttribute('pointer-events', 'all');
     g.style.cursor = 'pointer';
 
-    const pinkPath = document.createElementNS(svgNS, 'path');
-    pinkPath.setAttribute('d', pinkSegs[i]);
-    pinkPath.setAttribute('fill', pinkFill);
-    pinkPath.setAttribute('opacity', '0.9');
-    pinkPath.setAttribute('pointer-events', 'all');
-    g.appendChild(pinkPath);
+    const p = pts[i], q = pts[i + 1];
+    const midY = (p.y + q.y) / 2;
+    const topW = p.rx - p.lx;
+    const botW = q.rx - q.lx;
+    const fracs = getSourceFractions(i);
 
-    const greenPath = document.createElementNS(svgNS, 'path');
-    greenPath.setAttribute('d', greenSegs[i]);
-    greenPath.setAttribute('fill', greenFill);
-    greenPath.setAttribute('opacity', '0.9');
-    greenPath.setAttribute('pointer-events', 'all');
-    g.appendChild(greenPath);
+    let topOffset = 0;
+    let botOffset = 0;
+    fracs.forEach(({ frac, color }) => {
+      const topSlice = topW * frac;
+      const botSlice = botW * frac;
+      const tl = p.lx + topOffset;
+      const tr = tl + topSlice;
+      const bl = q.lx + botOffset;
+      const br = bl + botSlice;
+
+      const d =
+        `M ${tl} ${p.y} L ${tr} ${p.y}` +
+        ` C ${tr} ${midY} ${br} ${midY} ${br} ${q.y}` +
+        ` L ${bl} ${q.y}` +
+        ` C ${bl} ${midY} ${tl} ${midY} ${tl} ${p.y} Z`;
+
+      const path = document.createElementNS(svgNS, 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill', color);
+      path.setAttribute('opacity', '0.9');
+      path.setAttribute('pointer-events', 'all');
+      g.appendChild(path);
+
+      topOffset += topSlice;
+      botOffset += botSlice;
+    });
 
     svgEl.appendChild(g);
   }
@@ -2367,7 +2425,7 @@ function drawScoreDistributionSVG(job, candidates) {
   const labelFill = isLight ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.3)';
   const valFill = isLight ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.65)';
   const bucketFill = isLight ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.35)';
-  const barFill = isLight ? '#4f46e5' : '#6366f1';
+  const bucketColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#10b981'];
 
   const yTicks = [0, 25, 50, 75, 100];
   const yLines = yTicks.map(v => {
@@ -2384,7 +2442,7 @@ function drawScoreDistributionSVG(job, candidates) {
     const x = padL + i * gap + (gap - barW) / 2;
     const y = padT + chartH - barH;
     return `
-      <rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${barFill}" rx="3" opacity="0.9"/>
+      <rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${bucketColors[i]}" rx="3" opacity="0.9"/>
       ${p > 0 ? `<text x="${x + barW / 2}" y="${y - 4}" text-anchor="middle"
         fill="${valFill}" font-size="9.5" font-family="sans-serif">${Math.round(p)}%</text>` : ''}
       <text x="${x + barW / 2}" y="${H - padB + 14}" text-anchor="middle"
@@ -3051,9 +3109,9 @@ document.addEventListener('DOMContentLoaded', () => {
       btnViewBoard.classList.add('active');
       btnViewCards.classList.remove('active');
       jobsListContainer.style.display = 'none';
-      jobsBoardContainer.style.display = 'grid';
+      jobsBoardContainer.style.display = 'block';
       soundEngine.playClick();
-      renderKanbanBoard();
+      renderJobListView();
     });
   }
 
@@ -3802,6 +3860,32 @@ function initSourcing() {
     btnUpgradeSourcing.addEventListener('click', () => {
       soundEngine.playClick();
       showPremiumToast("ATS Integration is an Enterprise level feature. Please upgrade your plan.", "error");
+    });
+  }
+
+  document.querySelectorAll('.date-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      soundEngine.playClick();
+      showPremiumToast(`Date range set to ${btn.textContent.trim()}.`, 'success');
+    });
+  });
+
+  const btnLogout = document.querySelector('.btn-logout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast("You have been logged out.", "success");
+      setTimeout(() => { window.location.reload(); }, 1200);
+    });
+  }
+
+  const btnUpgrade = document.querySelector('.btn-upgrade');
+  if (btnUpgrade) {
+    btnUpgrade.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast("Plan upgrade flow coming soon. Contact sales for Enterprise access.", "info");
     });
   }
 }
@@ -4776,6 +4860,7 @@ function renderJobDetailPanes(job) {
         <div class="stage-table-container">
           <div class="stage-table-filters">
             <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg> Interview Status</span>
+            <span class="filter-chip filter-chip-cheat" data-filter-type="cheat"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg> Cheat Prob</span>
             <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg> Recruiter Screening</span>
             <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Recruiter Screening Score</span>
             <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line></svg> Source</span>
@@ -5006,6 +5091,83 @@ function renderJobDetailPanes(job) {
         e.preventDefault();
         const candId = link.getAttribute('data-cand-id');
         openReportDrawerForCandidate(candId);
+      });
+    });
+
+    pane.querySelectorAll('.table-checkbox-all').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const table = cb.closest('table');
+        const rows = table.querySelectorAll('.table-checkbox-row');
+        rows.forEach(r => { r.checked = cb.checked; });
+        const info = cb.closest('.stage-table-container').querySelector('.table-selection-info');
+        if (info) info.textContent = `${cb.checked ? rows.length : 0} of ${rows.length} row(s) selected.`;
+        soundEngine.playClick();
+      });
+    });
+
+    pane.querySelectorAll('.table-checkbox-row').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const table = cb.closest('table');
+        const rows = table.querySelectorAll('.table-checkbox-row');
+        const checked = table.querySelectorAll('.table-checkbox-row:checked').length;
+        const info = cb.closest('.stage-table-container').querySelector('.table-selection-info');
+        if (info) info.textContent = `${checked} of ${rows.length} row(s) selected.`;
+      });
+    });
+
+    pane.querySelectorAll('.filter-chip-cheat').forEach(chip => {
+      chip.addEventListener('click', () => {
+        soundEngine.playClick();
+        let dd = chip.querySelector('.cheat-dropdown');
+        if (dd) { dd.remove(); chip.classList.remove('active-filter'); return; }
+        dd = document.createElement('div');
+        dd.className = 'cheat-dropdown';
+        dd.innerHTML = `
+          <label class="cheat-dd-item"><input type="checkbox" value="High" /> High</label>
+          <label class="cheat-dd-item"><input type="checkbox" value="Medium" /> Medium</label>
+          <label class="cheat-dd-item"><input type="checkbox" value="Low" checked /> Low</label>`;
+        dd.addEventListener('click', e => e.stopPropagation());
+        chip.appendChild(dd);
+        chip.classList.add('active-filter');
+      });
+    });
+
+    pane.querySelectorAll('.btn-bulk-actions').forEach(btn => {
+      btn.addEventListener('click', () => {
+        soundEngine.playClick();
+        showPremiumToast("Bulk action: select candidates using checkboxes first.", "info");
+      });
+    });
+
+    pane.querySelectorAll('.btn-export-table').forEach(btn => {
+      btn.addEventListener('click', () => {
+        soundEngine.playClick();
+        triggerExcelExport('candidates');
+      });
+    });
+
+    pane.querySelectorAll('.btn-reschedule, .btn-schedule').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundEngine.playClick();
+        const name = btn.closest('tr')?.querySelector('td:nth-child(2)')?.textContent?.trim() || 'Candidate';
+        showPremiumToast(`Interview ${btn.classList.contains('btn-reschedule') ? 'rescheduled' : 'scheduled'} for ${name}.`, "success");
+      });
+    });
+
+    pane.querySelectorAll('.action-select-status').forEach(sel => {
+      sel.addEventListener('change', () => {
+        soundEngine.playClick();
+        const candId = sel.getAttribute('data-cand-id');
+        const newVal = sel.value;
+        if (candId && newVal) {
+          const cand = AppState.candidates.find(c => c.id === candId);
+          if (cand) {
+            cand.interviewStatus = newVal;
+            saveStateToLocalStorage();
+            showPremiumToast(`Status updated to ${newVal}.`, "success");
+          }
+        }
       });
     });
   }
@@ -5462,23 +5624,38 @@ function renderQuestionsPane(job) {
       
       soundEngine.playChime([392, 440], 0.1, 0.1);
 
+      const numQ = document.getElementById('cfg-num-questions')?.value || '5';
+      const qTypes = document.getElementById('cfg-question-types')?.value || 'mixed';
+      const qDiff = document.getElementById('cfg-difficulty')?.value || 'mixed';
+      const qDuration = document.getElementById('cfg-duration')?.value || '30';
+      const qFollowups = document.getElementById('cfg-followups')?.value || '2';
+
+      const typeInstruction = qTypes === 'mixed'
+        ? 'Include a mix of technical, behavioral, and situational questions.'
+        : `Generate only ${qTypes} questions.`;
+      const diffInstruction = qDiff === 'mixed'
+        ? 'Include a mix of beginner, intermediate, and advanced difficulty levels.'
+        : `All questions should be ${qDiff} difficulty.`;
+
       const systemPrompt = `You are a senior hiring manager and domain expert.
-Your task is to generate a set of 3 to 5 high-quality interview questions based on the given job description.
+Your task is to generate exactly ${numQ} high-quality interview questions based on the given job description.
+The interview is planned for ${qDuration} minutes.
 
 Requirements:
-- Include different types of questions: technical, behavioral, and situational.
+- ${typeInstruction}
+- ${diffInstruction}
 - For each question, provide:
   1. "type": either "technical", "behavioral", or "situational".
   2. "question": a clear, direct, and professional question.
   3. "difficulty": either "beginner", "intermediate", or "advanced".
   4. "rubric": a brief evaluation rubric (what a good answer should include).
-  5. "follow_ups": a list of 2 suggested follow-up questions.
+  5. "follow_ups": a list of ${qFollowups} suggested follow-up questions.
 - Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdown or add explanations.`;
 
       try {
         const responseText = await callDeepSeekAPI([
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate questions for this job description:\n\n${desc}` }
+          { role: "user", content: `Generate ${numQ} interview questions for this job description:\n\n${desc}` }
         ], true);
 
         const cleanText = sanitizeJSONResponse(responseText);
