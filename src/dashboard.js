@@ -2213,58 +2213,126 @@ function drawFunnelSVG(job, candidates) {
   }
 
   svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svgEl.setAttribute('pointer-events', 'all');
+  svgEl.style.cursor = 'pointer';
 
-  const segGroups = [];
+  while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+
+  pts.slice(1, -1).forEach(p => {
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', p.lx - 14);
+    line.setAttribute('y1', p.y);
+    line.setAttribute('x2', p.rx + 14);
+    line.setAttribute('y2', p.y);
+    line.setAttribute('stroke', dividerStroke);
+    line.setAttribute('stroke-width', '1');
+    line.setAttribute('stroke-dasharray', '4 3');
+    line.setAttribute('pointer-events', 'none');
+    svgEl.appendChild(line);
+  });
+
   for (let i = 0; i < n - 1; i++) {
-    segGroups.push(`
-      <g class="funnel-seg-group" data-stage-idx="${i}" style="cursor:pointer">
-        <path d="${pinkSegs[i]}" fill="${pinkFill}" opacity="0.9"/>
-        <path d="${greenSegs[i]}" fill="${greenFill}" opacity="0.9"/>
-      </g>
-    `);
+    const g = document.createElementNS(svgNS, 'g');
+    g.setAttribute('data-stage-idx', String(i));
+    g.setAttribute('pointer-events', 'all');
+    g.style.cursor = 'pointer';
+
+    const pinkPath = document.createElementNS(svgNS, 'path');
+    pinkPath.setAttribute('d', pinkSegs[i]);
+    pinkPath.setAttribute('fill', pinkFill);
+    pinkPath.setAttribute('opacity', '0.9');
+    pinkPath.setAttribute('pointer-events', 'all');
+    g.appendChild(pinkPath);
+
+    const greenPath = document.createElementNS(svgNS, 'path');
+    greenPath.setAttribute('d', greenSegs[i]);
+    greenPath.setAttribute('fill', greenFill);
+    greenPath.setAttribute('opacity', '0.9');
+    greenPath.setAttribute('pointer-events', 'all');
+    g.appendChild(greenPath);
+
+    svgEl.appendChild(g);
   }
 
-  svgEl.innerHTML = `${dividers}${segGroups.join('')}`;
-
   let funnelTooltipEl = document.getElementById('funnel-svg-tooltip');
-  if (funnelTooltipEl) funnelTooltipEl.remove();
-  funnelTooltipEl = document.createElement('div');
-  funnelTooltipEl.id = 'funnel-svg-tooltip';
-  funnelTooltipEl.className = 'funnel-svg-tooltip';
-  document.body.appendChild(funnelTooltipEl);
+  if (!funnelTooltipEl) {
+    funnelTooltipEl = document.createElement('div');
+    funnelTooltipEl.id = 'funnel-svg-tooltip';
+    funnelTooltipEl.className = 'funnel-svg-tooltip';
+    document.body.appendChild(funnelTooltipEl);
+  }
+  funnelTooltipEl.style.display = 'none';
 
   const stageItems = document.querySelectorAll('#jd-funnel-stages .jd-stage-item');
 
-  svgEl.querySelectorAll('.funnel-seg-group').forEach(group => {
-    group.addEventListener('mouseenter', (e) => {
-      const idx = parseInt(group.getAttribute('data-stage-idx'));
-      const label = stageLabels[idx];
-      const count = stageCounts[idx];
-      const breakdown = getBreakdownForStage(label);
-      const rows = Object.entries(breakdown).map(([src, cnt]) => {
-        const color = sourceColors[src] || '#888';
-        return `<div class="funnel-tooltip-row"><span class="funnel-tooltip-dot" style="background:${color}"></span><span>${src}</span><strong>${cnt}</strong></div>`;
-      }).join('');
+  let activeSegIdx = -1;
 
-      funnelTooltipEl.innerHTML = `<div class="funnel-tooltip-title">${label} <span>(${count})</span></div>${rows || '<div class="funnel-tooltip-row"><span style="color:var(--color-text-faint)">No candidates</span></div>'}`;
-      funnelTooltipEl.style.display = 'block';
-      funnelTooltipEl.style.left = `${e.clientX + 14}px`;
-      funnelTooltipEl.style.top = `${e.clientY - 10}px`;
+  function showTooltip(idx, clientX, clientY) {
+    if (activeSegIdx === idx) {
+      funnelTooltipEl.style.left = (clientX + 14) + 'px';
+      funnelTooltipEl.style.top = (clientY - 10) + 'px';
+      return;
+    }
+    activeSegIdx = idx;
+    const label = stageLabels[idx];
+    const count = stageCounts[idx];
+    const breakdown = getBreakdownForStage(label);
+    const rows = Object.entries(breakdown).map(([src, cnt]) => {
+      const color = sourceColors[src] || '#888';
+      return '<div class="funnel-tooltip-row"><span class="funnel-tooltip-dot" style="background:' + color + '"></span><span>' + src + '</span><strong>' + cnt + '</strong></div>';
+    }).join('');
 
-      group.querySelectorAll('path').forEach(p => { p.setAttribute('opacity', '1'); p.style.filter = 'brightness(1.25)'; });
-      if (stageItems[idx]) stageItems[idx].classList.add('funnel-hover-active');
+    funnelTooltipEl.innerHTML = '<div class="funnel-tooltip-title">' + label + ' <span>(' + count + ')</span></div>' + (rows || '<div class="funnel-tooltip-row"><span style="color:var(--color-text-faint)">No candidates</span></div>');
+    funnelTooltipEl.style.display = 'block';
+    funnelTooltipEl.style.left = (clientX + 14) + 'px';
+    funnelTooltipEl.style.top = (clientY - 10) + 'px';
+
+    svgEl.querySelectorAll('g[data-stage-idx]').forEach(g => {
+      const gi = parseInt(g.getAttribute('data-stage-idx'));
+      const paths = g.querySelectorAll('path');
+      if (gi === idx) {
+        paths.forEach(p => { p.setAttribute('opacity', '1'); p.style.filter = 'brightness(1.25)'; });
+      } else {
+        paths.forEach(p => { p.setAttribute('opacity', '0.9'); p.style.filter = ''; });
+      }
     });
-
-    group.addEventListener('mousemove', (e) => {
-      funnelTooltipEl.style.left = `${e.clientX + 14}px`;
-      funnelTooltipEl.style.top = `${e.clientY - 10}px`;
+    stageItems.forEach((si, si_i) => {
+      if (si_i === idx) si.classList.add('funnel-hover-active');
+      else si.classList.remove('funnel-hover-active');
     });
+  }
 
-    group.addEventListener('mouseleave', () => {
-      funnelTooltipEl.style.display = 'none';
-      group.querySelectorAll('path').forEach(p => { p.setAttribute('opacity', '0.9'); p.style.filter = ''; });
-      stageItems.forEach(si => si.classList.remove('funnel-hover-active'));
+  function hideTooltip() {
+    activeSegIdx = -1;
+    funnelTooltipEl.style.display = 'none';
+    svgEl.querySelectorAll('g[data-stage-idx] path').forEach(p => {
+      p.setAttribute('opacity', '0.9');
+      p.style.filter = '';
     });
+    stageItems.forEach(si => si.classList.remove('funnel-hover-active'));
+  }
+
+  svgEl.addEventListener('mousemove', function(e) {
+    const target = e.target;
+    const g = target.closest ? target.closest('g[data-stage-idx]') : null;
+    if (!g && target.tagName === 'path') {
+      const parent = target.parentElement;
+      if (parent && parent.tagName.toLowerCase() === 'g' && parent.hasAttribute('data-stage-idx')) {
+        showTooltip(parseInt(parent.getAttribute('data-stage-idx')), e.clientX, e.clientY);
+        return;
+      }
+    }
+    if (g) {
+      showTooltip(parseInt(g.getAttribute('data-stage-idx')), e.clientX, e.clientY);
+    } else {
+      hideTooltip();
+    }
+  });
+
+  svgEl.addEventListener('mouseleave', function() {
+    hideTooltip();
   });
 }
 

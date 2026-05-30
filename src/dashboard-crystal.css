@@ -5225,18 +5225,25 @@ body.light-theme .upload-file-progress-bar {
   flex-shrink: 0;
 }
 
-.funnel-seg {
-  transition: opacity 0.15s ease;
+#jd-funnel-svg {
+  pointer-events: all !important;
+  cursor: pointer;
+}
+
+#jd-funnel-svg g[data-stage-idx] {
+  pointer-events: all;
+  cursor: pointer;
+}
+
+#jd-funnel-svg g[data-stage-idx] path {
+  pointer-events: all;
+  transition: opacity 0.15s ease, filter 0.15s ease;
 }
 
 body.light-theme .funnel-svg-tooltip {
   background: rgba(255, 255, 255, 0.96);
   border-color: rgba(0,0,0,0.1);
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-}
-
-.funnel-seg-group path {
-  transition: opacity 0.15s ease, filter 0.15s ease;
 }
 
 .jd-stage-item.funnel-hover-active {
