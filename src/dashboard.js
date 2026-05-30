@@ -4523,29 +4523,7 @@ function generateAutoResumeAnalysis(candidateName) {
 function renderResumeStagePaneForJob(candidates, job, container) {
   container.innerHTML = candidates.map(c => {
     const initials = c.name.split(' ').map(n => n[0]).join('');
-    if (!resumeAnalysisCache[c.id]) {
-      resumeAnalysisCache[c.id] = generateAutoResumeAnalysis(c.name);
-      const result = resumeAnalysisCache[c.id];
-      c.score = `${result.matchScore}%`;
-    }
-    const result = resumeAnalysisCache[c.id];
-    const recClass = result.recommendation === 'Advance' ? 'advance' : result.recommendation === 'Hold' ? 'hold' : 'reject';
-    const recIcon  = result.recommendation === 'Advance' ? '✅' : result.recommendation === 'Hold' ? '⏸' : '❌';
-
-    const scRows = [
-      ['Technical',     result.scorecard?.technical     ?? 0],
-      ['Experience',    result.scorecard?.experience    ?? 0],
-      ['Communication', result.scorecard?.communication ?? 0],
-      ['Culture Fit',   result.scorecard?.cultureFit    ?? 0],
-    ].map(([lbl, val]) => `
-      <div class="sc-bar-row">
-        <span class="sc-label">${lbl}</span>
-        <div class="sc-bar-track"><div class="sc-bar-fill sc-fill-${recClass}" style="width:${(+val)*10}%"></div></div>
-        <span class="sc-val">${(+val).toFixed(1)}</span>
-      </div>`).join('');
-
-    const chips = (arr, cls) => (arr || []).map(s => `<span class="skill-chip ${cls}">${s}</span>`).join('');
-    const scoreColor = result.matchScore >= 75 ? '34,197,94' : result.matchScore >= 50 ? '251,191,36' : '239,68,68';
+    const hasCached = !!resumeAnalysisCache[c.id];
 
     return `
       <div class="resume-analysis-card" data-cid="${c.id}">
@@ -4555,37 +4533,24 @@ function renderResumeStagePaneForJob(candidates, job, container) {
             <span class="cand-name">${c.name}</span>
             <span class="cand-email">${c.email}</span>
           </div>
-          <span class="score-badge ra-score-badge" style="background:rgba(${scoreColor},0.12);color:rgb(${scoreColor});border-color:rgba(${scoreColor},0.3);">${result.matchScore}%</span>
+          <span class="score-badge ra-score-badge ${hasCached ? '' : 'ra-hidden'}" id="badge-${c.id}"></span>
         </div>
-        <div class="ra-result" id="ra-result-${c.id}">
-          <div class="ra-result-top">
-            <div class="ra-score-ring-wrap">
-              <div class="ra-score-ring" style="--score:${result.matchScore}">
-                <span class="ra-score-num">${result.matchScore}</span>
-                <span class="ra-score-pct">%</span>
-              </div>
-              <p class="ra-exp-label">~&nbsp;${result.experienceYears}</p>
-            </div>
-            <div class="ra-rec-block">
-              <div class="rec-badge ${recClass}">${recIcon}&nbsp;${result.recommendation}</div>
-              <p class="rec-reason">${result.recommendationReason}</p>
-            </div>
+        <div class="ra-input-section" id="ra-input-${c.id}" ${hasCached ? 'class="ra-hidden"' : ''}>
+          <div class="ra-upload-zone" id="ra-zone-${c.id}">
+            <input type="file" id="ra-file-${c.id}" accept=".pdf,.doc,.docx,.txt" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p class="ra-zone-text">Drop resume here or <span class="ra-zone-link">browse</span></p>
+            <p class="ra-zone-hint">.pdf, .doc, .docx, .txt</p>
           </div>
-          ${(result.skills?.matched?.length || result.skills?.missing?.length || result.skills?.detected?.length) ? `
-          <div class="ra-skills-section">
-            ${result.skills?.matched?.length  ? `<div class="ra-skills-row"><span class="rsk-label matched-label">Matched</span><div class="skill-chips-wrap">${chips(result.skills.matched,'matched')}</div></div>` : ''}
-            ${result.skills?.missing?.length  ? `<div class="ra-skills-row"><span class="rsk-label missing-label">Missing</span><div class="skill-chips-wrap">${chips(result.skills.missing,'missing')}</div></div>` : ''}
-            ${result.skills?.detected?.length ? `<div class="ra-skills-row"><span class="rsk-label detected-label">Detected</span><div class="skill-chips-wrap">${chips(result.skills.detected,'detected')}</div></div>` : ''}
-          </div>` : ''}
-          <div class="ra-scorecard">
-            <p class="ra-sc-title">AI Scorecard</p>
-            ${scRows}
-          </div>
-          <div class="ra-summary-box">
-            <span class="ra-summary-label">Lina's Assessment</span>
-            <p class="ra-summary-text">"${result.summary}"</p>
-          </div>
+          <div class="ra-file-preview ra-hidden" id="ra-preview-${c.id}"></div>
+          <a href="#" class="ra-paste-toggle" id="ra-paste-toggle-${c.id}">No file? Paste resume text</a>
+          <textarea class="ra-paste-area ra-hidden" id="ra-paste-${c.id}" placeholder="Paste the candidate's resume text here..." rows="5"></textarea>
+          <button class="btn-analyse-resume" id="ra-btn-${c.id}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Analyse with Lina
+          </button>
         </div>
+        <div class="ra-result ra-hidden" id="ra-result-${c.id}"></div>
         <div class="jd-card-actions">
           <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
           <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening">Advance to Screening →</button>
@@ -4593,6 +4558,8 @@ function renderResumeStagePaneForJob(candidates, job, container) {
       </div>
     `;
   }).join('');
+
+  bindResumeAnalysisEvents(job);
 }
 
 function bindResumeAnalysisEvents(job) {
