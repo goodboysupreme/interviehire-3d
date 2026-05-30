@@ -86,7 +86,7 @@ const AppState = {
     screening: { interviewStatus: [], cheatProb: [], recruiterScreening: [], scoreMin: null, scoreMax: null },
     functional: { interviewStatus: [], cheatProb: [], recruiterScreening: [], scoreMin: null, scoreMax: null, actions: [] }
   },
-  dateRange: '7d',
+  dateRange: 'all',
   
   jobs: [
     {
@@ -1260,6 +1260,31 @@ function getDateRangeBounds() {
   return { start, end: now };
 }
 
+function applyDateRangeGlobally() {
+  const { start, end } = getDateRangeBounds();
+  const rangeLabel = AppState.dateRange === 'all' ? 'All Time' :
+    AppState.dateRange === 'custom' ? 'Custom range' :
+    AppState.dateRange === '7d' ? 'Last 7 days' :
+    AppState.dateRange === '30d' ? 'Last 30 days' : 'Last 90 days';
+
+  recalculateJobPipelines();
+  updateSummaryMetrics();
+  renderAnalyticsTable();
+  renderJobCards();
+
+  const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+  if (activeJob) {
+    const jobCandidates = filterCandidatesByDateRange(
+      AppState.candidates.filter(c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName)
+    );
+    drawFunnelSVG(activeJob, jobCandidates);
+    drawScoreDistributionSVG(activeJob, jobCandidates);
+    renderJobDetailPanes(activeJob);
+  }
+
+  showPremiumToast(`${rangeLabel} — showing ${filterCandidatesByDateRange(AppState.candidates).length} of ${AppState.candidates.length} candidates.`, 'success');
+}
+
 function filterCandidatesByDateRange(candidates) {
   const { start, end } = getDateRangeBounds();
   if (!start && !end) return candidates;
@@ -1728,10 +1753,10 @@ function triggerExcelExport(dataType) {
 // ==========================================
 
 function recalculateJobPipelines() {
+  const dateFiltered = filterCandidatesByDateRange(AppState.candidates);
   AppState.jobs.forEach(job => {
-    // Find all candidates for this job
-    const jobCandidates = AppState.candidates.filter(c => c.jobApplied === job.roleName || c.jobApplied === job.cardName);
-    
+    const jobCandidates = dateFiltered.filter(c => c.jobApplied === job.roleName || c.jobApplied === job.cardName);
+
     job.pipeline.total = jobCandidates.length;
     job.pipeline.resume = jobCandidates.filter(c => c.status === 'Resume').length;
     job.pipeline.screening = jobCandidates.filter(c => c.status === 'Screening').length;
@@ -2307,7 +2332,7 @@ function navigateToJobDetail(jobId) {
   document.querySelectorAll('.jd-pane').forEach(p => p.classList.remove('active'));
   document.getElementById('jd-pane-overview').classList.add('active');
 
-  const jobCandidates = AppState.candidates.filter(
+  const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
     c => c.jobApplied === job.roleName || c.jobApplied === job.cardName
   );
 
@@ -3428,7 +3453,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (AppState.activeTab === 'job-detail' && AppState.activeJobId) {
       const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
       if (activeJob) {
-        const jobCandidates = AppState.candidates.filter(
+        const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
           c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName
         );
         drawFunnelSVG(activeJob, jobCandidates);
@@ -4111,9 +4136,7 @@ function initSourcing() {
       btn.classList.add('active');
       AppState.dateRange = btn.getAttribute('data-range');
       soundEngine.playClick();
-      updateSummaryMetrics();
-      renderAnalyticsTable();
-      showPremiumToast(`Date range: ${btn.textContent.trim()} applied across all tables.`, 'success');
+      applyDateRangeGlobally();
     });
   });
 
@@ -4125,9 +4148,7 @@ function initSourcing() {
         document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
         AppState.dateRange = 'custom';
         soundEngine.playClick();
-        updateSummaryMetrics();
-        renderAnalyticsTable();
-        showPremiumToast(`Custom date range applied.`, 'success');
+        applyDateRangeGlobally();
       });
     });
   }
@@ -5302,7 +5323,7 @@ function hasActiveFilters(stageKey) {
 function renderJobDetailPanes(job) {
   const searchVal = document.getElementById('jd-candidate-search').value.trim().toLowerCase();
   
-  const jobCandidates = AppState.candidates.filter(c => {
+  const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(c => {
     const matchesJob = c.jobApplied === job.roleName || c.jobApplied === job.cardName;
     if (!matchesJob) return false;
     if (searchVal) {
@@ -5747,12 +5768,12 @@ function updateCandidateStatus(candId, newStatus) {
     renderFunnelStages(activeJob);
     renderFunnelInsights(activeJob);
     
-    const jobCandidates = AppState.candidates.filter(
+    const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
       c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName
     );
     drawFunnelSVG(activeJob, jobCandidates);
     drawScoreDistributionSVG(activeJob, jobCandidates);
-    
+
     renderJobDetailPanes(activeJob);
   }
   
