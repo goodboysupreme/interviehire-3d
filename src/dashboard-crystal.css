@@ -2102,7 +2102,7 @@ body.light-theme .theme-icon-sun { display: block; }
 .rubric-item { display: flex; flex-direction: column; gap: 8px; }
 .rubric-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
 .rubric-meta .val { font-family: var(--font-mono); font-weight: 600; color: var(--color-gold); }
-.bar-outer { height: 6px; background: rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden; }
+.bar-outer { height: 3px; background: rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden; }
 .bar-inner { height: 100%; background: var(--gradient-brand); border-radius: 10px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); position: relative; }
 .bar-inner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25)); border-radius: inherit; }
 
@@ -3454,7 +3454,7 @@ body.light-theme .comp-box-original {
 }
 .sc-bar-track {
   flex: 1;
-  height: 6px;
+  height: 3px;
   background: rgba(255,255,255,0.07);
   border-radius: 3px;
   overflow: hidden;
@@ -4096,7 +4096,7 @@ body.light-theme .chat-speaker-lina .chat-text-bubble {
 
 .rubric-bar-track {
   flex-grow: 1;
-  height: 6px;
+  height: 3px;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
   overflow: hidden;
@@ -4802,7 +4802,7 @@ body.light-theme .code-review-pane.compact .code-box {
 }
 
 .upload-file-progress-bar {
-  height: 4px;
+  height: 3px;
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.05);
   overflow: hidden;
@@ -5174,48 +5174,35 @@ body.light-theme .upload-file-progress-bar {
 }
 
 /* ============================================================
-   CHANGE 1: FUNNEL STAGE HOVER TOOLTIPS
+   CHANGE 1: FUNNEL SVG HOVER TOOLTIPS
    ============================================================ */
-.jd-stage-item {
-  position: relative;
-  cursor: pointer;
-}
-
-.funnel-tooltip {
+.funnel-svg-tooltip {
   display: none;
   position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
   background: rgba(10, 10, 15, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: 10px;
   padding: 10px 14px;
-  min-width: 170px;
+  min-width: 180px;
   z-index: 200;
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  pointer-events: none;
 }
 
-.jd-stage-item:hover .funnel-tooltip {
-  display: block;
-  animation: tooltip-fade-in 0.2s ease;
+.funnel-tooltip-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 5px;
 }
 
-@keyframes tooltip-fade-in {
-  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-
-.funnel-tooltip::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: rgba(10, 10, 15, 0.95);
+.funnel-tooltip-title span {
+  font-weight: 400;
+  color: var(--color-text-muted);
 }
 
 .funnel-tooltip-row {
@@ -5240,13 +5227,14 @@ body.light-theme .upload-file-progress-bar {
   flex-shrink: 0;
 }
 
-body.light-theme .funnel-tooltip {
+.funnel-seg {
+  transition: opacity 0.15s ease;
+}
+
+body.light-theme .funnel-svg-tooltip {
   background: rgba(255, 255, 255, 0.96);
   border-color: rgba(0,0,0,0.1);
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-}
-body.light-theme .funnel-tooltip::after {
-  border-top-color: rgba(255, 255, 255, 0.96);
 }
 
 /* ============================================================
@@ -5766,7 +5754,7 @@ body.light-theme .funnel-tooltip::after {
 
 .report-caveats-body .rubric-bar-track {
   flex: 1;
-  height: 6px;
+  height: 3px;
   background: rgba(255,255,255,0.05);
   border-radius: 3px;
   overflow: hidden;

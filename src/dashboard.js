@@ -2077,24 +2077,13 @@ function renderFunnelStages(job) {
     { count: completed,               label: 'Qualified',            conv: Math.round((completed / total) * 100) },
   ];
 
-  container.innerHTML = stages.map(s => {
-    const filterFn = stageFilters[s.label];
-    const stageCands = filterFn ? filterFn() : [];
-    const breakdown = getSourceBreakdown(stageCands);
-    const breakdownHTML = Object.entries(breakdown).map(([src, cnt]) => {
-      const color = sourceColors[src] || '#888';
-      return `<div class="funnel-tooltip-row"><span class="funnel-tooltip-dot" style="background:${color}"></span><span>${src}</span><strong>${cnt}</strong></div>`;
-    }).join('');
-
-    return `
-      <div class="jd-stage-item">
-        <div class="jds-count">${s.count}</div>
-        <div class="jds-label">${s.label}</div>
-        ${s.conv !== null ? `<div class="jds-conv">${s.conv}%</div>` : ''}
-        ${stageCands.length > 0 ? `<div class="funnel-tooltip">${breakdownHTML}</div>` : ''}
-      </div>
-    `;
-  }).join('');
+  container.innerHTML = stages.map(s => `
+    <div class="jd-stage-item">
+      <div class="jds-count">${s.count}</div>
+      <div class="jds-label">${s.label}</div>
+      ${s.conv !== null ? `<div class="jds-conv">${s.conv}%</div>` : ''}
+    </div>
+  `).join('');
 }
 
 function renderFunnelInsights(job) {
@@ -2147,6 +2136,7 @@ function drawFunnelSVG(job, candidates) {
   const total = Math.max(job.pipeline.total, 1);
   const completed = job.pipeline.functional > 0 ? 1 : 0;
 
+  const stageLabels = ['Total Candidates', 'Resume Analysis', 'Recruiter Screening', 'Functional Interview', 'Completed', 'Qualified'];
   const stageCounts = [
     job.pipeline.total,
     job.pipeline.resume || 0,
@@ -2164,7 +2154,6 @@ function drawFunnelSVG(job, candidates) {
     return Math.max((c / total) * maxHW, 9);
   });
 
-  // Pink (Scheduled) fraction — proportional to screening candidates
   const pinkFrac = Math.max(Math.min(job.pipeline.screening / total, 0.85), 0.15) || 0.6;
 
   const pts = stageCounts.map((_, i) => ({
@@ -2195,22 +2184,92 @@ function drawFunnelSVG(job, candidates) {
 
   const isLight = document.body.classList.contains('light-theme');
   const dividerStroke = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.065)';
-  
-  // Clean solid flat colors configured separately for light and dark themes
-  const pinkFill = isLight ? '#be185d' : '#ec4899';   // Deep rose for light, vibrant pink for dark
-  const greenFill = isLight ? '#047857' : '#10b981';  // Forest green for light, vibrant emerald for dark
+  const pinkFill = isLight ? '#be185d' : '#ec4899';
+  const greenFill = isLight ? '#047857' : '#10b981';
 
   const dividers = pts.slice(1, -1).map(p =>
     `<line x1="${p.lx - 14}" y1="${p.y}" x2="${p.rx + 14}" y2="${p.y}"
       stroke="${dividerStroke}" stroke-width="1" stroke-dasharray="4 3"/>`
   ).join('');
 
+  const sourceColors = {
+    'Career Page': '#6366f1', 'ATS': '#06b6d4', 'Bulk Upload': '#f59e0b',
+    'Scheduled': '#ec4899', 'Direct Link': '#10b981'
+  };
+  const stageStatusMap = {
+    'Total Candidates': null, 'Resume Analysis': 'Resume', 'Recruiter Screening': 'Screening',
+    'Functional Interview': 'Functional', 'Completed': 'Functional', 'Qualified': 'Hired'
+  };
+
+  function getBreakdownForStage(stageLabel) {
+    const status = stageStatusMap[stageLabel];
+    let stageCands;
+    if (stageLabel === 'Total Candidates') stageCands = candidates;
+    else if (stageLabel === 'Completed') stageCands = candidates.filter(c => c.status === 'Functional' || c.status === 'Hired');
+    else stageCands = candidates.filter(c => c.status === status);
+    const breakdown = {};
+    stageCands.forEach(c => { const src = c.source || 'Unknown'; breakdown[src] = (breakdown[src] || 0) + 1; });
+    return breakdown;
+  }
+
   svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svgEl.innerHTML = `
     ${dividers}
-    ${pinkSegs.map(d => `<path d="${d}" fill="${pinkFill}" opacity="0.9"/>`).join('')}
-    ${greenSegs.map(d => `<path d="${d}" fill="${greenFill}" opacity="0.9"/>`).join('')}
+    ${pinkSegs.map((d, i) => `<path d="${d}" fill="${pinkFill}" opacity="0.9" class="funnel-seg" data-stage-idx="${i}" style="cursor:pointer"/>`).join('')}
+    ${greenSegs.map((d, i) => `<path d="${d}" fill="${greenFill}" opacity="0.9" class="funnel-seg" data-stage-idx="${i}" style="cursor:pointer"/>`).join('')}
   `;
+
+  let funnelTooltipEl = document.getElementById('funnel-svg-tooltip');
+  if (!funnelTooltipEl) {
+    funnelTooltipEl = document.createElement('div');
+    funnelTooltipEl.id = 'funnel-svg-tooltip';
+    funnelTooltipEl.className = 'funnel-svg-tooltip';
+    const funnelCard = svgEl.closest('.jd-funnel-card');
+    if (funnelCard) {
+      funnelCard.style.position = 'relative';
+      funnelCard.appendChild(funnelTooltipEl);
+    }
+  }
+
+  svgEl.querySelectorAll('.funnel-seg').forEach(seg => {
+    seg.addEventListener('mouseenter', (e) => {
+      const idx = parseInt(seg.getAttribute('data-stage-idx'));
+      const label = stageLabels[idx];
+      const count = stageCounts[idx];
+      const breakdown = getBreakdownForStage(label);
+      const rows = Object.entries(breakdown).map(([src, cnt]) => {
+        const color = sourceColors[src] || '#888';
+        return `<div class="funnel-tooltip-row"><span class="funnel-tooltip-dot" style="background:${color}"></span><span>${src}</span><strong>${cnt}</strong></div>`;
+      }).join('');
+
+      funnelTooltipEl.innerHTML = `<div class="funnel-tooltip-title">${label} <span>(${count})</span></div>${rows || '<div class="funnel-tooltip-row"><span style="color:var(--color-text-faint)">No candidates</span></div>'}`;
+      funnelTooltipEl.style.display = 'block';
+
+      const rect = svgEl.closest('.jd-funnel-chart-wrap').getBoundingClientRect();
+      const cardRect = svgEl.closest('.jd-funnel-card').getBoundingClientRect();
+      funnelTooltipEl.style.left = `${e.clientX - cardRect.left + 12}px`;
+      funnelTooltipEl.style.top = `${e.clientY - cardRect.top - 10}px`;
+    });
+
+    seg.addEventListener('mousemove', (e) => {
+      const cardRect = svgEl.closest('.jd-funnel-card').getBoundingClientRect();
+      funnelTooltipEl.style.left = `${e.clientX - cardRect.left + 12}px`;
+      funnelTooltipEl.style.top = `${e.clientY - cardRect.top - 10}px`;
+    });
+
+    seg.addEventListener('mouseleave', () => {
+      funnelTooltipEl.style.display = 'none';
+    });
+
+    seg.addEventListener('mouseenter', () => {
+      seg.setAttribute('opacity', '1');
+      seg.setAttribute('filter', 'brightness(1.2)');
+    });
+    seg.addEventListener('mouseleave', () => {
+      seg.setAttribute('opacity', '0.9');
+      seg.removeAttribute('filter');
+    });
+  });
 }
 
 function drawScoreDistributionSVG(job, candidates) {
