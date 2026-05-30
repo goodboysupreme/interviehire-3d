@@ -95,10 +95,10 @@ const AppState = {
       createdBy: 'Devasri',
       description: "We are seeking a detail-oriented Government Tender & Proposal Executive to manage and lead the preparation, review, and submission of bids, tenders, and proposals for public sector opportunities. Key duties include analyzing RFP guidelines, checking compliance matrices, and writing clear technical and operational responses.",
       pipeline: {
-        total: 3,
-        resume: 0,
-        screening: 2,
-        functional: 1
+        total: 10,
+        resume: 3,
+        screening: 3,
+        functional: 4
       },
       questions: [
         {
@@ -138,10 +138,10 @@ const AppState = {
       createdBy: 'Devasri',
       description: "We are hiring a Full Stack Developer to design, build, and support high-performance web applications. You will work with React on the frontend, Node.js and Express on the backend, and PostgreSQL for storage. Responsibilities include building responsive dashboards, optimizing latency, and ensuring data consistency across endpoints.",
       pipeline: {
-        total: 1,
-        resume: 0,
-        screening: 0,
-        functional: 1
+        total: 10,
+        resume: 4,
+        screening: 3,
+        functional: 3
       },
       questions: [
         {
@@ -285,6 +285,210 @@ const AppState = {
       registeredOn: '28 May 2026, 11:15 AM',
       phone: '8877665544',
       source: 'ATS',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-6601-FK1',
+      name: 'Meera Kapoor',
+      email: 'meera.kapoor@outlook.com',
+      jobApplied: 'Full Stack Developer',
+      status: 'Functional',
+      score: '88%',
+      registeredOn: '02 Apr 2026, 03:20 PM',
+      phone: '9123456789',
+      source: 'Career Page',
+      attemptedAt: 'Apr 15, 2026 10:30 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 78,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 88
+    },
+    {
+      id: 'CAN-6602-FK2',
+      name: 'Vikram Singh',
+      email: 'vikram.singh@techmail.com',
+      jobApplied: 'Full Stack Developer',
+      status: 'Screening',
+      score: '72%',
+      registeredOn: '05 Apr 2026, 09:45 AM',
+      phone: '9234567890',
+      source: 'ATS',
+      attemptedAt: 'Apr 18, 2026 02:00 PM',
+      interviewStatus: 'Incomplete',
+      cheatProbability: 'Medium',
+      interviewScore: null,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 65
+    },
+    {
+      id: 'CAN-6603-FK3',
+      name: 'Ananya Reddy',
+      email: 'ananya.r@devstudio.in',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '10 Apr 2026, 01:30 PM',
+      phone: '9345678901',
+      source: 'Bulk Upload',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-7701-GT1',
+      name: 'Kavya Nair',
+      email: 'kavya.nair@govwork.in',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Functional',
+      score: '82%',
+      registeredOn: '15 Mar 2026, 04:10 PM',
+      phone: '9456789012',
+      source: 'Scheduled',
+      attemptedAt: 'Mar 28, 2026 09:00 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 69,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 85
+    },
+    {
+      id: 'CAN-7702-GT2',
+      name: 'Rahul Gupta',
+      email: 'rahul.gupta@bidpro.com',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Screening',
+      score: '78%',
+      registeredOn: '18 Mar 2026, 10:00 AM',
+      phone: '9567890123',
+      source: 'Career Page',
+      attemptedAt: 'Apr 02, 2026 11:15 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'High',
+      interviewScore: 42,
+      recruiterScreening: 'Poor fit',
+      recruiterScreeningScore: 38
+    },
+    {
+      id: 'CAN-7703-GT3',
+      name: 'Neha Patil',
+      email: 'neha.patil@tenderex.co',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '20 Apr 2026, 08:30 AM',
+      phone: '9678901234',
+      source: 'Direct Link',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-8801-FK4',
+      name: 'Shreya Joshi',
+      email: 'shreya.j@codecraft.io',
+      jobApplied: 'Full Stack Developer',
+      status: 'Screening',
+      score: '85%',
+      registeredOn: '22 Apr 2026, 11:00 AM',
+      phone: '9789012345',
+      source: 'Scheduled',
+      attemptedAt: 'May 01, 2026 03:45 PM',
+      interviewStatus: 'Slot Missed',
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 70
+    },
+    {
+      id: 'CAN-8802-FK5',
+      name: 'Karthik Iyer',
+      email: 'karthik.i@fullstack.dev',
+      jobApplied: 'Full Stack Developer',
+      status: 'Functional',
+      score: '91%',
+      registeredOn: '25 Apr 2026, 09:15 AM',
+      phone: '9890123456',
+      source: 'ATS',
+      attemptedAt: 'May 10, 2026 10:00 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 83,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 95
+    },
+    {
+      id: 'CAN-9901-GT4',
+      name: 'Amit Saxena',
+      email: 'amit.sax@procure.gov',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Screening',
+      score: '68%',
+      registeredOn: '01 May 2026, 02:20 PM',
+      phone: '9901234567',
+      source: 'Bulk Upload',
+      attemptedAt: 'May 15, 2026 04:30 PM',
+      interviewStatus: 'Incomplete',
+      cheatProbability: 'Medium',
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-9902-FK6',
+      name: 'Divya Menon',
+      email: 'divya.m@webworks.co',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '05 May 2026, 10:45 AM',
+      phone: '8012345678',
+      source: 'Career Page',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-9903-GT5',
+      name: 'Pooja Deshmukh',
+      email: 'pooja.d@tenders.in',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '08 May 2026, 03:00 PM',
+      phone: '8123456789',
+      source: 'ATS',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-1001-FK7',
+      name: 'Siddharth Rao',
+      email: 'sid.rao@devhub.in',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '12 May 2026, 08:00 AM',
+      phone: '8234567890',
+      source: 'Direct Link',
       attemptedAt: null,
       interviewStatus: null,
       cheatProbability: null,
@@ -4704,11 +4908,32 @@ function handleResumeFile(cid, file) {
   reader.readAsText(file);
 }
 
+function generateSyntheticResume(candidate, job) {
+  const skills = {
+    'Full Stack Developer': ['JavaScript', 'React', 'Node.js', 'PostgreSQL', 'TypeScript', 'REST APIs', 'Git', 'Docker', 'AWS', 'MongoDB', 'GraphQL', 'Redis'],
+    'Government Tender & Proposal Executive': ['Proposal Writing', 'RFP Analysis', 'Compliance', 'GeM Portal', 'SAP Ariba', 'Tender Management', 'Government Procurement', 'Documentation', 'MS Office', 'Contract Negotiation']
+  };
+  const jobSkills = skills[job.roleName] || skills['Full Stack Developer'];
+  const numSkills = 5 + Math.floor(Math.random() * 5);
+  const picked = jobSkills.sort(() => 0.5 - Math.random()).slice(0, numSkills);
+  const yrs = 1 + Math.floor(Math.random() * 7);
+  return `RESUME\nName: ${candidate.name}\nEmail: ${candidate.email}\nPhone: ${candidate.phone}\n\nProfessional Summary:\nExperienced professional with ${yrs} years in ${job.roleName.toLowerCase()} roles. Proven track record in delivering results in fast-paced environments.\n\nSkills: ${picked.join(', ')}\n\nExperience:\n- ${job.roleName} at TechCorp Solutions (${yrs} years)\n  - Led team of ${2 + Math.floor(Math.random() * 6)} on key projects\n  - Delivered ${3 + Math.floor(Math.random() * 8)} major projects on time\n\nEducation:\n- B.Tech Computer Science, University of Delhi (2018-2022)`;
+}
+
 async function runResumeAnalysis(cid, job) {
   const pasteArea = document.getElementById(`ra-paste-${cid}`);
   const btn = document.getElementById(`ra-btn-${cid}`);
-  const resumeText = (resumeTextCache[cid] || '') + '\n' + (pasteArea?.value || '');
-  if (!resumeText.trim()) { showPremiumToast('Upload a resume or paste text first.', 'error'); return; }
+  let resumeText = ((resumeTextCache[cid] || '') + '\n' + (pasteArea?.value || '')).trim();
+  if (!resumeText) {
+    const candidate = AppState.candidates.find(c => c.id === cid);
+    if (candidate) {
+      resumeText = generateSyntheticResume(candidate, job);
+      showPremiumToast('No resume uploaded — using auto-generated profile for analysis.', 'info');
+    } else {
+      showPremiumToast('Upload a resume or paste text first.', 'error');
+      return;
+    }
+  }
 
   const origHTML = btn.innerHTML;
   btn.disabled = true;

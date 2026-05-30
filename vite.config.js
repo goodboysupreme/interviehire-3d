@@ -12,7 +12,7 @@ function devDeepSeekProxy(apiKey) {
         req.on('end', async () => {
           try {
             const { messages, jsonMode } = JSON.parse(body);
-            const payload = { model: 'deepseek-chat', messages, temperature: 0.7, max_tokens: 3000 };
+            const payload = { model: 'deepseek-reasoner', messages, temperature: 0.7, max_tokens: 3000 };
             if (jsonMode) payload.response_format = { type: 'json_object' };
             const upstream = await fetch('https://api.deepseek.com/v1/chat/completions', {
               method: 'POST',
