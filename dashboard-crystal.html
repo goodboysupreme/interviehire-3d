@@ -1300,7 +1300,7 @@
       </div>
 
       <!-- Drawer: Candidate Report -->
-      <div class="slide-drawer" id="drawer-report" style="width: 520px; right: -620px;">
+      <div class="slide-drawer" id="drawer-report" style="width: 560px; right: -620px;">
         <div class="drawer-header">
           <h2 class="drawer-title">Vetting Report</h2>
           <button class="btn-close-drawer" id="btn-close-drawer-report" aria-label="Close panel">×</button>
@@ -1316,91 +1316,68 @@
             <div class="cand-score-large" id="report-score">94%</div>
           </div>
 
-          <!-- Tabs for Rubrics / Code review -->
           <div class="report-tabs">
-            <button class="report-tab-btn active" data-report-tab="rubric">Evaluation Rubrics</button>
-            <button class="report-tab-btn" data-report-tab="code">Expert Code Review</button>
+            <button class="report-tab-btn active" data-report-tab="score">Score</button>
+            <button class="report-tab-btn" data-report-tab="transcript">Transcription & Audio</button>
+            <button class="report-tab-btn" data-report-tab="caveats">Scores & Caveats</button>
+            <button class="report-tab-btn" data-report-tab="actions">Notes & Actions</button>
           </div>
 
           <div class="report-content-body">
-            <!-- Rubric content -->
-            <div class="report-tab-content active" id="rep-tab-rubric">
-              <div class="rubric-list">
+            <!-- Score tab -->
+            <div class="report-tab-content active" id="rep-tab-score">
+              <div class="rubric-list" id="report-rubric-list">
                 <div class="rubric-item">
-                  <div class="rubric-meta">
-                    <span>Coding Proficiency</span>
-                    <strong class="val">9.2 / 10</strong>
-                  </div>
+                  <div class="rubric-meta"><span>Coding Proficiency</span><strong class="val">9.2 / 10</strong></div>
                   <div class="bar-outer"><div class="bar-inner" style="width: 92%;"></div></div>
                 </div>
                 <div class="rubric-item">
-                  <div class="rubric-meta">
-                    <span>System Design</span>
-                    <strong class="val">8.8 / 10</strong>
-                  </div>
+                  <div class="rubric-meta"><span>System Design</span><strong class="val">8.8 / 10</strong></div>
                   <div class="bar-outer"><div class="bar-inner" style="width: 88%;"></div></div>
                 </div>
                 <div class="rubric-item">
-                  <div class="rubric-meta">
-                    <span>Communication</span>
-                    <strong class="val">9.5 / 10</strong>
-                  </div>
+                  <div class="rubric-meta"><span>Communication</span><strong class="val">9.5 / 10</strong></div>
                   <div class="bar-outer"><div class="bar-inner" style="width: 95%;"></div></div>
                 </div>
                 <div class="rubric-item">
-                  <div class="rubric-meta">
-                    <span>Problem Solving</span>
-                    <strong class="val">9.0 / 10</strong>
-                  </div>
+                  <div class="rubric-meta"><span>Problem Solving</span><strong class="val">9.0 / 10</strong></div>
                   <div class="bar-outer"><div class="bar-inner" style="width: 90%;"></div></div>
                 </div>
               </div>
+            </div>
 
-              <!-- Waveform snippet -->
+            <!-- Transcription & Audio tab -->
+            <div class="report-tab-content" id="rep-tab-transcript">
               <div class="waveform-box">
-                <h4 class="waveform-title">Expert Human Interview Snippet</h4>
+                <h4 class="waveform-title">Interview Audio Recording</h4>
                 <div class="waveform-controls">
                   <button class="btn-play-waveform" id="btn-play-wave" aria-label="Play Interview Snippet">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="play-svg"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pause-svg" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                   </button>
-                  <div class="waveform-viz" id="waveform-viz-bars">
-                    <!-- Dynamic wave bars -->
-                  </div>
+                  <div class="waveform-viz" id="waveform-viz-bars"></div>
                   <span class="waveform-time" id="waveform-timer">0:00 / 0:12</span>
                 </div>
               </div>
+              <div class="report-transcript-body" id="report-transcript-body">
+                <span class="transcript-label">AI Interview Transcript:</span>
+                <div class="transcript-chat-flow" id="report-transcript-flow"></div>
+              </div>
             </div>
 
-            <!-- Code review content -->
-            <div class="report-tab-content" id="rep-tab-code">
-              <div class="code-editor-header">
-                <span class="file-name">App.jsx (React)</span>
-              </div>
-              <div class="code-editor-body">
-                <pre class="code-view-container"><code><span class="keyword">import</span> { useState, useEffect } <span class="keyword">from</span> <span class="string">'react'</span>;
+            <!-- Scores & Caveats tab -->
+            <div class="report-tab-content" id="rep-tab-caveats">
+              <div class="report-caveats-body" id="report-caveats-body"></div>
+            </div>
 
-export default function <span class="func">UserList</span>() {
-  <span class="keyword">const</span> [users, setUsers] = useState([]);
-  <span class="keyword">const</span> [loading, setLoading] = useState(<span class="keyword">true</span>);
-
-  useEffect(() =&gt; {
-    <span class="keyword">const</span> controller = <span class="keyword">new</span> <span class="class-name">AbortController</span>();
-    <span class="func">fetchUsers</span>(controller.signal);
-    <span class="keyword">return</span> () =&gt; controller.abort();
-  }, []);</code></pre>
-                
-                <!-- Comment by human reviewer -->
-                <div class="code-review-comment">
-                  <div class="comment-author">
-                    <span class="author-tag">SJ</span>
-                    <div class="author-meta">
-                      <span class="author-name">Sarah J.</span>
-                      <span class="author-desc">Sr. Frontend Engineer // Reviewer</span>
-                    </div>
-                  </div>
-                  <p class="comment-body">Excellent cleanup hook. Aditya handles asynchronous API mounts using the correct React AbortController pattern. Prevents race conditions and memory leaks.</p>
+            <!-- Notes & Actions tab -->
+            <div class="report-tab-content" id="rep-tab-actions">
+              <div class="report-actions-body" id="report-actions-body">
+                <div class="recruiter-notes-wrap">
+                  <span class="notes-label">Recruiter Notes:</span>
+                  <textarea class="recruiter-notes-textarea" id="report-notes-textarea" placeholder="Add custom notes on notice buyout or communication flags..."></textarea>
                 </div>
+                <div class="report-action-buttons" id="report-action-buttons"></div>
               </div>
             </div>
           </div>
