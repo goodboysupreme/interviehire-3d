@@ -6032,32 +6032,33 @@ function initCrystalAnimations() {
   });
 
   // 2. 3D Card Hover Tilt and Shine Spotlights
+  const isCrystalTheme = !!document.getElementById('crystal-shader-canvas');
+
   function applyTactileTiltEffects() {
+    if (isCrystalTheme) return;
+
     const cards = document.querySelectorAll(
       '.job-card, .card-metric, .panel-setting, .agent-card, .terminal-box, .table-card, .panel-preview, .sourcing-tab-card'
     );
-    
+
     cards.forEach(card => {
-      // Avoid duplicate listener bindings
       if (card.dataset.tiltInitialized) return;
       card.dataset.tiltInitialized = 'true';
 
-      // Set initial variables for gradient highlight (shine spotlight)
       card.style.setProperty('--shine-x', '50%');
       card.style.setProperty('--shine-y', '50%');
 
       card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left; 
-        const y = e.clientY - rect.top;  
-        
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
         const xc = rect.width / 2;
         const yc = rect.height / 2;
-        
-        // Tilt limit: 8 degrees for a subtle and high-end feel
-        const angleX = -(y - yc) / (rect.height / 8); 
-        const angleY = (x - xc) / (rect.width / 8);  
-        
+
+        const angleX = -(y - yc) / (rect.height / 8);
+        const angleY = (x - xc) / (rect.width / 8);
+
         gsap.to(card, {
           rotationX: angleX,
           rotationY: angleY,
@@ -6066,11 +6067,11 @@ function initCrystalAnimations() {
           transformPerspective: 800,
           transformOrigin: 'center center'
         });
-        
+
         card.style.setProperty('--shine-x', `${(x / rect.width) * 100}%`);
         card.style.setProperty('--shine-y', `${(y / rect.height) * 100}%`);
       });
-      
+
       card.addEventListener('mouseleave', () => {
         gsap.to(card, {
           rotationX: 0,
@@ -6086,7 +6087,6 @@ function initCrystalAnimations() {
 
   applyTactileTiltEffects();
 
-  // Create observer to automatically apply 3D tilt effects on dynamically loaded/rendered cards (like jobs lists)
   const listObserver = new MutationObserver(() => {
     applyTactileTiltEffects();
   });
