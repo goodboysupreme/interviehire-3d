@@ -2849,19 +2849,19 @@ body.light-theme .btn-stage-advance:hover {
 }
 
 .jd-gen-config {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 .jd-config-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  padding: 5px 8px;
+  gap: 5px;
+  padding: 4px 8px;
   background: rgba(0, 0, 0, 0.15);
   border-radius: 6px;
   border: 1px solid var(--glass-border);
+  flex: 0 0 auto;
 }
 .jd-config-label {
   font-size: 0.68rem;
@@ -2877,8 +2877,6 @@ body.light-theme .btn-stage-advance:hover {
   color: var(--color-text-primary);
   cursor: pointer;
   outline: none;
-  min-width: 70px;
-  max-width: 100px;
 }
 .jd-config-select:focus {
   border-color: var(--glass-border-gold);
@@ -3594,9 +3592,6 @@ body.light-theme .comp-box-original {
   }
   .jd-questions-input-card {
     position: static;
-  }
-  .jd-gen-config {
-    grid-template-columns: 1fr 1fr 1fr;
   }
 }
 
@@ -5585,10 +5580,10 @@ body.light-theme .funnel-svg-tooltip {
   margin-left: 2px;
 }
 
-.filter-chip-cheat {
+.filter-chip {
   position: relative;
 }
-.cheat-dropdown {
+.stage-filter-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -5596,30 +5591,151 @@ body.light-theme .funnel-svg-tooltip {
   background: var(--color-surface-solid);
   border: 1px solid var(--glass-border);
   border-radius: 10px;
-  padding: 8px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  z-index: 50;
-  min-width: 120px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 60;
+  min-width: 200px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+  overflow: hidden;
 }
-.cheat-dd-item {
+.sfd-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--glass-border);
+}
+.sfd-search svg {
+  flex-shrink: 0;
+  opacity: 0.4;
+}
+.sfd-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: 0.78rem;
+  font-family: var(--font-body);
+  outline: none;
+}
+.sfd-items {
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.sfd-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 8px;
+  padding: 6px 8px;
   border-radius: 6px;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   color: var(--color-text-primary);
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.12s ease;
 }
-.cheat-dd-item:hover {
+.sfd-item:hover {
   background: rgba(255, 255, 255, 0.06);
 }
-.cheat-dd-item input {
+.sfd-item input[type="checkbox"] {
   accent-color: var(--color-gold);
+  flex-shrink: 0;
+}
+.sfd-item-icon {
+  flex-shrink: 0;
+  opacity: 0.5;
+  width: 14px;
+  height: 14px;
+}
+.sfd-item-label {
+  flex: 1;
+}
+.sfd-item-count {
+  font-size: 0.7rem;
+  color: var(--color-text-faint);
+  margin-left: auto;
+}
+.sfd-footer {
+  padding: 8px 10px;
+  border-top: 1px solid var(--glass-border);
+  text-align: center;
+}
+.sfd-clear-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.74rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.sfd-clear-btn:hover {
+  color: var(--color-text-primary);
+}
+.sfd-range-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+}
+.sfd-range-row label {
+  font-size: 0.76rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+.sfd-range-input {
+  width: 60px;
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  color: var(--color-text-primary);
+  font-size: 0.76rem;
+  text-align: center;
+  outline: none;
+}
+.sfd-range-input:focus {
+  border-color: var(--glass-border-gold);
+}
+.sfd-range-sep {
+  color: var(--color-text-faint);
+  font-size: 0.76rem;
+}
+.sfd-actions-row {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--glass-border);
+}
+.sfd-btn-clear {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.74rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+.sfd-btn-apply {
+  flex: 1;
+  padding: 6px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(var(--color-gold-rgb), 0.2);
+  color: var(--color-gold);
+  font-size: 0.74rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+.sfd-btn-apply:hover {
+  background: rgba(var(--color-gold-rgb), 0.3);
 }
 
 .btn-filter-reset {
@@ -5669,6 +5785,81 @@ body.light-theme .funnel-svg-tooltip {
 .btn-export-table:hover {
   border-color: var(--glass-border-gold);
   color: var(--color-text-primary);
+}
+
+/* Schedule Modal */
+.schedule-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.schedule-modal {
+  background: var(--color-surface-solid);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 24px;
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.schedule-modal h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.schedule-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.schedule-form-group label {
+  font-size: 0.76rem;
+  color: var(--color-text-muted);
+}
+.schedule-form-group input {
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+  outline: none;
+}
+.schedule-form-group input:focus {
+  border-color: var(--glass-border-gold);
+}
+.schedule-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+.schedule-modal-actions button {
+  flex: 1;
+  padding: 9px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+.btn-schedule-cancel {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--color-text-muted);
+}
+.btn-schedule-confirm {
+  background: rgba(var(--color-gold-rgb), 0.2);
+  border: 1px solid rgba(var(--color-gold-rgb), 0.3);
+  color: var(--color-gold);
+  font-weight: 600;
+}
+.btn-schedule-confirm:hover {
+  background: rgba(var(--color-gold-rgb), 0.3);
 }
 
 .stage-data-table {

@@ -82,6 +82,11 @@ const AppState = {
   jobsSortKey: 'id',
   jobsSortAsc: true,
   analyticsSubtab: 'jobs-data',
+  stageFilters: {
+    screening: { interviewStatus: [], cheatProb: [], recruiterScreening: [], scoreMin: null, scoreMax: null },
+    functional: { interviewStatus: [], cheatProb: [], recruiterScreening: [], scoreMin: null, scoreMax: null, actions: [] }
+  },
+  dateRange: '7d',
   
   jobs: [
     {
@@ -3285,12 +3290,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Global click outside to hide column popups
   document.addEventListener('click', () => {
     const popToggle = document.getElementById('pop-columns-toggle');
     const popTeam = document.getElementById('pop-columns-team');
     if (popToggle) popToggle.style.display = 'none';
     if (popTeam) popTeam.style.display = 'none';
+    document.querySelectorAll('.stage-filter-dropdown').forEach(d => d.remove());
   });
 
   // Kanban view switching setup
@@ -4071,10 +4076,28 @@ function initSourcing() {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      AppState.dateRange = btn.getAttribute('data-range');
       soundEngine.playClick();
-      showPremiumToast(`Date range set to ${btn.textContent.trim()}.`, 'success');
+      updateSummaryMetrics();
+      renderAnalyticsTable();
+      showPremiumToast(`Date range: ${btn.textContent.trim()} applied across all tables.`, 'success');
     });
   });
+
+  const dateFrom = document.getElementById('date-from');
+  const dateTo = document.getElementById('date-to');
+  if (dateFrom && dateTo) {
+    [dateFrom, dateTo].forEach(inp => {
+      inp.addEventListener('change', () => {
+        document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+        AppState.dateRange = 'custom';
+        soundEngine.playClick();
+        updateSummaryMetrics();
+        renderAnalyticsTable();
+        showPremiumToast(`Custom date range applied.`, 'success');
+      });
+    });
+  }
 
   const btnLogout = document.querySelector('.btn-logout');
   if (btnLogout) {
@@ -5100,6 +5123,149 @@ function renderAnalysisResult(cid, result) {
   });
 }
 
+function openScheduleModal(candidateName, mode, callback) {
+  const existing = document.getElementById('schedule-modal-overlay');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'schedule-modal-overlay';
+  overlay.className = 'schedule-modal-overlay';
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  const dateStr = tomorrow.toISOString().split('T')[0];
+  overlay.innerHTML = `
+    <div class="schedule-modal">
+      <h3>${mode === 'reschedule' ? 'Reschedule' : 'Schedule'} Interview — ${candidateName}</h3>
+      <div class="schedule-form-group">
+        <label>Date</label>
+        <input type="date" id="sched-date" value="${dateStr}" />
+      </div>
+      <div class="schedule-form-group">
+        <label>Time</label>
+        <input type="time" id="sched-time" value="10:00" />
+      </div>
+      <div class="schedule-form-group">
+        <label>Duration</label>
+        <select id="sched-duration" style="padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--glass-border);border-radius:8px;color:var(--color-text-primary);font-size:0.82rem;outline:none;">
+          <option value="15">15 minutes</option>
+          <option value="30" selected>30 minutes</option>
+          <option value="45">45 minutes</option>
+          <option value="60">60 minutes</option>
+        </select>
+      </div>
+      <div class="schedule-modal-actions">
+        <button class="btn-schedule-cancel" id="sched-cancel">Cancel</button>
+        <button class="btn-schedule-confirm" id="sched-confirm">Confirm</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.getElementById('sched-cancel').addEventListener('click', () => overlay.remove());
+  document.getElementById('sched-confirm').addEventListener('click', () => {
+    const date = document.getElementById('sched-date').value;
+    const time = document.getElementById('sched-time').value;
+    overlay.remove();
+    if (callback) callback(date, time);
+    showPremiumToast(`Interview ${mode === 'reschedule' ? 'rescheduled' : 'scheduled'} for ${candidateName} on ${date} at ${time}.`, 'success');
+    soundEngine.playChime([523.25, 659.25], 0.15, 0.08);
+  });
+}
+
+function buildFilterDropdown(chip, type, candidates, stageKey) {
+  const existing = chip.querySelector('.stage-filter-dropdown');
+  if (existing) { existing.remove(); chip.classList.remove('active-filter'); return; }
+  document.querySelectorAll('.stage-filter-dropdown').forEach(d => { d.remove(); d.closest?.('.filter-chip')?.classList.remove('active-filter'); });
+
+  const dd = document.createElement('div');
+  dd.className = 'stage-filter-dropdown';
+  dd.addEventListener('click', e => e.stopPropagation());
+
+  const filters = AppState.stageFilters[stageKey];
+
+  if (type === 'interviewStatus') {
+    const statuses = ['Completed', 'Incomplete', 'Evaluating', 'Attempting', 'Not Started', 'Slot Missed'];
+    const counts = {};
+    statuses.forEach(s => { counts[s] = candidates.filter(c => c.interviewStatus === s).length; });
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Interview Status" /></div>
+      <div class="sfd-items">${statuses.map(s => `<label class="sfd-item"><input type="checkbox" value="${s}" ${filters.interviewStatus.includes(s) ? 'checked' : ''} /><span class="sfd-item-label">${s}</span><span class="sfd-item-count">${counts[s]}</span></label>`).join('')}</div>
+      <div class="sfd-footer"><button class="sfd-clear-btn">Clear filters</button></div>`;
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+      filters.interviewStatus = [...dd.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+      if (activeJob) renderJobDetailPanes(activeJob);
+    }));
+    dd.querySelector('.sfd-clear-btn').addEventListener('click', () => { filters.interviewStatus = []; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'cheatProb') {
+    const levels = ['High', 'Medium', 'Low'];
+    const counts = {};
+    levels.forEach(l => { counts[l] = candidates.filter(c => c.cheatProbability === l).length; });
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cheat Probability" /></div>
+      <div class="sfd-items">${levels.map(l => `<label class="sfd-item"><input type="checkbox" value="${l}" ${filters.cheatProb.includes(l) ? 'checked' : ''} /><span class="sfd-item-label">${l}</span><span class="sfd-item-count">${counts[l]}</span></label>`).join('')}</div>
+      <div class="sfd-footer"><button class="sfd-clear-btn">Clear filters</button></div>`;
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+      filters.cheatProb = [...dd.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob);
+    }));
+    dd.querySelector('.sfd-clear-btn').addEventListener('click', () => { filters.cheatProb = []; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'recruiterScreening') {
+    const vals = ['Good fit', 'Moderate fit', 'Poor fit'];
+    const counts = {};
+    vals.forEach(v => { counts[v] = candidates.filter(c => c.recruiterScreening === v).length; });
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Recruiter Screening" /></div>
+      <div class="sfd-items">${vals.map(v => `<label class="sfd-item"><input type="checkbox" value="${v}" ${filters.recruiterScreening.includes(v) ? 'checked' : ''} /><span class="sfd-item-label">${v}</span><span class="sfd-item-count">${counts[v]}</span></label>`).join('')}</div>
+      <div class="sfd-footer"><button class="sfd-clear-btn">Clear filters</button></div>`;
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+      filters.recruiterScreening = [...dd.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob);
+    }));
+    dd.querySelector('.sfd-clear-btn').addEventListener('click', () => { filters.recruiterScreening = []; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'interviewScore') {
+    dd.innerHTML = `
+      <div class="sfd-range-row">
+        <label>Interview score</label>
+        <input type="number" class="sfd-range-input" id="sfd-score-min" value="${filters.scoreMin ?? 0}" min="0" max="100" />
+        <span class="sfd-range-sep">to</span>
+        <input type="number" class="sfd-range-input" id="sfd-score-max" value="${filters.scoreMax ?? 100}" min="0" max="100" />
+      </div>
+      <div class="sfd-actions-row">
+        <button class="sfd-btn-clear">Clear</button>
+        <button class="sfd-btn-apply">Apply</button>
+      </div>`;
+    dd.querySelector('.sfd-btn-apply').addEventListener('click', () => {
+      filters.scoreMin = parseInt(dd.querySelector('#sfd-score-min').value) || 0;
+      filters.scoreMax = parseInt(dd.querySelector('#sfd-score-max').value) || 100;
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob);
+    });
+    dd.querySelector('.sfd-btn-clear').addEventListener('click', () => { filters.scoreMin = null; filters.scoreMax = null; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'actions') {
+    const acts = ['Shortlisted', 'Rejected', 'Waitlisted', 'Panel Shortlisted', 'Panel Rejected', 'Panel Waitlisted', 'Pending Action'];
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Actions" /></div>
+      <div class="sfd-items">${acts.map(a => `<label class="sfd-item"><input type="checkbox" value="${a}" /><span class="sfd-item-label">${a}</span><span class="sfd-item-count">0</span></label>`).join('')}</div>`;
+  }
+
+  chip.appendChild(dd);
+  chip.classList.add('active-filter');
+}
+
+function applyStageFilters(candidates, stageKey) {
+  const f = AppState.stageFilters[stageKey];
+  if (!f) return candidates;
+  let filtered = candidates;
+  if (f.interviewStatus.length > 0) filtered = filtered.filter(c => f.interviewStatus.includes(c.interviewStatus));
+  if (f.cheatProb.length > 0) filtered = filtered.filter(c => f.cheatProb.includes(c.cheatProbability));
+  if (f.recruiterScreening.length > 0) filtered = filtered.filter(c => f.recruiterScreening.includes(c.recruiterScreening));
+  if (f.scoreMin != null) filtered = filtered.filter(c => c.interviewScore != null && c.interviewScore >= f.scoreMin);
+  if (f.scoreMax != null) filtered = filtered.filter(c => c.interviewScore != null && c.interviewScore <= f.scoreMax);
+  return filtered;
+}
+
+function hasActiveFilters(stageKey) {
+  const f = AppState.stageFilters[stageKey];
+  return f && (f.interviewStatus.length > 0 || f.cheatProb.length > 0 || f.recruiterScreening.length > 0 || f.scoreMin != null || f.scoreMax != null);
+}
+
 function renderJobDetailPanes(job) {
   const searchVal = document.getElementById('jd-candidate-search').value.trim().toLowerCase();
   
@@ -5147,14 +5313,17 @@ function renderJobDetailPanes(job) {
         return '<span class="status-chip">—</span>';
       };
 
+      const allScreeningCands = screeningCands;
+      const displayScreeningCands = applyStageFilters(screeningCands, 'screening');
+      const sf = AppState.stageFilters.screening;
       screeningList.innerHTML = `
         <div class="stage-table-container">
           <div class="stage-table-filters">
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg> Interview Status</span>
-            <span class="filter-chip filter-chip-cheat" data-filter-type="cheat"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg> Cheat Prob</span>
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg> Recruiter Screening</span>
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Recruiter Screening Score</span>
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line></svg> Source</span>
+            <span class="filter-chip" data-filter="interviewStatus" data-stage="screening">${sf.interviewStatus.length ? '⊗' : '⊕'} Interview Status ${sf.interviewStatus.length ? `<span class="filter-chip-val">${sf.interviewStatus.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="cheatProb" data-stage="screening">${sf.cheatProb.length ? '⊗' : '⊕'} Cheat Probability ${sf.cheatProb.length ? `<span class="filter-chip-val">${sf.cheatProb.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="recruiterScreening" data-stage="screening">⊕ Recruiter Screening ${sf.recruiterScreening.length ? `<span class="filter-chip-val">${sf.recruiterScreening.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="interviewScore" data-stage="screening">⊕ Interview Score</span>
+            ${hasActiveFilters('screening') ? '<button class="btn-filter-reset" data-stage="screening">✕ Reset</button>' : ''}
             <div class="stage-table-actions-bar">
               <button class="btn-bulk-actions">Bulk Actions <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
               <button class="btn-columns-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg> Columns</button>
@@ -5178,7 +5347,8 @@ function renderJobDetailPanes(job) {
               </tr>
             </thead>
             <tbody>
-              ${screeningCands.map(c => {
+              ${displayScreeningCands.length === 0 ? '<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
+              ${displayScreeningCands.map(c => {
                 const initials = c.name.split(' ').map(n=>n[0]).join('');
                 const hasReport = c.interviewStatus === 'Incomplete' || c.interviewStatus === 'Completed';
                 const sourceIcon = c.source === 'Direct Link' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>';
@@ -5209,7 +5379,7 @@ function renderJobDetailPanes(job) {
             </tbody>
           </table>
           <div class="stage-table-footer">
-            <span class="table-selection-info">0 of ${screeningCands.length} row(s) selected.</span>
+            <span class="table-selection-info">0 of ${displayScreeningCands.length} row(s) selected.</span>
             <div class="table-pagination">
               <span>Rows per page</span>
               <select class="rows-per-page"><option>25</option></select>
@@ -5254,15 +5424,18 @@ function renderJobDetailPanes(job) {
         return `<span class="screening-fit-badge ${cls}">${val}</span>`;
       };
 
+      const allFunctionalCands = functionalCands;
+      const displayFunctionalCands = applyStageFilters(functionalCands, 'functional');
+      const ff = AppState.stageFilters.functional;
       functionalList.innerHTML = `
         <div class="stage-table-container">
           <div class="stage-table-filters">
-            <span class="filter-chip active-filter">Interview Status <span class="filter-chip-val">Completed</span></span>
-            <span class="filter-chip active-filter">Cheat Probability <span class="filter-chip-val">Low</span></span>
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Interview Score</span>
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg> Recruiter Screening</span>
-            <span class="filter-chip"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg> Actions</span>
-            <button class="btn-filter-reset"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Reset</button>
+            <span class="filter-chip" data-filter="interviewStatus" data-stage="functional">${ff.interviewStatus.length ? '⊗' : '⊕'} Interview Status ${ff.interviewStatus.length ? `<span class="filter-chip-val">${ff.interviewStatus.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="cheatProb" data-stage="functional">${ff.cheatProb.length ? '⊗' : '⊕'} Cheat Probability ${ff.cheatProb.length ? `<span class="filter-chip-val">${ff.cheatProb.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="interviewScore" data-stage="functional">⊕ Interview Score</span>
+            <span class="filter-chip" data-filter="recruiterScreening" data-stage="functional">⊕ Recruiter Screening ${ff.recruiterScreening.length ? `<span class="filter-chip-val">${ff.recruiterScreening.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="actions" data-stage="functional">⊕ Actions</span>
+            ${hasActiveFilters('functional') ? '<button class="btn-filter-reset" data-stage="functional">✕ Reset</button>' : ''}
             <div class="stage-table-actions-bar">
               <button class="btn-bulk-actions">Bulk Reschedule <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
               <button class="btn-columns-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg> Columns</button>
@@ -5287,7 +5460,8 @@ function renderJobDetailPanes(job) {
               </tr>
             </thead>
             <tbody>
-              ${functionalCands.map(c => {
+              ${displayFunctionalCands.length === 0 ? '<tr><td colspan="12" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
+              ${displayFunctionalCands.map(c => {
                 const initials = c.name.split(' ').map(n=>n[0]).join('');
                 const sourceIcon = c.source === 'Direct Link' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>';
                 return `
@@ -5323,7 +5497,7 @@ function renderJobDetailPanes(job) {
             </tbody>
           </table>
           <div class="stage-table-footer">
-            <span class="table-selection-info">0 of ${functionalCands.length} row(s) selected.</span>
+            <span class="table-selection-info">0 of ${displayFunctionalCands.length} row(s) selected.</span>
             <div class="table-pagination">
               <span>Rows per page</span>
               <select class="rows-per-page"><option>25</option></select>
@@ -5406,20 +5580,25 @@ function renderJobDetailPanes(job) {
       });
     });
 
-    pane.querySelectorAll('.filter-chip-cheat').forEach(chip => {
-      chip.addEventListener('click', () => {
+    const jobCands = AppState.candidates.filter(c => c.jobApplied === job.roleName || c.jobApplied === job.cardName);
+    pane.querySelectorAll('.filter-chip[data-filter]').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
         soundEngine.playClick();
-        let dd = chip.querySelector('.cheat-dropdown');
-        if (dd) { dd.remove(); chip.classList.remove('active-filter'); return; }
-        dd = document.createElement('div');
-        dd.className = 'cheat-dropdown';
-        dd.innerHTML = `
-          <label class="cheat-dd-item"><input type="checkbox" value="High" /> High</label>
-          <label class="cheat-dd-item"><input type="checkbox" value="Medium" /> Medium</label>
-          <label class="cheat-dd-item"><input type="checkbox" value="Low" checked /> Low</label>`;
-        dd.addEventListener('click', e => e.stopPropagation());
-        chip.appendChild(dd);
-        chip.classList.add('active-filter');
+        const filterType = chip.getAttribute('data-filter');
+        const stageKey = chip.getAttribute('data-stage');
+        buildFilterDropdown(chip, filterType, jobCands, stageKey);
+      });
+    });
+
+    pane.querySelectorAll('.btn-filter-reset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        soundEngine.playClick();
+        const stageKey = btn.getAttribute('data-stage');
+        if (stageKey && AppState.stageFilters[stageKey]) {
+          AppState.stageFilters[stageKey] = { interviewStatus: [], cheatProb: [], recruiterScreening: [], scoreMin: null, scoreMax: null, actions: [] };
+          renderJobDetailPanes(job);
+        }
       });
     });
 
@@ -5441,8 +5620,18 @@ function renderJobDetailPanes(job) {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         soundEngine.playClick();
-        const name = btn.closest('tr')?.querySelector('td:nth-child(2)')?.textContent?.trim() || 'Candidate';
-        showPremiumToast(`Interview ${btn.classList.contains('btn-reschedule') ? 'rescheduled' : 'scheduled'} for ${name}.`, "success");
+        const name = btn.closest('tr')?.querySelector('.cand-name-link')?.textContent?.trim() || 'Candidate';
+        const mode = btn.classList.contains('btn-reschedule') ? 'reschedule' : 'schedule';
+        const candId = btn.getAttribute('data-candidate-id');
+        openScheduleModal(name, mode, (date, time) => {
+          const cand = AppState.candidates.find(c => c.id === candId);
+          if (cand) {
+            cand.interviewStatus = mode === 'reschedule' ? 'Incomplete' : 'Not Started';
+            cand.attemptedAt = `${date} ${time}`;
+            saveStateToLocalStorage();
+            renderJobDetailPanes(job);
+          }
+        });
       });
     });
 
@@ -5454,9 +5643,9 @@ function renderJobDetailPanes(job) {
         if (candId && newVal) {
           const cand = AppState.candidates.find(c => c.id === candId);
           if (cand) {
-            cand.interviewStatus = newVal;
-            saveStateToLocalStorage();
-            showPremiumToast(`Status updated to ${newVal}.`, "success");
+            if (newVal === 'advance') updateCandidateStatus(candId, 'Hired');
+            else if (newVal === 'reject') updateCandidateStatus(candId, 'Rejected');
+            else showPremiumToast(`${cand.name} placed on hold.`, 'info');
           }
         }
       });
