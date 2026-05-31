@@ -3996,6 +3996,35 @@ function initSourcing() {
     });
   }
 
+  const isetBtn = document.getElementById('btn-interview-settings');
+  const isetOverlay = document.getElementById('interview-settings-overlay');
+  const isetClose = document.getElementById('btn-close-iset');
+  const isetSave = document.getElementById('btn-save-iset');
+  if (isetBtn && isetOverlay) {
+    isetBtn.addEventListener('click', () => {
+      isetOverlay.classList.add('open');
+      soundEngine.playClick();
+    });
+    isetClose?.addEventListener('click', () => {
+      isetOverlay.classList.remove('open');
+      soundEngine.playClick();
+    });
+    isetOverlay.addEventListener('click', (e) => {
+      if (e.target === isetOverlay) isetOverlay.classList.remove('open');
+    });
+    isetSave?.addEventListener('click', () => {
+      isetOverlay.classList.remove('open');
+      showPremiumToast('Interview settings saved.', 'success');
+      soundEngine.playChime([523.25], 0.15);
+    });
+    isetOverlay.querySelectorAll('.settings-toggle').forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        toggle.classList.toggle('active');
+        soundEngine.playClick();
+      });
+    });
+  }
+
   // Sourcing mode toggle buttons
   const modeButtons = document.querySelectorAll('.mode-toggle-btn');
   modeButtons.forEach(btn => {
