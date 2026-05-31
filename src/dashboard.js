@@ -5506,18 +5506,17 @@ function renderJobDetailPanes(job) {
                 <th><input type="checkbox" class="table-checkbox-all" /></th>
                 <th>Candidate</th>
                 <th>Phone</th>
-                <th>Interview Status</th>
-                <th>Recruiter Screening</th>
-                <th>Recruiter Screening Score <span class="sort-arrows">⇅</span></th>
-                <th>Match Count <span class="sort-arrows">⇅</span></th>
+                <th>Status</th>
+                <th>Screening</th>
+                <th>Score <span class="sort-arrows">⇅</span></th>
                 <th>Report</th>
                 <th>Source</th>
-                <th>Attempted At <span class="sort-arrows">⇅</span></th>
+                <th>Attempted <span class="sort-arrows">⇅</span></th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              ${displayScreeningCands.length === 0 ? '<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
+              ${displayScreeningCands.length === 0 ? '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
               ${displayScreeningCands.map(c => {
                 const initials = c.name.split(' ').map(n=>n[0]).join('');
                 const hasReport = c.interviewStatus === 'Incomplete' || c.interviewStatus === 'Completed';
@@ -5536,7 +5535,6 @@ function renderJobDetailPanes(job) {
                     </td>
                     <td>${c.phone || '—'}</td>
                     <td>${statusIcon(c.interviewStatus)}</td>
-                    <td>—</td>
                     <td>—</td>
                     <td>—</td>
                     <td>${hasReport ? `<a href="#" class="report-link" data-cand-id="${c.id}">Report <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : '—'}</td>
@@ -5618,19 +5616,17 @@ function renderJobDetailPanes(job) {
                 <th><input type="checkbox" class="table-checkbox-all" /></th>
                 <th>Candidate</th>
                 <th>Phone</th>
-                <th>Interview Status</th>
+                <th>Status</th>
                 <th>Report</th>
-                <th>Interview score <span class="sort-arrows">⇅</span></th>
-                <th>Cheat Probability</th>
+                <th>Score <span class="sort-arrows">⇅</span></th>
+                <th>Cheat <span class="sort-arrows">⇅</span></th>
                 <th>Source</th>
-                <th>Recruiter Screening</th>
-                <th>Recruiter Screening Score <span class="sort-arrows">⇅</span></th>
-                <th>Score</th>
+                <th>Screening</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              ${displayFunctionalCands.length === 0 ? '<tr><td colspan="12" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
+              ${displayFunctionalCands.length === 0 ? '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
               ${displayFunctionalCands.map(c => {
                 const initials = c.name.split(' ').map(n=>n[0]).join('');
                 const sourceIcon = c.source === 'Direct Link' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>';
@@ -5651,8 +5647,6 @@ function renderJobDetailPanes(job) {
                     <td><span class="cheat-prob-badge ${cheatColor(c.cheatProbability)}">${c.cheatProbability ? '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg> ' + c.cheatProbability : '—'}</span></td>
                     <td><span class="source-badge">${sourceIcon} ${c.source || '—'}</span></td>
                     <td>${screeningBadge(c.recruiterScreening)}</td>
-                    <td>${c.recruiterScreeningScore != null ? c.recruiterScreeningScore : '—'}</td>
-                    <td>${c.score}</td>
                     <td>
                       <select class="action-select-status">
                         <option value="">Select Sta...</option>

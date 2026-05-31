@@ -5637,6 +5637,8 @@ body.light-theme .funnel-svg-tooltip {
   border: 1px solid var(--glass-border);
   border-radius: 14px;
   overflow: hidden;
+  overflow-x: auto;
+  min-width: 0;
 }
 
 .stage-table-filters {
@@ -5969,12 +5971,13 @@ body.light-theme .funnel-svg-tooltip {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.82rem;
+  table-layout: auto;
 }
 
 .stage-data-table thead th {
-  padding: 10px 12px;
+  padding: 8px 10px;
   text-align: center;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--color-text-muted);
   text-transform: uppercase;
@@ -5999,11 +6002,12 @@ body.light-theme .funnel-svg-tooltip {
 }
 
 .stage-data-table tbody td {
-  padding: 12px 12px;
+  padding: 10px 10px;
   text-align: center;
   color: var(--color-text-secondary);
   vertical-align: middle;
   white-space: nowrap;
+  font-size: 0.78rem;
 }
 
 .table-checkbox-all,
