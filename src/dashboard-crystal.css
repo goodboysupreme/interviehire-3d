@@ -737,14 +737,14 @@ body.light-theme .theme-icon-sun { display: block; }
 .view-filter-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  height: 56px;
-  min-height: 56px;
-  max-height: 56px;
-  flex: 0 0 56px;
+  gap: 10px;
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
+  flex: 0 0 38px;
   flex-wrap: nowrap;
   border-bottom: 1px solid var(--glass-border);
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   contain: layout;
 }
 .filter-options {
@@ -767,10 +767,10 @@ body.light-theme .theme-icon-sun { display: block; }
   border: 1px solid transparent;
   color: var(--color-text-muted);
   font-family: var(--font-body);
-  font-size: 0.88rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  padding: 7px 16px;
-  border-radius: 20px;
+  padding: 4px 12px;
+  border-radius: 16px;
   cursor: pointer;
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -781,7 +781,7 @@ body.light-theme .theme-icon-sun { display: block; }
   color: var(--color-gold);
   box-shadow: 0 2px 8px rgba(var(--color-gold-rgb), 0.10);
 }
-.filter-meta { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; flex: 0 0 auto; }
+.filter-meta { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; flex: 0 0 auto; }
 .layout-toggle-group { display: flex; gap: 4px; flex: 0 0 auto; }
 .meta-label { color: var(--color-text-muted); }
 .meta-select {
@@ -2308,8 +2308,8 @@ body.light-theme .theme-icon-sun { display: block; }
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   color: var(--color-text-muted);
-  padding: 7px 10px;
-  border-radius: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: var(--spring-fast);
   display: flex; align-items: center;
