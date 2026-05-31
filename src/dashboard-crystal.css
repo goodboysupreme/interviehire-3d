@@ -5892,6 +5892,54 @@ body.light-theme .funnel-svg-tooltip {
   color: var(--color-text-primary);
 }
 
+/* Bulk Actions Dropdown */
+.bulk-actions-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 4px;
+  min-width: 170px;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.bulk-dd-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: left;
+}
+.bulk-dd-item:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--color-text-primary);
+}
+.bulk-dd-item[data-action="reject"]:hover {
+  color: #f87171;
+}
+.bulk-dd-item[data-action="advance"]:hover {
+  color: #34d399;
+}
+body.light-theme .bulk-actions-dropdown {
+  background: rgba(255,255,255,0.95);
+  border-color: rgba(0,0,0,0.1);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+body.light-theme .bulk-dd-item:hover {
+  background: rgba(0,0,0,0.04);
+}
+
 /* Schedule Modal */
 .schedule-modal-overlay {
   position: fixed;
