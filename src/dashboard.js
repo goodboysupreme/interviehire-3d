@@ -1644,17 +1644,11 @@ function navigateToSubtab(subtabId) {
 
   actionBtn.style.display = 'none';
 
-  if (subtabId === 'settings-password') {
-    breadcrumb.textContent = 'Settings / Security';
-    mainTitle.textContent = 'Admin Password Panel';
-    subText.textContent = 'Change access credentials for Org. Admin';
-    document.getElementById('view-settings-password').classList.add('active-view');
-    soundEngine.playChime([261.63, 293.66, 329.63], 0.1, 0.08);
-  } else if (subtabId === 'settings-cookies') {
-    breadcrumb.textContent = 'Settings / Cookies';
-    mainTitle.textContent = 'Cookie Policies';
-    subText.textContent = 'Manage cookie levels and session trackers';
-    document.getElementById('view-settings-cookies').classList.add('active-view');
+  if (subtabId === 'settings-general') {
+    breadcrumb.textContent = 'Settings';
+    mainTitle.textContent = 'General Settings';
+    subText.textContent = 'Manage your account, notifications, and preferences';
+    document.getElementById('view-settings-general').classList.add('active-view');
     soundEngine.playChime([261.63, 293.66, 329.63], 0.1, 0.08);
   }
 }
@@ -3289,39 +3283,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2000);
   });
 
-  document.getElementById('password-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const newPass = document.getElementById('new-pass').value;
-    const confirmPass = document.getElementById('confirm-pass').value;
-    const alertBox = document.getElementById('pass-success');
-
-    if (newPass !== confirmPass) {
-      alertBox.textContent = '❌ Passwords do not match!';
-      alertBox.style.color = 'var(--color-orange)';
-      alertBox.style.display = 'block';
-      return;
-    }
-
-    soundEngine.playChime([523.25], 0.15);
-    alertBox.textContent = '✓ Password updated successfully!';
-    alertBox.style.color = 'var(--color-success)';
-    alertBox.style.display = 'block';
-    e.target.reset();
-    setTimeout(() => {
-      alertBox.style.display = 'none';
-    }, 3000);
+  document.querySelectorAll('.settings-toggle:not([style*="pointer-events"])').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      toggle.classList.toggle('active');
+      soundEngine.playClick();
+      showPremiumToast('Setting updated.', 'success');
+    });
   });
 
-  document.getElementById('cookies-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    soundEngine.playChime([523.25], 0.15);
-    const alertBox = document.getElementById('cookies-success');
-    alertBox.textContent = '✓ Cookie tracking profiles saved!';
-    alertBox.style.display = 'block';
-    setTimeout(() => {
-      alertBox.style.display = 'none';
-    }, 3000);
-  });
+  const btnChangePass = document.getElementById('btn-change-password');
+  if (btnChangePass) {
+    btnChangePass.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast('Password change dialog would open here.', 'info');
+    });
+  }
+
+  const btnExportData = document.getElementById('btn-export-data');
+  if (btnExportData) {
+    btnExportData.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast('Data export started. You will receive an email shortly.', 'success');
+    });
+  }
+
+  const btnDeleteAccount = document.getElementById('btn-delete-account');
+  if (btnDeleteAccount) {
+    btnDeleteAccount.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast('Account deletion requires email confirmation.', 'info');
+    });
+  }
 
   // I. Exports Buttons Bindings
   document.getElementById('btn-export-jobs').addEventListener('click', () => {
@@ -4982,107 +4974,120 @@ function generateAutoResumeAnalysis(candidateName) {
 }
 
 function renderResumeStagePaneForJob(candidates, job, container) {
-  container.innerHTML = candidates.map(c => {
-    const initials = c.name.split(' ').map(n => n[0]).join('');
-    const hasCached = !!resumeAnalysisCache[c.id];
+  const getMatchClass = (score) => {
+    if (score >= 75) return 'high';
+    if (score >= 50) return 'medium';
+    if (score > 0) return 'low';
+    return 'pending';
+  };
 
-    return `
-      <div class="resume-analysis-card" data-cid="${c.id}">
-        <div class="jd-card-header">
-          <div class="user-avatar-mini" style="background:rgba(var(--color-gold-rgb),0.12);border-color:rgba(var(--color-gold-rgb),0.4);color:var(--color-gold)">${initials}</div>
-          <div class="user-details">
-            <span class="cand-name">${c.name}</span>
-            <span class="cand-email">${c.email}</span>
+  container.innerHTML = `
+    <div class="stage-table-container">
+      <div class="ra-table-wrapper">
+        <table class="ra-data-table">
+          <thead>
+            <tr>
+              <th><input type="checkbox" class="table-checkbox-all" /></th>
+              <th>Candidate</th>
+              <th>Match Score</th>
+              <th>Status</th>
+              <th>Resume</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${candidates.map(c => {
+              const initials = c.name.split(' ').map(n => n[0]).join('');
+              const cached = resumeAnalysisCache[c.id];
+              const score = cached ? cached.overallScore : 0;
+              const matchClass = getMatchClass(score);
+              const isAnalysed = !!cached;
+              return `
+                <tr data-candidate-id="${c.id}" data-cid="${c.id}">
+                  <td><input type="checkbox" class="table-checkbox-row" /></td>
+                  <td>
+                    <div class="table-candidate-cell">
+                      <span class="cand-name-link">${c.name} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
+                      <span class="cand-email-sub">${c.email}</span>
+                    </div>
+                  </td>
+                  <td><span class="ra-match-pill ${matchClass}">${isAnalysed ? score + '%' : 'Pending'}</span></td>
+                  <td><span class="ra-status-badge ${isAnalysed ? 'analysed' : 'pending'}">${isAnalysed ? 'Analysed' : 'Awaiting'}</span></td>
+                  <td>
+                    <input type="file" id="ra-file-${c.id}" accept=".pdf,.doc,.docx,.txt" hidden>
+                    ${isAnalysed
+                      ? `<button class="btn-ra-view-resume" data-cid="${c.id}">View Results</button>`
+                      : `<button class="btn-ra-analyse" data-cid="${c.id}" id="ra-btn-${c.id}"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Analyse</button>`
+                    }
+                  </td>
+                  <td>
+                    <div style="display:flex;gap:6px;justify-content:center;">
+                      <button class="btn-stage-reject" data-candidate-id="${c.id}" style="padding:4px 8px;font-size:0.72rem;">Reject</button>
+                      <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening" style="padding:4px 8px;font-size:0.72rem;">Advance</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="stage-table-footer">
+        <span class="table-selection-info">0 of ${candidates.length} row(s) selected.</span>
+        <div class="table-pagination">
+          <span>Rows per page</span>
+          <select class="rows-per-page"><option>25</option></select>
+          <span>Page 1 of 1</span>
+          <div class="pagination-btns">
+            <button disabled>&laquo;</button><button disabled>&lsaquo;</button><button disabled>&rsaquo;</button><button disabled>&raquo;</button>
           </div>
-          <span class="score-badge ra-score-badge ${hasCached ? '' : 'ra-hidden'}" id="badge-${c.id}"></span>
-        </div>
-        <div class="ra-input-section" id="ra-input-${c.id}" ${hasCached ? 'class="ra-hidden"' : ''}>
-          <div class="ra-upload-zone" id="ra-zone-${c.id}">
-            <input type="file" id="ra-file-${c.id}" accept=".pdf,.doc,.docx,.txt" hidden>
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <p class="ra-zone-text">Drop resume here or <span class="ra-zone-link">browse</span></p>
-            <p class="ra-zone-hint">.pdf, .doc, .docx, .txt</p>
-          </div>
-          <div class="ra-file-preview ra-hidden" id="ra-preview-${c.id}"></div>
-          <a href="#" class="ra-paste-toggle" id="ra-paste-toggle-${c.id}">No file? Paste resume text</a>
-          <textarea class="ra-paste-area ra-hidden" id="ra-paste-${c.id}" placeholder="Paste the candidate's resume text here..." rows="5"></textarea>
-          <button class="btn-analyse-resume" id="ra-btn-${c.id}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Analyse with Lina
-          </button>
-        </div>
-        <div class="ra-result ra-hidden" id="ra-result-${c.id}"></div>
-        <div class="jd-card-actions">
-          <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
-          <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening">Advance to Screening →</button>
         </div>
       </div>
-    `;
-  }).join('');
+    </div>
+  `;
 
   bindResumeAnalysisEvents(job);
 }
 
 function bindResumeAnalysisEvents(job) {
-  document.querySelectorAll('.resume-analysis-card').forEach(card => {
-    const cid = card.dataset.cid;
-    const zone = document.getElementById(`ra-zone-${cid}`);
+  document.querySelectorAll('.ra-data-table tr[data-cid]').forEach(row => {
+    const cid = row.dataset.cid;
     const fileInput = document.getElementById(`ra-file-${cid}`);
-    const pasteToggle = document.getElementById(`ra-paste-toggle-${cid}`);
-    const pasteArea = document.getElementById(`ra-paste-${cid}`);
-    const btn = document.getElementById(`ra-btn-${cid}`);
+    const analyseBtn = row.querySelector('.btn-ra-analyse');
+    const viewBtn = row.querySelector('.btn-ra-view-resume');
 
-    if (resumeAnalysisCache[cid]) renderAnalysisResult(cid, resumeAnalysisCache[cid]);
-
-    zone?.addEventListener('click', () => fileInput?.click());
-    zone?.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-    zone?.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-    zone?.addEventListener('drop', e => {
-      e.preventDefault(); zone.classList.remove('drag-over');
-      if (e.dataTransfer.files[0]) handleResumeFile(cid, e.dataTransfer.files[0]);
-    });
     fileInput?.addEventListener('change', () => {
       if (fileInput.files[0]) handleResumeFile(cid, fileInput.files[0]);
     });
-    pasteToggle?.addEventListener('click', e => {
-      e.preventDefault();
-      const nowHidden = pasteArea?.classList.toggle('ra-hidden');
-      pasteToggle.textContent = nowHidden ? '✎ No file? Paste resume text' : '✕ Hide paste area';
+
+    analyseBtn?.addEventListener('click', () => {
+      fileInput?.click();
+      const handler = () => {
+        if (fileInput.files[0]) {
+          handleResumeFile(cid, fileInput.files[0]);
+          setTimeout(() => runResumeAnalysis(cid, job), 200);
+        } else {
+          runResumeAnalysis(cid, job);
+        }
+        fileInput.removeEventListener('change', handler);
+      };
+      fileInput?.addEventListener('change', handler);
     });
-    btn?.addEventListener('click', () => runResumeAnalysis(cid, job));
+
+    viewBtn?.addEventListener('click', () => {
+      if (resumeAnalysisCache[cid]) {
+        openReportDrawerForCandidate(cid);
+      }
+    });
   });
 }
 
 function handleResumeFile(cid, file) {
-  const preview = document.getElementById(`ra-preview-${cid}`);
-  const zone = document.getElementById(`ra-zone-${cid}`);
   const isPDF = file.name.toLowerCase().endsWith('.pdf');
-
-  function showFileChip(note) {
-    zone?.classList.add('has-file');
-    if (preview) {
-      preview.classList.remove('ra-hidden');
-      preview.innerHTML = `
-        <div class="ra-file-chip">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span>${file.name}${note ? ` (${note})` : ''}</span>
-          <button class="ra-remove-file" data-rcid="${cid}">×</button>
-        </div>`;
-      preview.querySelector('.ra-remove-file')?.addEventListener('click', () => {
-        resumeTextCache[cid] = null;
-        preview.classList.add('ra-hidden');
-        preview.innerHTML = '';
-        zone?.classList.remove('has-file');
-        const fi = document.getElementById(`ra-file-${cid}`);
-        if (fi) fi.value = '';
-      });
-    }
-  }
 
   if (isPDF) {
     resumeTextCache[cid] = null;
-    showFileChip('PDF — will use AI profile');
-    showPremiumToast('PDF text extraction not available — analysis will use auto-generated profile.', 'info');
+    showPremiumToast(`${file.name} loaded — PDF will use auto-generated profile.`, 'info');
     return;
   }
 
@@ -5091,11 +5096,10 @@ function handleResumeFile(cid, file) {
     const text = e.target.result;
     if (isGarbageText(text)) {
       resumeTextCache[cid] = null;
-      showFileChip('binary — will use AI profile');
-      showPremiumToast('File appears to be binary — analysis will use auto-generated profile.', 'info');
+      showPremiumToast(`${file.name} loaded — binary file will use auto-generated profile.`, 'info');
     } else {
       resumeTextCache[cid] = text;
-      showFileChip();
+      showPremiumToast(`${file.name} loaded successfully.`, 'success');
     }
   };
   reader.readAsText(file);
@@ -5174,9 +5178,11 @@ async function runResumeAnalysis(cid, job) {
     }
   }
 
-  const origHTML = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = `<span class="ra-spinner"></span> Analysing…`;
+  const origHTML = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="ra-spinner"></span> Analysing…`;
+  }
 
   const systemPrompt = `You are Lina, an expert ATS resume analyst for IntervieHire. Analyse the provided resume against the job requirements. Respond ONLY with a valid JSON object matching exactly this schema — no extra text, no markdown fences:
 {"matchScore":number,"summary":"2-3 sentence professional assessment","experienceYears":"e.g. 4 years","skills":{"detected":["skill1"],"matched":["skill1"],"missing":["skill1"]},"scorecard":{"technical":number,"experience":number,"communication":number,"cultureFit":number},"recommendation":"Advance|Hold|Reject","recommendationReason":"1 sentence reason"}
@@ -5197,14 +5203,36 @@ All scorecard values 0–10. matchScore 0–100.`;
     showPremiumToast('Resume analysis complete.', 'success');
   } catch {
     showPremiumToast('Analysis failed — please try again.', 'error');
-    btn.disabled = false;
-    btn.innerHTML = origHTML;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHTML;
+    }
   }
 }
 
 function renderAnalysisResult(cid, result) {
+  const row = document.querySelector(`tr[data-cid="${cid}"]`);
+  if (row) {
+    const scoreTd = row.querySelectorAll('td')[2];
+    const statusTd = row.querySelectorAll('td')[3];
+    const resumeTd = row.querySelectorAll('td')[4];
+    if (scoreTd) {
+      const matchClass = result.matchScore >= 75 ? 'high' : result.matchScore >= 50 ? 'medium' : 'low';
+      scoreTd.innerHTML = `<span class="ra-match-pill ${matchClass}">${result.matchScore}%</span>`;
+    }
+    if (statusTd) {
+      statusTd.innerHTML = `<span class="ra-status-badge analysed">Analysed</span>`;
+    }
+    if (resumeTd) {
+      resumeTd.innerHTML = `<button class="btn-ra-view-resume" data-cid="${cid}">View Results</button>`;
+      resumeTd.querySelector('.btn-ra-view-resume')?.addEventListener('click', () => {
+        openReportDrawerForCandidate(cid);
+      });
+    }
+    return;
+  }
+
   const resultEl = document.getElementById(`ra-result-${cid}`);
-  const inputEl  = document.getElementById(`ra-input-${cid}`);
   const badgeEl  = document.getElementById(`badge-${cid}`);
   if (!resultEl) return;
 
@@ -5213,64 +5241,6 @@ function renderAnalysisResult(cid, result) {
     const c = result.matchScore >= 75 ? '34,197,94' : result.matchScore >= 50 ? '251,191,36' : '239,68,68';
     badgeEl.style.cssText = `background:rgba(${c},0.12);color:rgb(${c});border-color:rgba(${c},0.3);`;
   }
-
-  const recClass = result.recommendation === 'Advance' ? 'advance' : result.recommendation === 'Hold' ? 'hold' : 'reject';
-  const recIcon  = result.recommendation === 'Advance' ? '✅' : result.recommendation === 'Hold' ? '⏸' : '❌';
-
-  const scRows = [
-    ['Technical',     result.scorecard?.technical     ?? 0],
-    ['Experience',    result.scorecard?.experience    ?? 0],
-    ['Communication', result.scorecard?.communication ?? 0],
-    ['Culture Fit',   result.scorecard?.cultureFit    ?? 0],
-  ].map(([lbl, val]) => `
-    <div class="sc-bar-row">
-      <span class="sc-label">${lbl}</span>
-      <div class="sc-bar-track"><div class="sc-bar-fill sc-fill-${recClass}" style="width:${(+val)*10}%"></div></div>
-      <span class="sc-val">${(+val).toFixed(1)}</span>
-    </div>`).join('');
-
-  const chips = (arr, cls) => (arr || []).map(s => `<span class="skill-chip ${cls}">${s}</span>`).join('');
-
-  resultEl.innerHTML = `
-    <div class="ra-result-top">
-      <div class="ra-score-ring-wrap">
-        <div class="ra-score-ring" style="--score:${result.matchScore}">
-          <span class="ra-score-num">${result.matchScore}</span>
-          <span class="ra-score-pct">%</span>
-        </div>
-        <p class="ra-exp-label">~&nbsp;${result.experienceYears}</p>
-      </div>
-      <div class="ra-rec-block">
-        <div class="rec-badge ${recClass}">${recIcon}&nbsp;${result.recommendation}</div>
-        <p class="rec-reason">${result.recommendationReason}</p>
-      </div>
-    </div>
-    ${(result.skills?.matched?.length || result.skills?.missing?.length || result.skills?.detected?.length) ? `
-    <div class="ra-skills-section">
-      ${result.skills?.matched?.length  ? `<div class="ra-skills-row"><span class="rsk-label matched-label">Matched</span><div class="skill-chips-wrap">${chips(result.skills.matched,'matched')}</div></div>` : ''}
-      ${result.skills?.missing?.length  ? `<div class="ra-skills-row"><span class="rsk-label missing-label">Missing</span><div class="skill-chips-wrap">${chips(result.skills.missing,'missing')}</div></div>` : ''}
-      ${result.skills?.detected?.length ? `<div class="ra-skills-row"><span class="rsk-label detected-label">Detected</span><div class="skill-chips-wrap">${chips(result.skills.detected,'detected')}</div></div>` : ''}
-    </div>` : ''}
-    <div class="ra-scorecard">
-      <p class="ra-sc-title">AI Scorecard</p>
-      ${scRows}
-    </div>
-    <div class="ra-summary-box">
-      <span class="ra-summary-label">Lina's Assessment</span>
-      <p class="ra-summary-text">"${result.summary}"</p>
-    </div>
-    <button class="btn-re-analyse" id="ra-re-${cid}">↺ Re-analyse</button>
-  `;
-
-  resultEl.classList.remove('ra-hidden');
-  inputEl?.classList.add('ra-hidden');
-
-  document.getElementById(`ra-re-${cid}`)?.addEventListener('click', () => {
-    resultEl.classList.add('ra-hidden');
-    inputEl?.classList.remove('ra-hidden');
-    const btn = document.getElementById(`ra-btn-${cid}`);
-    if (btn) { btn.disabled = false; btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Analyse with Lina`; }
-  });
 }
 
 function openScheduleModal(candidateName, mode, callback) {
@@ -6148,7 +6118,7 @@ function renderQuestionsPane(job) {
       <div class="jd-empty-pane" style="text-align: center; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity: 0.85;">
         <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
         <p style="color: var(--color-text-muted); font-size: 0.9rem;">No interview questions defined yet.</p>
-        <p style="color: var(--color-text-faint); font-size: 0.8rem; max-width: 320px; margin-top: -6px;">Enter a job description on the left and click "Generate Questions Set" to auto-design a premium interview rubric.</p>
+        <p style="color: var(--color-text-faint); font-size: 0.8rem; max-width: 320px; margin-top: -6px;">Click "JD" to expand the job description panel, then click "Generate Questions" to auto-design a premium interview rubric.</p>
       </div>
     `;
   } else {
@@ -6340,6 +6310,15 @@ Requirements:
         loaderSpan.remove();
         textSpan.style.display = 'inline-block';
       }
+    });
+  }
+
+  const btnToggleJd = document.getElementById('btn-toggle-jd');
+  const jdDetails = document.getElementById('qg-jd-details');
+  if (btnToggleJd && jdDetails) {
+    btnToggleJd.addEventListener('click', () => {
+      jdDetails.classList.toggle('open');
+      soundEngine.playClick();
     });
   }
 
