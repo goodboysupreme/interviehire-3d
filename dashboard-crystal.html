@@ -96,8 +96,7 @@
                 </svg>
               </div>
               <ul class="sub-nav">
-                <li data-subtab="settings-password">Change Password</li>
-                <li data-subtab="settings-cookies">Cookie Settings</li>
+                <li data-subtab="settings-password">General Settings</li>
               </ul>
             </li>
           </ul>
@@ -591,59 +590,135 @@
           <!-- SETTINGS VIEWS (SUBTABS) -->
           <!-- ===================================== -->
           <section class="dashboard-view" id="view-settings-password">
-            <div class="card-glass panel-setting max-w-md">
-              <h3 class="panel-title">Change Password</h3>
-              <p class="panel-desc">Update your client portal access security parameters.</p>
-              
-              <form class="settings-form" id="password-form">
-                <div class="form-group">
-                  <label for="old-pass">Current Password</label>
-                  <input type="password" id="old-pass" required />
+            <div class="settings-unified">
+
+              <!-- Account & Security -->
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <div class="settings-section-icon" style="background:rgba(var(--color-gold-rgb),0.1);border:1px solid rgba(var(--color-gold-rgb),0.2);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-gold)"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  </div>
+                  <div>
+                    <h3 class="settings-section-title">Account & Security</h3>
+                    <p class="settings-section-desc">Manage your password and authentication</p>
+                  </div>
                 </div>
-                <div class="form-group">
-                  <label for="new-pass">New Password</label>
-                  <input type="password" id="new-pass" required />
+                <form class="settings-form" id="password-form">
+                  <div class="form-group">
+                    <label for="old-pass">Current Password</label>
+                    <input type="password" id="old-pass" required placeholder="Enter current password" />
+                  </div>
+                  <div class="form-group">
+                    <label for="new-pass">New Password</label>
+                    <input type="password" id="new-pass" required placeholder="Enter new password" />
+                  </div>
+                  <div class="form-group">
+                    <label for="confirm-pass">Confirm New Password</label>
+                    <input type="password" id="confirm-pass" required placeholder="Re-enter new password" />
+                  </div>
+                  <button type="submit" class="btn-submit">Update Password</button>
+                  <div id="pass-success" class="alert-success-inline"></div>
+                </form>
+              </div>
+
+              <!-- Notifications -->
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <div class="settings-section-icon" style="background:rgba(var(--color-indigo-rgb),0.1);border:1px solid rgba(var(--color-indigo-rgb),0.2);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-indigo)"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                  </div>
+                  <div>
+                    <h3 class="settings-section-title">Notifications</h3>
+                    <p class="settings-section-desc">Control how you receive updates</p>
+                  </div>
                 </div>
-                <div class="form-group">
-                  <label for="confirm-pass">Confirm New Password</label>
-                  <input type="password" id="confirm-pass" required />
+                <div class="settings-row">
+                  <div class="settings-row-label">
+                    <span class="settings-row-title">Email notifications</span>
+                    <span class="settings-row-desc">Get notified when candidates complete interviews</span>
+                  </div>
+                  <input type="checkbox" class="settings-toggle" checked />
                 </div>
-                <button type="submit" class="btn-submit">Change Password</button>
-                <div id="pass-success" class="alert-success-inline"></div>
-              </form>
+                <div class="settings-row">
+                  <div class="settings-row-label">
+                    <span class="settings-row-title">Weekly digest</span>
+                    <span class="settings-row-desc">Receive a summary of hiring activity each week</span>
+                  </div>
+                  <input type="checkbox" class="settings-toggle" checked />
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-label">
+                    <span class="settings-row-title">Candidate status changes</span>
+                    <span class="settings-row-desc">Alerts when candidates move between pipeline stages</span>
+                  </div>
+                  <input type="checkbox" class="settings-toggle" />
+                </div>
+              </div>
+
+              <!-- Privacy & Data -->
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <div class="settings-section-icon" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-success)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                  </div>
+                  <div>
+                    <h3 class="settings-section-title">Privacy & Data</h3>
+                    <p class="settings-section-desc">Cookie preferences and data handling</p>
+                  </div>
+                </div>
+                <form id="cookies-form">
+                  <div class="settings-row">
+                    <div class="settings-row-label">
+                      <span class="settings-row-title">Essential cookies</span>
+                      <span class="settings-row-desc">Required for authentication. Cannot be disabled.</span>
+                    </div>
+                    <input type="checkbox" class="settings-toggle" id="cookie-essential" checked disabled />
+                  </div>
+                  <div class="settings-row">
+                    <div class="settings-row-label">
+                      <span class="settings-row-title">Analytics tracking</span>
+                      <span class="settings-row-desc">Usage metrics and performance monitoring</span>
+                    </div>
+                    <input type="checkbox" class="settings-toggle" id="cookie-analytics" checked />
+                  </div>
+                  <div style="padding-top:12px;">
+                    <button type="submit" class="btn-submit">Save Preferences</button>
+                    <div id="cookies-success" class="alert-success-inline"></div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Appearance -->
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <div class="settings-section-icon" style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#a855f7"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                  </div>
+                  <div>
+                    <h3 class="settings-section-title">Appearance</h3>
+                    <p class="settings-section-desc">Theme and display preferences</p>
+                  </div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-label">
+                    <span class="settings-row-title">Dark mode</span>
+                    <span class="settings-row-desc">Use dark theme across the dashboard</span>
+                  </div>
+                  <input type="checkbox" class="settings-toggle" id="settings-dark-mode" checked />
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-label">
+                    <span class="settings-row-title">Sound effects</span>
+                    <span class="settings-row-desc">Play UI interaction sounds</span>
+                  </div>
+                  <input type="checkbox" class="settings-toggle" id="settings-sounds" />
+                </div>
+              </div>
+
             </div>
           </section>
 
           <section class="dashboard-view" id="view-settings-cookies">
-            <div class="card-glass panel-setting max-w-md">
-              <h3 class="panel-title">Cookie Settings</h3>
-              <p class="panel-desc">Configure dashboard cookie performance track levels.</p>
-              
-              <form class="settings-form" id="cookies-form">
-                <div class="checkbox-group">
-                  <label class="checkbox-label">
-                    <input type="checkbox" id="cookie-essential" checked disabled />
-                    <span class="checkmark-wrap"></span>
-                    <span class="lbl-wrap">
-                      <strong class="title">Essential Cookies</strong>
-                      <span class="desc">Required for admin session tokens. Cannot be turned off.</span>
-                    </span>
-                  </label>
-                </div>
-                <div class="checkbox-group">
-                  <label class="checkbox-label">
-                    <input type="checkbox" id="cookie-analytics" checked />
-                    <span class="checkmark-wrap"></span>
-                    <span class="lbl-wrap">
-                      <strong class="title">Analytics Tracking</strong>
-                      <span class="desc">Enables usage dashboard data metrics reporting.</span>
-                    </span>
-                  </label>
-                </div>
-                <button type="submit" class="btn-submit">Save Cookie Policies</button>
-                <div id="cookies-success" class="alert-success-inline"></div>
-              </form>
-            </div>
           </section>
 
           <!-- ===================================== -->
@@ -843,60 +918,91 @@
 
               <!-- Questions Generator Pane -->
               <div class="jd-pane" id="jd-pane-questions">
-                <div class="jd-questions-layout">
-                  <!-- Left: Job Description Source Panel -->
-                  <div class="card-glass jd-questions-input-card">
-                    <div class="jd-panel-header">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-indigo)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                      <h3 class="jd-card-title">Job Description</h3>
-                    </div>
-                    <div class="jd-questions-input-body">
-                      <textarea id="jd-raw-description" placeholder="Paste the job description or role requirements here..."></textarea>
-                      <div class="jd-generator-actions">
-                        <button class="btn-jd-primary" id="btn-generate-questions" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                          <span class="btn-text">✨ Generate Questions Set</span>
-                        </button>
+                <div class="qg-layout">
+                  <!-- Top: Generator Controls -->
+                  <div class="qg-controls-bar card-glass">
+                    <div class="qg-controls-left">
+                      <div class="qg-control-group">
+                        <label class="qg-label">Questions</label>
+                        <select class="qg-select" id="qg-num-questions">
+                          <option value="3">3</option>
+                          <option value="5" selected>5</option>
+                          <option value="7">7</option>
+                          <option value="10">10</option>
+                        </select>
                       </div>
+                      <div class="qg-control-group">
+                        <label class="qg-label">Types</label>
+                        <select class="qg-select" id="qg-types">
+                          <option value="mixed" selected>Mixed</option>
+                          <option value="technical">Technical</option>
+                          <option value="behavioral">Behavioral</option>
+                          <option value="situational">Situational</option>
+                        </select>
+                      </div>
+                      <div class="qg-control-group">
+                        <label class="qg-label">Difficulty</label>
+                        <select class="qg-select" id="qg-difficulty">
+                          <option value="mixed" selected>Mixed</option>
+                          <option value="beginner">Beginner</option>
+                          <option value="intermediate">Intermediate</option>
+                          <option value="advanced">Advanced</option>
+                        </select>
+                      </div>
+                      <div class="qg-control-group">
+                        <label class="qg-label">Follow-ups</label>
+                        <select class="qg-select" id="qg-followups">
+                          <option value="0">None</option>
+                          <option value="2" selected>2 per question</option>
+                          <option value="3">3 per question</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="qg-controls-right">
+                      <span class="questions-count-badge" id="questions-count-badge">0 questions</span>
+                      <button class="btn-jd-primary" id="btn-generate-questions">
+                        <span class="btn-text">Generate Questions</span>
+                      </button>
                     </div>
                   </div>
 
-                  <!-- Right: Questions List & Custom Adder -->
-                  <div class="jd-questions-list-section">
-                    <div class="jd-questions-header">
-                      <div class="jd-questions-title-wrap">
-                        <h3 class="jd-section-title">Interview Rubric & Questions</h3>
-                        <p class="jd-section-subtitle">Structured evaluation criteria powered by DeepSeek-V3</p>
+                  <!-- Job Description (collapsible) -->
+                  <details class="qg-jd-details card-glass" open>
+                    <summary class="qg-jd-summary">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                      Job Description
+                      <svg class="qg-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </summary>
+                    <div class="qg-jd-body">
+                      <textarea id="jd-raw-description" placeholder="Paste the job description or role requirements here to generate contextual interview questions..."></textarea>
+                    </div>
+                  </details>
+
+                  <!-- Staging area for newly generated questions -->
+                  <div class="card-glass jd-staging-area" id="jd-staging-area" style="display: none;">
+                    <div class="staging-header">
+                      <span class="staging-title">Review Generated Questions</span>
+                      <div class="staging-actions">
+                        <button class="btn-jd-ghost btn-sm" id="btn-staging-replace">Replace All</button>
+                        <button class="btn-jd-primary btn-sm" id="btn-staging-append">Append</button>
+                        <button class="btn-close-staging" id="btn-close-staging">&times;</button>
                       </div>
-                      <span class="questions-count-badge" id="questions-count-badge">0 questions</span>
                     </div>
+                    <div class="staging-list" id="staging-questions-list"></div>
+                  </div>
 
-                    <!-- Staging area for newly generated questions before importing -->
-                    <div class="card-glass jd-staging-area" id="jd-staging-area" style="display: none;">
-                      <div class="staging-header">
-                        <span class="staging-title">📋 Review Generated Questions</span>
-                        <div class="staging-actions">
-                          <button class="btn-jd-ghost btn-sm" id="btn-staging-replace">Replace List</button>
-                          <button class="btn-jd-primary btn-sm" id="btn-staging-append">Append List</button>
-                          <button class="btn-close-staging" id="btn-close-staging">&times;</button>
-                        </div>
-                      </div>
-                      <div class="staging-list" id="staging-questions-list"></div>
-                    </div>
+                  <!-- Questions List -->
+                  <div class="qg-questions-list" id="list-questions">
+                    <!-- Filled by JS -->
+                  </div>
 
-                    <!-- Main list of questions -->
-                    <div class="jd-questions-list" id="list-questions">
-                      <!-- Filled by JS -->
-                    </div>
-
-                    <!-- Add Custom Question Card -->
-                    <div class="card-glass jd-add-question-card">
-                      <h4 class="jd-add-title">Add Custom Question</h4>
-                      <div class="jd-add-row">
-                        <textarea id="input-custom-question" placeholder="Draft a raw interview question... (e.g. Tell me about your experience scaling Postgres database tables.)"></textarea>
-                        <div class="jd-add-actions">
-                          <button class="btn-jd-ghost" id="btn-add-question-raw">+ Add As-Is</button>
-                          <button class="btn-jd-primary" id="btn-enhance-custom">✨ Enhance with AI</button>
-                        </div>
+                  <!-- Add Custom Question -->
+                  <div class="qg-add-card card-glass">
+                    <div class="qg-add-row">
+                      <textarea id="input-custom-question" placeholder="Type a custom interview question..."></textarea>
+                      <div class="qg-add-actions">
+                        <button class="btn-jd-ghost btn-sm" id="btn-add-question-raw">+ Add</button>
+                        <button class="btn-jd-primary btn-sm" id="btn-enhance-custom">Enhance</button>
                       </div>
                     </div>
                   </div>

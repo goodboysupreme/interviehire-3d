@@ -1269,17 +1269,11 @@ function navigateToSubtab(subtabId) {
 
   actionBtn.style.display = 'none';
 
-  if (subtabId === 'settings-password') {
-    breadcrumb.textContent = 'Settings / Security';
-    mainTitle.textContent = 'Admin Password Panel';
-    subText.textContent = 'Change access credentials for Org. Admin';
+  if (subtabId === 'settings-password' || subtabId === 'settings-cookies') {
+    breadcrumb.textContent = 'Settings';
+    mainTitle.textContent = 'Settings';
+    subText.textContent = 'Manage your account, notifications, and preferences';
     document.getElementById('view-settings-password').classList.add('active-view');
-    soundEngine.playChime([261.63, 293.66, 329.63], 0.1, 0.08);
-  } else if (subtabId === 'settings-cookies') {
-    breadcrumb.textContent = 'Settings / Cookies';
-    mainTitle.textContent = 'Cookie Policies';
-    subText.textContent = 'Manage cookie levels and session trackers';
-    document.getElementById('view-settings-cookies').classList.add('active-view');
     soundEngine.playChime([261.63, 293.66, 329.63], 0.1, 0.08);
   }
 }
@@ -2633,15 +2627,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3000);
   });
 
-  document.getElementById('cookies-form').addEventListener('submit', (e) => {
+  document.getElementById('cookies-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     soundEngine.playChime([523.25], 0.15);
     const alertBox = document.getElementById('cookies-success');
-    alertBox.textContent = '✓ Cookie tracking profiles saved!';
-    alertBox.style.display = 'block';
-    setTimeout(() => {
-      alertBox.style.display = 'none';
-    }, 3000);
+    if (alertBox) {
+      alertBox.textContent = '✓ Preferences saved!';
+      alertBox.style.display = 'block';
+      setTimeout(() => { alertBox.style.display = 'none'; }, 3000);
+    }
+    showPremiumToast('Preferences saved.', 'success');
+  });
+
+  document.getElementById('settings-dark-mode')?.addEventListener('change', (e) => {
+    document.body.classList.toggle('light-theme', !e.target.checked);
+    soundEngine.playClick();
+  });
+
+  document.getElementById('settings-sounds')?.addEventListener('change', (e) => {
+    soundEngine.muted = !e.target.checked;
+    if (!soundEngine.muted) soundEngine.playClick();
   });
 
   // I. Exports Buttons Bindings
@@ -4166,42 +4171,126 @@ const resumeTextCache = {};
 const resumeAnalysisCache = {};
 
 function renderResumeStagePaneForJob(candidates, job, container) {
-  container.innerHTML = candidates.map(c => {
-    const initials = c.name.split(' ').map(n => n[0]).join('');
-    return `
-      <div class="resume-analysis-card" data-cid="${c.id}">
-        <div class="jd-card-header">
-          <div class="user-avatar-mini" style="background:rgba(var(--color-gold-rgb),0.12);border-color:rgba(var(--color-gold-rgb),0.4);color:var(--color-gold)">${initials}</div>
-          <div class="user-details">
-            <span class="cand-name">${c.name}</span>
-            <span class="cand-email">${c.email}</span>
-          </div>
-          <span class="score-badge ra-score-badge" id="badge-${c.id}">${c.score}</span>
+  const getScoreColor = (score) => {
+    const num = parseInt(score);
+    if (isNaN(num)) return { bg: 'rgba(255,255,255,0.06)', color: 'var(--color-text-muted)', border: 'rgba(255,255,255,0.1)' };
+    if (num >= 75) return { bg: 'rgba(34,197,94,0.12)', color: 'rgb(34,197,94)', border: 'rgba(34,197,94,0.3)' };
+    if (num >= 50) return { bg: 'rgba(251,191,36,0.12)', color: 'rgb(251,191,36)', border: 'rgba(251,191,36,0.3)' };
+    return { bg: 'rgba(239,68,68,0.12)', color: 'rgb(239,68,68)', border: 'rgba(239,68,68,0.3)' };
+  };
+
+  container.innerHTML = `
+    <div class="ra-table-wrapper">
+      <div class="ra-table-header">
+        <h3 class="ra-table-title">Resume Analysis</h3>
+        <p class="ra-table-subtitle">${candidates.length} candidate${candidates.length !== 1 ? 's' : ''} pending review</p>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table ra-data-table">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding-left:24px;">Candidate</th>
+              <th>Match Score</th>
+              <th>Status</th>
+              <th>Resume</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${candidates.map(c => {
+              const initials = c.name.split(' ').map(n => n[0]).join('');
+              const scoreColors = getScoreColor(c.score);
+              const hasAnalysis = !!resumeAnalysisCache[c.id];
+              const analysisData = resumeAnalysisCache[c.id];
+              const recommendation = analysisData?.recommendation || '';
+              const statusBadge = hasAnalysis
+                ? `<span class="ra-status-badge ra-status-${recommendation.toLowerCase()}">${recommendation}</span>`
+                : `<span class="ra-status-badge ra-status-pending">Pending</span>`;
+              return `
+                <tr class="ra-table-row" data-cid="${c.id}">
+                  <td style="text-align:left;padding-left:24px;">
+                    <div class="user-cell">
+                      <div class="user-avatar-mini" style="background:rgba(var(--color-gold-rgb),0.12);border-color:rgba(var(--color-gold-rgb),0.4);color:var(--color-gold);width:34px;height:34px;font-size:0.8rem;">${initials}</div>
+                      <div class="user-details">
+                        <span class="cand-name" style="font-weight:600;font-size:0.9rem;">${c.name}</span>
+                        <span class="user-email-mini">${c.email}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="ra-match-pill" id="badge-${c.id}" style="background:${scoreColors.bg};color:${scoreColors.color};border:1px solid ${scoreColors.border};padding:4px 12px;border-radius:20px;font-size:0.82rem;font-weight:700;">${c.score || '—'}</span>
+                  </td>
+                  <td>${statusBadge}</td>
+                  <td>
+                    <button class="btn-ra-view-resume" data-cid="${c.id}" title="Analyse resume">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                      ${hasAnalysis ? 'View Analysis' : 'Analyse'}
+                    </button>
+                  </td>
+                  <td>
+                    <div class="ra-actions-cell">
+                      <button class="btn-ra-action btn-ra-advance" data-candidate-id="${c.id}" data-next-stage="Screening" title="Advance to Screening">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        Advance
+                      </button>
+                      <button class="btn-ra-action btn-ra-reject" data-candidate-id="${c.id}" title="Reject candidate">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        Reject
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    ${candidates.map(c => `
+      <div class="ra-analysis-drawer ra-hidden" id="ra-drawer-${c.id}">
+        <div class="ra-drawer-header">
+          <h4>Resume Analysis — ${c.name}</h4>
+          <button class="btn-close-ra-drawer" data-cid="${c.id}">&times;</button>
         </div>
-        <div class="ra-input-section" id="ra-input-${c.id}">
-          <div class="ra-upload-zone" id="ra-zone-${c.id}">
-            <input type="file" id="ra-file-${c.id}" class="ra-file-input" accept=".pdf,.docx,.txt" />
-            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-            <p class="ra-zone-title">Drop resume here</p>
-            <p class="ra-zone-sub">PDF · DOCX · TXT — or click to browse</p>
+        <div class="ra-drawer-body">
+          <div class="ra-input-section" id="ra-input-${c.id}">
+            <div class="ra-upload-zone" id="ra-zone-${c.id}">
+              <input type="file" id="ra-file-${c.id}" class="ra-file-input" accept=".pdf,.docx,.txt" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              <p class="ra-zone-title">Drop resume here or click to browse</p>
+              <p class="ra-zone-sub">PDF, DOCX, or TXT</p>
+            </div>
+            <div class="ra-file-preview ra-hidden" id="ra-preview-${c.id}"></div>
+            <a class="ra-paste-toggle" id="ra-paste-toggle-${c.id}" href="#">Paste resume text instead</a>
+            <textarea class="ra-paste-area ra-hidden" id="ra-paste-${c.id}" placeholder="Paste the candidate's resume text here..."></textarea>
+            <button class="btn-analyse-resume" id="ra-btn-${c.id}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Analyse with Lina
+            </button>
           </div>
-          <div class="ra-file-preview ra-hidden" id="ra-preview-${c.id}"></div>
-          <a class="ra-paste-toggle" id="ra-paste-toggle-${c.id}" href="#">✎ No file? Paste resume text</a>
-          <textarea class="ra-paste-area ra-hidden" id="ra-paste-${c.id}" placeholder="Paste the candidate's resume text here..."></textarea>
-          <button class="btn-analyse-resume" id="ra-btn-${c.id}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Analyse with Lina
-          </button>
-        </div>
-        <div class="ra-result ra-hidden" id="ra-result-${c.id}"></div>
-        <div class="jd-card-actions">
-          <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
-          <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening">Advance to Screening →</button>
+          <div class="ra-result ra-hidden" id="ra-result-${c.id}"></div>
         </div>
       </div>
-    `;
-  }).join('');
+    `).join('')}
+  `;
+
+  candidates.forEach(c => {
+    document.querySelector(`.btn-ra-view-resume[data-cid="${c.id}"]`)?.addEventListener('click', () => {
+      const drawer = document.getElementById(`ra-drawer-${c.id}`);
+      if (drawer) {
+        const isHidden = drawer.classList.contains('ra-hidden');
+        document.querySelectorAll('.ra-analysis-drawer').forEach(d => d.classList.add('ra-hidden'));
+        if (isHidden) drawer.classList.remove('ra-hidden');
+      }
+    });
+
+    document.querySelector(`.btn-close-ra-drawer[data-cid="${c.id}"]`)?.addEventListener('click', () => {
+      document.getElementById(`ra-drawer-${c.id}`)?.classList.add('ra-hidden');
+    });
+  });
+
   bindResumeAnalysisEvents(job);
+  bindStageActionButtons();
 }
 
 function bindResumeAnalysisEvents(job) {
@@ -4368,13 +4457,16 @@ function renderAnalysisResult(cid, result) {
 }
 
 function renderJobDetailPanes(job) {
-  const searchVal = document.getElementById('jd-candidate-search').value.trim().toLowerCase();
-  
-  const jobCandidates = AppState.candidates.filter(c => {
+  if (!job) return;
+  const searchInput = document.getElementById('jd-candidate-search');
+  const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+  const jobCandidates = (AppState.candidates || []).filter(c => {
+    if (!c || !c.name) return false;
     const matchesJob = c.jobApplied === job.roleName || c.jobApplied === job.cardName;
     if (!matchesJob) return false;
     if (searchVal) {
-      return c.name.toLowerCase().includes(searchVal) || c.email.toLowerCase().includes(searchVal);
+      return (c.name || '').toLowerCase().includes(searchVal) || (c.email || '').toLowerCase().includes(searchVal);
     }
     return true;
   });
@@ -4493,8 +4585,12 @@ function renderJobDetailPanes(job) {
                 <p class="candidate-summary-quote">"${vetting.summary}"</p>
                 <textarea class="recruiter-notes-textarea" placeholder="Add custom notes on notice buyout or communication flags..."></textarea>
               </div>
-              <div class="jd-card-actions inline">
+              <div class="jd-card-actions inline" style="gap:8px;">
                 <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
+                <button class="btn-stage-schedule" data-candidate-id="${c.id}" title="Schedule interview">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  Reschedule
+                </button>
                 <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Functional">Advance to Functional →</button>
               </div>
             </div>
@@ -4614,8 +4710,12 @@ function renderJobDetailPanes(job) {
                 <p class="candidate-summary-quote">"${vetting.summary}"</p>
                 <textarea class="recruiter-notes-textarea" placeholder="Add feedback comments or executive vetting notes..."></textarea>
               </div>
-              <div class="jd-card-actions inline">
+              <div class="jd-card-actions inline" style="gap:8px;">
                 <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
+                <button class="btn-stage-schedule" data-candidate-id="${c.id}" title="Schedule interview">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  Schedule
+                </button>
                 <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Hired">Hire Candidate ✓</button>
               </div>
             </div>
@@ -4648,46 +4748,46 @@ function renderJobDetailPanes(job) {
     }
   }
 
-  // Bind actions
-  const pane = document.getElementById('view-job-detail');
-  if (pane) {
-    pane.querySelectorAll('.subtab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const candId = btn.parentElement.getAttribute('data-cand-id');
-        const tabName = btn.getAttribute('data-tab');
-        
-        // Stop audio playing if swapping tabs
-        stopActiveCardPlayer();
-        
-        activeCandidateSubTabs[candId] = tabName;
-        soundEngine.playClick();
-        renderJobDetailPanes(job);
-      });
-    });
-
-    pane.querySelectorAll('.btn-stage-reject').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const candId = btn.getAttribute('data-candidate-id');
-        updateCandidateStatus(candId, 'Rejected');
-      });
-    });
-    
-    pane.querySelectorAll('.btn-stage-advance').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const candId = btn.getAttribute('data-candidate-id');
-        const nextStage = btn.getAttribute('data-next-stage');
-        updateCandidateStatus(candId, nextStage);
-      });
-    });
-
-    pane.querySelectorAll('.btn-player-play').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const candId = btn.getAttribute('data-play-id');
-        toggleCardPlayer(candId);
-      });
-    });
-  }
+  bindStageActionButtons(job);
   renderQuestionsPane(job);
+}
+
+function bindStageActionButtons(job) {
+  const pane = document.getElementById('view-job-detail');
+  if (!pane) return;
+
+  pane.querySelectorAll('.subtab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const candId = btn.parentElement.getAttribute('data-cand-id');
+      const tabName = btn.getAttribute('data-tab');
+      stopActiveCardPlayer();
+      activeCandidateSubTabs[candId] = tabName;
+      soundEngine.playClick();
+      renderJobDetailPanes(job);
+    });
+  });
+
+  pane.querySelectorAll('.btn-stage-reject, .btn-ra-reject').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const candId = btn.getAttribute('data-candidate-id');
+      if (candId) updateCandidateStatus(candId, 'Rejected');
+    });
+  });
+
+  pane.querySelectorAll('.btn-stage-advance, .btn-ra-advance').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const candId = btn.getAttribute('data-candidate-id');
+      const nextStage = btn.getAttribute('data-next-stage');
+      if (candId && nextStage) updateCandidateStatus(candId, nextStage);
+    });
+  });
+
+  pane.querySelectorAll('.btn-player-play').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const candId = btn.getAttribute('data-play-id');
+      toggleCardPlayer(candId);
+    });
+  });
 }
 
 function updateCandidateStatus(candId, newStatus) {
@@ -5004,10 +5104,10 @@ function renderQuestionsPane(job) {
 
   if (!job.questions || job.questions.length === 0) {
     listQuestions.innerHTML = `
-      <div class="jd-empty-pane" style="text-align: center; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity: 0.85;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-        <p style="color: var(--color-text-muted); font-size: 0.9rem;">No interview questions defined yet.</p>
-        <p style="color: var(--color-text-faint); font-size: 0.8rem; max-width: 320px; margin-top: -6px;">Enter a job description on the left and click "Generate Questions Set" to auto-design a premium interview rubric.</p>
+      <div class="jd-empty-pane" style="text-align: center; padding: 48px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity: 0.85;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p style="color: var(--color-text-muted); font-size: 0.88rem;">No interview questions yet</p>
+        <p style="color: var(--color-text-faint); font-size: 0.78rem; max-width: 360px; margin-top: -4px;">Add a job description above and click "Generate Questions" to create a structured interview rubric.</p>
       </div>
     `;
   } else {
@@ -5140,23 +5240,37 @@ function renderQuestionsPane(job) {
       
       soundEngine.playChime([392, 440], 0.1, 0.1);
 
+      const numQ = document.getElementById('qg-num-questions')?.value || '5';
+      const typeFilter = document.getElementById('qg-types')?.value || 'mixed';
+      const diffFilter = document.getElementById('qg-difficulty')?.value || 'mixed';
+      const followUpsCount = document.getElementById('qg-followups')?.value || '2';
+
+      const typeInstruction = typeFilter === 'mixed'
+        ? 'Include a mix of technical, behavioral, and situational questions.'
+        : `Focus on ${typeFilter} questions only.`;
+
+      const diffInstruction = diffFilter === 'mixed'
+        ? 'Vary difficulty levels across beginner, intermediate, and advanced.'
+        : `All questions should be ${diffFilter} difficulty.`;
+
       const systemPrompt = `You are a senior hiring manager and domain expert.
-Your task is to generate a set of 3 to 5 high-quality interview questions based on the given job description.
+Generate exactly ${numQ} high-quality interview questions based on the given job description.
 
 Requirements:
-- Include different types of questions: technical, behavioral, and situational.
+- ${typeInstruction}
+- ${diffInstruction}
 - For each question, provide:
   1. "type": either "technical", "behavioral", or "situational".
   2. "question": a clear, direct, and professional question.
   3. "difficulty": either "beginner", "intermediate", or "advanced".
   4. "rubric": a brief evaluation rubric (what a good answer should include).
-  5. "follow_ups": a list of 2 suggested follow-up questions.
+  5. "follow_ups": a list of ${followUpsCount} suggested follow-up questions.
 - Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdown or add explanations.`;
 
       try {
         const responseText = await callDeepSeekAPI([
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate questions for this job description:\n\n${desc}` }
+          { role: "user", content: `Generate ${numQ} interview questions for this job description:\n\n${desc}` }
         ], true);
 
         const cleanText = sanitizeJSONResponse(responseText);

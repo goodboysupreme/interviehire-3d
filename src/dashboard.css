@@ -453,7 +453,7 @@ body {
    ============================================================ */
 .dashboard-app {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 260px minmax(0, 1fr);
   min-height: 100vh;
   width: 100%;
 }
@@ -1309,21 +1309,29 @@ body.light-theme .theme-icon-sun {
 .table-responsive {
   width: 100%;
   overflow-x: auto;
+  min-width: 0;
+}
+
+.main-content {
+  min-width: 0;
+  overflow-x: hidden;
 }
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
+  table-layout: auto;
 }
 .data-table th {
   background: rgba(0, 0, 0, 0.2);
-  padding: 14px 24px;
+  padding: 14px 18px;
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: center;
+  white-space: nowrap;
 }
 .data-table th[data-sort] {
   cursor: pointer;
@@ -1338,10 +1346,11 @@ body.light-theme .theme-icon-sun {
 }
 
 .data-table td {
-  padding: 14px 24px;
+  padding: 14px 18px;
   font-size: 0.88rem;
   color: var(--color-text-primary);
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  text-align: center;
 }
 .data-table tbody tr {
   transition: var(--transition-fast);
@@ -4991,6 +5000,27 @@ body.light-theme .recruiter-notes-textarea {
   border-top: none;
   padding-top: 0;
   margin-top: 4px;
+}
+
+.btn-stage-schedule {
+  background: rgba(var(--color-indigo-rgb), 0.08);
+  border: 1px solid rgba(var(--color-indigo-rgb), 0.25);
+  color: var(--color-indigo-light);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-stage-schedule:hover {
+  background: rgba(var(--color-indigo-rgb), 0.15);
+  border-color: var(--color-indigo);
+  box-shadow: 0 0 10px rgba(var(--color-indigo-rgb), 0.15);
 }
 
 /* Code evaluation tab layout */
