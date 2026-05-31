@@ -1016,11 +1016,16 @@ function renderAnalyticsTable() {
         `;
       }
       if (visible.includes('actions')) {
+        const nextStage = c.status === 'Resume' ? 'Screening' : c.status === 'Screening' ? 'Functional' : c.status === 'Functional' ? 'Hired' : null;
         cellsHtml += `
           <td>
-            <button class="table-btn-action btn-view-report-from-table" data-candidate-id="${c.id}" title="View Full Report">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            </button>
+            <div style="display:flex;gap:6px;align-items:center;justify-content:center;">
+              <button class="table-btn-action btn-view-report-from-table" data-candidate-id="${c.id}" title="View Full Report">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+              ${nextStage ? `<button class="btn-stage-advance btn-tbl-advance" data-candidate-id="${c.id}" data-next-stage="${nextStage}" title="Advance to ${nextStage}" style="padding:4px 8px;font-size:0.7rem;">Advance</button>` : ''}
+              ${c.status !== 'Hired' && c.status !== 'Rejected' ? `<button class="btn-stage-reject btn-tbl-reject" data-candidate-id="${c.id}" title="Reject candidate" style="padding:4px 8px;font-size:0.7rem;">Reject</button>` : ''}
+            </div>
           </td>
         `;
       }
@@ -1029,11 +1034,27 @@ function renderAnalyticsTable() {
       tbody.appendChild(tr);
     });
     
-    // Bind click handlers to full report buttons in the table
     tbody.querySelectorAll('.btn-view-report-from-table').forEach(btn => {
       btn.addEventListener('click', () => {
         const candId = btn.getAttribute('data-candidate-id');
         openCandidateReport(candId);
+      });
+    });
+
+    tbody.querySelectorAll('.btn-tbl-advance').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.getAttribute('data-candidate-id');
+        const nextStage = btn.getAttribute('data-next-stage');
+        updateCandidateStatus(candId, nextStage);
+        renderAnalyticsTable();
+      });
+    });
+
+    tbody.querySelectorAll('.btn-tbl-reject').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.getAttribute('data-candidate-id');
+        updateCandidateStatus(candId, 'Rejected');
+        renderAnalyticsTable();
       });
     });
   }
