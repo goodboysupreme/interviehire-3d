@@ -6265,19 +6265,21 @@ function renderQuestionsPane(job) {
         : `All questions should be ${qDiff} difficulty.`;
 
       const systemPrompt = `You are a senior hiring manager and domain expert.
-Your task is to generate exactly ${numQ} high-quality interview questions based on the given job description.
+Generate exactly ${numQ} high-quality interview questions based on the given job description.
 The interview is planned for ${qDuration} minutes.
 
-Requirements:
-- ${typeInstruction}
-- ${diffInstruction}
-- For each question, provide:
-  1. "type": either "technical", "behavioral", or "situational".
-  2. "question": a clear, direct, and professional question.
-  3. "difficulty": either "beginner", "intermediate", or "advanced".
-  4. "rubric": a brief evaluation rubric (what a good answer should include).
-  5. "follow_ups": a list of ${qFollowups} suggested follow-up questions.
-- Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdown or add explanations.`;
+${typeInstruction}
+${diffInstruction}
+
+Return ONLY a JSON object in this exact format (no markdown, no explanation, no extra text):
+{"questions":[{"type":"technical","question":"Your question here?","difficulty":"intermediate","rubric":"What a good answer includes.","follow_ups":["Follow-up 1","Follow-up 2"]}]}
+
+Rules:
+- "type" must be one of: "technical", "behavioral", "situational"
+- "difficulty" must be one of: "beginner", "intermediate", "advanced"
+- "rubric" should describe what a strong candidate answer covers
+- "follow_ups" must contain exactly ${qFollowups} follow-up question strings
+- Generate exactly ${numQ} question objects in the array`;
 
       try {
         const responseText = await callDeepSeekAPI([
@@ -6287,20 +6289,21 @@ Requirements:
 
         const cleanText = sanitizeJSONResponse(responseText);
         const parsed = JSON.parse(cleanText);
-        
-        if (parsed && parsed.questions) {
-          currentStagedQuestions = parsed.questions.map((q, idx) => ({
+
+        const questionsArr = parsed.questions || parsed.interview_questions || (Array.isArray(parsed) ? parsed : null);
+        if (questionsArr && questionsArr.length > 0) {
+          currentStagedQuestions = questionsArr.map((q, idx) => ({
             id: `q-gen-${Date.now()}-${idx}`,
-            type: q.type || 'technical',
-            question: q.question,
-            difficulty: q.difficulty || 'intermediate',
-            rubric: q.rubric || '',
-            follow_ups: q.follow_ups || []
+            type: q.type || q.category || 'technical',
+            question: q.question || q.text || '',
+            difficulty: q.difficulty || q.level || 'intermediate',
+            rubric: q.rubric || q.evaluation_rubric || q.expected_answer || '',
+            follow_ups: q.follow_ups || q.followups || q.follow_up_questions || []
           }));
-          
+
           showStagingArea(job);
         } else {
-          throw new Error("Invalid response format. Missing 'questions' array.");
+          throw new Error("Invalid response format. Could not find questions array.");
         }
       } catch (err) {
         console.error("Failed to generate questions:", err);
