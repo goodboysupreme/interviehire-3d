@@ -6357,7 +6357,14 @@ Rules:
         }
       } catch (err) {
         console.error("Failed to generate questions:", err);
-        showPremiumToast("Failed to generate questions. Please verify your prompt or API status.", "error");
+        const errMsg = err.message || 'Unknown error';
+        if (errMsg.includes('API response error')) {
+          showPremiumToast(`API error: ${errMsg}`, "error");
+        } else if (errMsg.includes('aborted')) {
+          showPremiumToast("Request timed out. The API took too long to respond.", "error");
+        } else {
+          showPremiumToast(`Failed to generate questions: ${errMsg}`, "error");
+        }
       } finally {
         newBtnGen.disabled = false;
         loaderSpan.remove();
