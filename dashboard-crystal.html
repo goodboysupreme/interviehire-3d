@@ -240,21 +240,43 @@
           <section class="dashboard-view" id="view-analytics">
             <!-- Date Range Bar -->
             <div class="date-range-bar">
-              <div class="date-range-presets">
-                <select class="date-range-select" id="date-range-select">
-                  <option value="all" selected>All Time</option>
-                  <option value="7d">Last 7 Days</option>
-                  <option value="30d">Last 30 Days</option>
-                  <option value="90d">Last 90 Days</option>
-                  <option value="custom">Custom Range</option>
-                </select>
+              <div class="date-range-wrap" id="analytics-date-range-wrap">
+                <button class="btn-date-range-trigger" id="btn-analytics-daterange">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  <span id="analytics-daterange-label">All Time</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <div class="date-range-dropdown" id="analytics-daterange-dropdown">
+                  <div class="dr-presets">
+                    <button class="dr-preset active" data-range="all">All Time</button>
+                    <button class="dr-preset" data-range="7d">Last 7 Days</button>
+                    <button class="dr-preset" data-range="30d">Last 30 Days</button>
+                    <button class="dr-preset" data-range="90d">Last 90 Days</button>
+                  </div>
+                  <div class="dr-divider"></div>
+                  <div class="dr-calendar-section">
+                    <label class="dr-label">Custom Range</label>
+                    <div class="dr-calendar-inputs">
+                      <div class="dr-cal-field">
+                        <label>From</label>
+                        <input type="date" id="date-from" class="date-input" />
+                      </div>
+                      <div class="dr-cal-field">
+                        <label>To</label>
+                        <input type="date" id="date-to" class="date-input" />
+                      </div>
+                    </div>
+                    <button class="dr-apply-btn" id="dr-apply-custom">Apply</button>
+                  </div>
+                </div>
               </div>
-              <div class="date-range-custom" id="date-range-custom" style="display:none;">
-                <label class="date-label">From</label>
-                <input type="date" id="date-from" class="date-input" />
-                <label class="date-label">To</label>
-                <input type="date" id="date-to" class="date-input" />
-              </div>
+              <select class="date-range-select" id="date-range-select" style="display:none;">
+                <option value="all" selected>All Time</option>
+                <option value="7d">Last 7 Days</option>
+                <option value="30d">Last 30 Days</option>
+                <option value="90d">Last 90 Days</option>
+                <option value="custom">Custom Range</option>
+              </select>
             </div>
             <!-- Metrics Row -->
             <div class="metrics-grid">
