@@ -78,6 +78,8 @@ const AppState = {
   jobsFilter: 'all',
   teamFilter: 'all',
   tableSearch: '',
+  analyticsJobStatusFilter: [],
+  analyticsCandStageFilter: [],
   globalSearch: '',
   jobsSortKey: 'id',
   jobsSortAsc: true,
@@ -912,6 +914,9 @@ function renderAnalyticsTable() {
     if (searchVal) {
       list = list.filter(j => j.roleName.toLowerCase().includes(searchVal) || j.id.toLowerCase().includes(searchVal));
     }
+    if (AppState.analyticsJobStatusFilter?.length > 0) {
+      list = list.filter(j => AppState.analyticsJobStatusFilter.includes(j.status));
+    }
     
     list.sort((a, b) => {
       let valA = a.id;
@@ -969,6 +974,9 @@ function renderAnalyticsTable() {
     let list = filterCandidatesByDateRange(AppState.candidates);
     if (searchVal) {
       list = list.filter(c => c.name.toLowerCase().includes(searchVal) || c.email.toLowerCase().includes(searchVal) || c.jobApplied.toLowerCase().includes(searchVal));
+    }
+    if (AppState.analyticsCandStageFilter?.length > 0) {
+      list = list.filter(c => AppState.analyticsCandStageFilter.includes(c.status));
     }
 
     document.getElementById('analytics-table-showing').textContent = `Showing 1-${list.length} of ${list.length}`;
@@ -3138,6 +3146,59 @@ document.addEventListener('DOMContentLoaded', () => {
     AppState.tableSearch = e.target.value;
     renderAnalyticsTable();
   });
+
+  const analyticsFilterBtn = document.querySelector('.btn-ctrl-filter');
+  if (analyticsFilterBtn) {
+    analyticsFilterBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      soundEngine.playClick();
+      const existing = analyticsFilterBtn.parentElement.querySelector('.analytics-filter-dropdown');
+      if (existing) { existing.remove(); return; }
+      document.querySelectorAll('.analytics-filter-dropdown').forEach(d => d.remove());
+
+      const dd = document.createElement('div');
+      dd.className = 'analytics-filter-dropdown';
+      dd.addEventListener('click', ev => ev.stopPropagation());
+
+      if (AppState.analyticsSubtab === 'jobs-data') {
+        const statuses = ['Published', 'Draft', 'Archived'];
+        dd.innerHTML = `
+          <div class="afd-title">Filter by Status</div>
+          <div class="afd-items">${statuses.map(s => `<label class="afd-item"><input type="checkbox" value="${s}" ${AppState.analyticsJobStatusFilter?.includes(s) ? 'checked' : ''} /><span>${s}</span></label>`).join('')}</div>
+          <div class="afd-footer"><button class="afd-clear">Clear</button><button class="afd-apply">Apply</button></div>`;
+        dd.querySelector('.afd-apply').addEventListener('click', () => {
+          AppState.analyticsJobStatusFilter = [...dd.querySelectorAll('input:checked')].map(c => c.value);
+          renderAnalyticsTable();
+          dd.remove();
+        });
+        dd.querySelector('.afd-clear').addEventListener('click', () => {
+          AppState.analyticsJobStatusFilter = [];
+          renderAnalyticsTable();
+          dd.remove();
+        });
+      } else {
+        const stages = ['Resume', 'Screening', 'Functional', 'Hired', 'Rejected'];
+        dd.innerHTML = `
+          <div class="afd-title">Filter by Stage</div>
+          <div class="afd-items">${stages.map(s => `<label class="afd-item"><input type="checkbox" value="${s}" ${AppState.analyticsCandStageFilter?.includes(s) ? 'checked' : ''} /><span>${s}</span></label>`).join('')}</div>
+          <div class="afd-footer"><button class="afd-clear">Clear</button><button class="afd-apply">Apply</button></div>`;
+        dd.querySelector('.afd-apply').addEventListener('click', () => {
+          AppState.analyticsCandStageFilter = [...dd.querySelectorAll('input:checked')].map(c => c.value);
+          renderAnalyticsTable();
+          dd.remove();
+        });
+        dd.querySelector('.afd-clear').addEventListener('click', () => {
+          AppState.analyticsCandStageFilter = [];
+          renderAnalyticsTable();
+          dd.remove();
+        });
+      }
+      analyticsFilterBtn.parentElement.style.position = 'relative';
+      analyticsFilterBtn.parentElement.appendChild(dd);
+      const close = (ev) => { if (!dd.contains(ev.target) && ev.target !== analyticsFilterBtn) { dd.remove(); document.removeEventListener('click', close); } };
+      setTimeout(() => document.addEventListener('click', close), 0);
+    });
+  }
 
   const teamSearchInput = document.getElementById('team-search');
   teamSearchInput.addEventListener('input', () => {
