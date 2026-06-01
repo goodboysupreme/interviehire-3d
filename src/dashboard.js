@@ -4274,30 +4274,32 @@ function initSourcing() {
     });
   }
 
-  document.querySelectorAll('.date-preset').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      AppState.dateRange = btn.getAttribute('data-range');
-      // sync job detail dropdown
+  const dateRangeSelect = document.getElementById('date-range-select');
+  const dateRangeCustom = document.getElementById('date-range-custom');
+  if (dateRangeSelect) {
+    dateRangeSelect.addEventListener('change', () => {
+      const val = dateRangeSelect.value;
+      AppState.dateRange = val;
+      if (dateRangeCustom) dateRangeCustom.style.display = val === 'custom' ? 'flex' : 'none';
       const jdLabel = document.getElementById('jd-daterange-label');
-      if (jdLabel) jdLabel.textContent = btn.textContent;
+      if (jdLabel) jdLabel.textContent = dateRangeSelect.options[dateRangeSelect.selectedIndex].text;
       const jdDrop = document.getElementById('jd-daterange-dropdown');
       if (jdDrop) jdDrop.querySelectorAll('.jd-dr-preset').forEach(b => {
-        b.classList.toggle('active', b.getAttribute('data-range') === AppState.dateRange);
+        b.classList.toggle('active', b.getAttribute('data-range') === val);
       });
       soundEngine.playClick();
       applyDateRangeGlobally();
     });
-  });
+  }
 
   const dateFrom = document.getElementById('date-from');
   const dateTo = document.getElementById('date-to');
   if (dateFrom && dateTo) {
     [dateFrom, dateTo].forEach(inp => {
       inp.addEventListener('change', () => {
-        document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
         AppState.dateRange = 'custom';
+        AppState.customDateFrom = dateFrom.value;
+        AppState.customDateTo = dateTo.value;
         soundEngine.playClick();
         applyDateRangeGlobally();
       });
@@ -4322,10 +4324,9 @@ function initSourcing() {
         btn.classList.add('active');
         AppState.dateRange = btn.getAttribute('data-range');
         document.getElementById('jd-daterange-label').textContent = btn.textContent;
-        // sync analytics bar
-        document.querySelectorAll('.date-preset').forEach(b => {
-          b.classList.toggle('active', b.getAttribute('data-range') === AppState.dateRange);
-        });
+        // sync analytics bar dropdown
+        const sel = document.getElementById('date-range-select');
+        if (sel) sel.value = AppState.dateRange;
         soundEngine.playClick();
         applyDateRangeGlobally();
         jdDrDrop.classList.remove('open');
@@ -4341,8 +4342,11 @@ function initSourcing() {
           AppState.customDateFrom = jdDateFrom.value;
           AppState.customDateTo = jdDateTo.value;
           document.getElementById('jd-daterange-label').textContent = 'Custom';
-          // sync analytics bar
-          document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+          // sync analytics bar dropdown
+          const sel2 = document.getElementById('date-range-select');
+          if (sel2) sel2.value = 'custom';
+          const drc = document.getElementById('date-range-custom');
+          if (drc) drc.style.display = 'flex';
           if (document.getElementById('date-from')) document.getElementById('date-from').value = jdDateFrom.value;
           if (document.getElementById('date-to')) document.getElementById('date-to').value = jdDateTo.value;
           soundEngine.playClick();

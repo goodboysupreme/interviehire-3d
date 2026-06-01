@@ -241,14 +241,18 @@
             <!-- Date Range Bar -->
             <div class="date-range-bar">
               <div class="date-range-presets">
-                <button class="date-preset" data-range="7d">7 Days</button>
-                <button class="date-preset" data-range="30d">30 Days</button>
-                <button class="date-preset" data-range="90d">90 Days</button>
-                <button class="date-preset active" data-range="all">All Time</button>
+                <select class="date-range-select" id="date-range-select">
+                  <option value="all" selected>All Time</option>
+                  <option value="7d">Last 7 Days</option>
+                  <option value="30d">Last 30 Days</option>
+                  <option value="90d">Last 90 Days</option>
+                  <option value="custom">Custom Range</option>
+                </select>
               </div>
-              <div class="date-range-custom">
+              <div class="date-range-custom" id="date-range-custom" style="display:none;">
+                <label class="date-label">From</label>
                 <input type="date" id="date-from" class="date-input" />
-                <span class="date-sep">to</span>
+                <label class="date-label">To</label>
                 <input type="date" id="date-to" class="date-input" />
               </div>
             </div>
