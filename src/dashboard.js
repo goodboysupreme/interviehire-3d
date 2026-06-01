@@ -3452,6 +3452,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (popToggle) popToggle.style.display = 'none';
     if (popTeam) popTeam.style.display = 'none';
     document.querySelectorAll('.stage-filter-dropdown').forEach(d => d.remove());
+    document.querySelectorAll('.filter-chip.active-filter').forEach(c => { c.classList.remove('active-filter'); c._filterDropdown = null; });
   });
 
   // Kanban view switching setup
@@ -5405,9 +5406,9 @@ function openScheduleModal(candidateName, mode, callback) {
 }
 
 function buildFilterDropdown(chip, type, candidates, stageKey) {
-  const existing = chip.querySelector('.stage-filter-dropdown');
-  if (existing) { existing.remove(); chip.classList.remove('active-filter'); return; }
-  document.querySelectorAll('.stage-filter-dropdown').forEach(d => { d.remove(); d.closest?.('.filter-chip')?.classList.remove('active-filter'); });
+  if (chip._filterDropdown) { chip._filterDropdown.remove(); chip._filterDropdown = null; chip.classList.remove('active-filter'); return; }
+  document.querySelectorAll('.stage-filter-dropdown').forEach(d => d.remove());
+  document.querySelectorAll('.filter-chip.active-filter').forEach(c => { c.classList.remove('active-filter'); c._filterDropdown = null; });
 
   const dd = document.createElement('div');
   dd.className = 'stage-filter-dropdown';
@@ -5480,8 +5481,16 @@ function buildFilterDropdown(chip, type, candidates, stageKey) {
       <div class="sfd-items">${acts.map(a => `<label class="sfd-item"><input type="checkbox" value="${a}" /><span class="sfd-item-label">${a}</span><span class="sfd-item-count">0</span></label>`).join('')}</div>`;
   }
 
-  chip.appendChild(dd);
+  const rect = chip.getBoundingClientRect();
+  dd.style.left = rect.left + 'px';
+  dd.style.top = (rect.bottom + 4) + 'px';
+  document.body.appendChild(dd);
   chip.classList.add('active-filter');
+  chip._filterDropdown = dd;
+
+  const closeOnScroll = () => { dd.remove(); chip.classList.remove('active-filter'); chip._filterDropdown = null; };
+  const mainContent = chip.closest('.main-content');
+  if (mainContent) mainContent.addEventListener('scroll', closeOnScroll, { once: true });
 }
 
 function applyStageFilters(candidates, stageKey) {

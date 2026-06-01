@@ -5674,12 +5674,9 @@ body.light-theme .date-range-select { background: rgba(0,0,0,0.04); color: var(-
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 14px;
-  overflow: visible;
-  min-width: 0;
-}
-.stage-table-container .stage-data-table {
+  overflow: hidden;
   overflow-x: auto;
-  display: block;
+  min-width: 0;
 }
 
 .stage-table-filters {
@@ -5728,14 +5725,9 @@ body.light-theme .date-range-select { background: rgba(0,0,0,0.04); color: var(-
   margin-left: 2px;
 }
 
-.filter-chip {
-  position: relative;
-}
 .stage-filter-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 6px;
+  position: fixed;
+  margin-top: 4px;
   background: var(--color-surface-solid);
   border: 1px solid var(--glass-border);
   border-radius: 10px;
