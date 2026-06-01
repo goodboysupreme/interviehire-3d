@@ -3069,6 +3069,13 @@ body.light-theme .btn-stage-advance:hover {
   color: #9ca3af;
 }
 
+.q-type-select {
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+}
+.q-type-select option { background: var(--color-surface-solid); color: var(--color-text-primary); }
+
 /* Add custom card styling */
 .jd-add-question-card {
   background: rgba(255, 255, 255, 0.015);

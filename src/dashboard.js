@@ -6291,8 +6291,12 @@ function renderQuestionsPane(job) {
     listQuestions.innerHTML = job.questions.map((q, qIndex) => `
       <div class="card-glass jd-question-card" data-q-id="${q.id}" style="margin-bottom: 16px; padding: 16px; border-radius: 12px; border: 1px solid var(--glass-border); transition: var(--spring-fast);">
         <div class="q-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 12px;">
-          <span class="q-type-badge ${q.type || 'technical'}" style="padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;">${q.type || 'technical'}</span>
-          <select class="q-difficulty-select" data-field="difficulty" style="background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); color: var(--color-text-primary); border-radius: 6px; padding: 2px 6px; font-size: 0.78rem; font-family: var(--font-body); outline: none;">
+          <select class="q-type-select" data-field="type" style="padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); color: var(--color-text-primary); font-family: var(--font-body); outline: none; cursor: pointer;">
+            <option value="technical" ${(q.type || 'technical') === 'technical' ? 'selected' : ''}>Technical</option>
+            <option value="behavioral" ${q.type === 'behavioral' ? 'selected' : ''}>Behavioral</option>
+            <option value="situational" ${q.type === 'situational' ? 'selected' : ''}>Situational</option>
+          </select>
+          <select class="q-difficulty-select" data-field="difficulty" style="background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); color: var(--color-text-primary); border-radius: 6px; padding: 2px 6px; font-size: 0.78rem; font-family: var(--font-body); outline: none; cursor: pointer;">
             <option value="beginner" ${q.difficulty === 'beginner' ? 'selected' : ''}>Beginner</option>
             <option value="intermediate" ${q.difficulty === 'intermediate' ? 'selected' : ''}>Intermediate</option>
             <option value="advanced" ${q.difficulty === 'advanced' ? 'selected' : ''}>Advanced</option>
@@ -6358,17 +6362,19 @@ function renderQuestionsPane(job) {
         const questionText = card.querySelector('.q-question-text').value.trim();
         const rubricText = card.querySelector('.q-rubric-text').value.trim();
         const difficulty = card.querySelector('.q-difficulty-select').value;
-        
+        const qType = card.querySelector('.q-type-select')?.value || 'technical';
+
         const followUps = [];
         card.querySelectorAll('.q-followup-input').forEach(inp => {
           if (inp.value.trim() !== '') {
             followUps.push(inp.value.trim());
           }
         });
-        
+
         job.questions[idx].question = questionText;
         job.questions[idx].rubric = rubricText;
         job.questions[idx].difficulty = difficulty;
+        job.questions[idx].type = qType;
         job.questions[idx].follow_ups = followUps;
         
         saveStateToLocalStorage();
@@ -6607,13 +6613,37 @@ function showStagingArea(job) {
   stagingList.innerHTML = currentStagedQuestions.map((q, idx) => `
     <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 10px; margin-bottom: 8px; position: relative;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--color-indigo);">${q.type}</span>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <select class="staging-type-select" data-idx="${idx}" style="padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:700; text-transform:uppercase; background:rgba(0,0,0,0.25); border:1px solid var(--glass-border); color:var(--color-text-primary); font-family:var(--font-body); outline:none; cursor:pointer;">
+            <option value="technical" ${q.type === 'technical' ? 'selected' : ''}>Technical</option>
+            <option value="behavioral" ${q.type === 'behavioral' ? 'selected' : ''}>Behavioral</option>
+            <option value="situational" ${q.type === 'situational' ? 'selected' : ''}>Situational</option>
+          </select>
+          <select class="staging-diff-select" data-idx="${idx}" style="padding:2px 6px; border-radius:4px; font-size:0.7rem; background:rgba(0,0,0,0.25); border:1px solid var(--glass-border); color:var(--color-text-muted); font-family:var(--font-body); outline:none; cursor:pointer;">
+            <option value="beginner" ${q.difficulty === 'beginner' ? 'selected' : ''}>Beginner</option>
+            <option value="intermediate" ${q.difficulty === 'intermediate' ? 'selected' : ''}>Intermediate</option>
+            <option value="advanced" ${q.difficulty === 'advanced' ? 'selected' : ''}>Advanced</option>
+          </select>
+        </div>
         <button class="btn-staging-discard-item" data-idx="${idx}" style="background:none; border:none; color:#ef4444; font-size:0.9rem; cursor:pointer; padding:0 4px;">&times;</button>
       </div>
       <div style="font-size:0.82rem; color:var(--color-text-primary); line-height:1.4;">${q.question}</div>
       <div style="font-size:0.76rem; color:var(--color-text-muted); margin-top:4px; font-style:italic;">Rubric: ${q.rubric}</div>
     </div>
   `).join('');
+
+  stagingList.querySelectorAll('.staging-type-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const idx = parseInt(sel.getAttribute('data-idx'));
+      currentStagedQuestions[idx].type = sel.value;
+    });
+  });
+  stagingList.querySelectorAll('.staging-diff-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const idx = parseInt(sel.getAttribute('data-idx'));
+      currentStagedQuestions[idx].difficulty = sel.value;
+    });
+  });
 
   stagingList.querySelectorAll('.btn-staging-discard-item').forEach(btn => {
     btn.addEventListener('click', () => {
