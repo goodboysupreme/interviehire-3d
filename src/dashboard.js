@@ -78,10 +78,17 @@ const AppState = {
   jobsFilter: 'all',
   teamFilter: 'all',
   tableSearch: '',
+  analyticsJobStatusFilter: [],
+  analyticsCandStageFilter: [],
   globalSearch: '',
   jobsSortKey: 'id',
   jobsSortAsc: true,
   analyticsSubtab: 'jobs-data',
+  stageFilters: {
+    screening: { interviewStatus: [], cheatProb: [], recruiterScreening: [], scoreMin: null, scoreMax: null },
+    functional: { interviewStatus: [], cheatProb: [], recruiterScreening: [], scoreMin: null, scoreMax: null, actions: [] }
+  },
+  dateRange: 'all',
   
   jobs: [
     {
@@ -95,10 +102,10 @@ const AppState = {
       createdBy: 'Devasri',
       description: "We are seeking a detail-oriented Government Tender & Proposal Executive to manage and lead the preparation, review, and submission of bids, tenders, and proposals for public sector opportunities. Key duties include analyzing RFP guidelines, checking compliance matrices, and writing clear technical and operational responses.",
       pipeline: {
-        total: 3,
-        resume: 0,
-        screening: 2,
-        functional: 1
+        total: 10,
+        resume: 3,
+        screening: 3,
+        functional: 4
       },
       questions: [
         {
@@ -138,10 +145,10 @@ const AppState = {
       createdBy: 'Devasri',
       description: "We are hiring a Full Stack Developer to design, build, and support high-performance web applications. You will work with React on the frontend, Node.js and Express on the backend, and PostgreSQL for storage. Responsibilities include building responsive dashboards, optimizing latency, and ensuring data consistency across endpoints.",
       pipeline: {
-        total: 1,
-        resume: 0,
-        screening: 0,
-        functional: 1
+        total: 10,
+        resume: 4,
+        screening: 3,
+        functional: 3
       },
       questions: [
         {
@@ -180,7 +187,15 @@ const AppState = {
       jobApplied: 'Full Stack Developer',
       status: 'Functional',
       score: '94%',
-      registeredOn: '04 Mar 2026, 10:15 AM'
+      registeredOn: '04 Mar 2026, 10:15 AM',
+      phone: '8869889654',
+      source: 'Direct Link',
+      attemptedAt: 'Mar 22, 2026 11:57 PM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 71,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 100
     },
     {
       id: 'CAN-7128-DF5',
@@ -189,7 +204,15 @@ const AppState = {
       jobApplied: 'Government Tender & Proposal Executive',
       status: 'Functional',
       score: '96%',
-      registeredOn: '11 Mar 2026, 02:40 PM'
+      registeredOn: '11 Mar 2026, 02:40 PM',
+      phone: '9876543210',
+      source: 'Scheduled',
+      attemptedAt: 'Mar 18, 2026 03:15 PM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 85,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 92
     },
     {
       id: 'CAN-3401-EA1',
@@ -198,7 +221,15 @@ const AppState = {
       jobApplied: 'Government Tender & Proposal Executive',
       status: 'Screening',
       score: '87%',
-      registeredOn: '12 Mar 2026, 09:12 AM'
+      registeredOn: '12 Mar 2026, 09:12 AM',
+      phone: '9999999999',
+      source: 'Direct Link',
+      attemptedAt: 'Mar 22, 2026 11:57 PM',
+      interviewStatus: 'Incomplete',
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
     },
     {
       id: 'CAN-9012-EA2',
@@ -207,7 +238,15 @@ const AppState = {
       jobApplied: 'Government Tender & Proposal Executive',
       status: 'Screening',
       score: '91%',
-      registeredOn: '13 Mar 2026, 11:05 AM'
+      registeredOn: '13 Mar 2026, 11:05 AM',
+      phone: '8869889654',
+      source: 'Scheduled',
+      attemptedAt: null,
+      interviewStatus: 'Slot Missed',
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
     },
     {
       id: 'CAN-4402-RA1',
@@ -216,7 +255,15 @@ const AppState = {
       jobApplied: 'Full Stack Developer',
       status: 'Resume',
       score: '—',
-      registeredOn: '28 May 2026, 09:00 AM'
+      registeredOn: '28 May 2026, 09:00 AM',
+      phone: '7012345678',
+      source: 'Career Page',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
     },
     {
       id: 'CAN-5501-RA2',
@@ -225,7 +272,15 @@ const AppState = {
       jobApplied: 'Government Tender & Proposal Executive',
       status: 'Resume',
       score: '—',
-      registeredOn: '28 May 2026, 10:30 AM'
+      registeredOn: '28 May 2026, 10:30 AM',
+      phone: '9988776655',
+      source: 'Bulk Upload',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
     },
     {
       id: 'CAN-5502-RA3',
@@ -234,7 +289,491 @@ const AppState = {
       jobApplied: 'Government Tender & Proposal Executive',
       status: 'Resume',
       score: '—',
-      registeredOn: '28 May 2026, 11:15 AM'
+      registeredOn: '28 May 2026, 11:15 AM',
+      phone: '8877665544',
+      source: 'ATS',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-6601-FK1',
+      name: 'Meera Kapoor',
+      email: 'meera.kapoor@outlook.com',
+      jobApplied: 'Full Stack Developer',
+      status: 'Functional',
+      score: '88%',
+      registeredOn: '02 Apr 2026, 03:20 PM',
+      phone: '9123456789',
+      source: 'Career Page',
+      attemptedAt: 'Apr 15, 2026 10:30 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 78,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 88
+    },
+    {
+      id: 'CAN-6602-FK2',
+      name: 'Vikram Singh',
+      email: 'vikram.singh@techmail.com',
+      jobApplied: 'Full Stack Developer',
+      status: 'Screening',
+      score: '72%',
+      registeredOn: '05 Apr 2026, 09:45 AM',
+      phone: '9234567890',
+      source: 'ATS',
+      attemptedAt: 'Apr 18, 2026 02:00 PM',
+      interviewStatus: 'Incomplete',
+      cheatProbability: 'Medium',
+      interviewScore: null,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 65
+    },
+    {
+      id: 'CAN-6603-FK3',
+      name: 'Ananya Reddy',
+      email: 'ananya.r@devstudio.in',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '10 Apr 2026, 01:30 PM',
+      phone: '9345678901',
+      source: 'Bulk Upload',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-7701-GT1',
+      name: 'Kavya Nair',
+      email: 'kavya.nair@govwork.in',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Functional',
+      score: '82%',
+      registeredOn: '15 Mar 2026, 04:10 PM',
+      phone: '9456789012',
+      source: 'Scheduled',
+      attemptedAt: 'Mar 28, 2026 09:00 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 69,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 85
+    },
+    {
+      id: 'CAN-7702-GT2',
+      name: 'Rahul Gupta',
+      email: 'rahul.gupta@bidpro.com',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Screening',
+      score: '78%',
+      registeredOn: '18 Mar 2026, 10:00 AM',
+      phone: '9567890123',
+      source: 'Career Page',
+      attemptedAt: 'Apr 02, 2026 11:15 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'High',
+      interviewScore: 42,
+      recruiterScreening: 'Poor fit',
+      recruiterScreeningScore: 38
+    },
+    {
+      id: 'CAN-7703-GT3',
+      name: 'Neha Patil',
+      email: 'neha.patil@tenderex.co',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '20 Apr 2026, 08:30 AM',
+      phone: '9678901234',
+      source: 'Direct Link',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-8801-FK4',
+      name: 'Shreya Joshi',
+      email: 'shreya.j@codecraft.io',
+      jobApplied: 'Full Stack Developer',
+      status: 'Screening',
+      score: '85%',
+      registeredOn: '22 Apr 2026, 11:00 AM',
+      phone: '9789012345',
+      source: 'Scheduled',
+      attemptedAt: 'May 01, 2026 03:45 PM',
+      interviewStatus: 'Slot Missed',
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 70
+    },
+    {
+      id: 'CAN-8802-FK5',
+      name: 'Karthik Iyer',
+      email: 'karthik.i@fullstack.dev',
+      jobApplied: 'Full Stack Developer',
+      status: 'Functional',
+      score: '91%',
+      registeredOn: '25 Apr 2026, 09:15 AM',
+      phone: '9890123456',
+      source: 'ATS',
+      attemptedAt: 'May 10, 2026 10:00 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 83,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 95
+    },
+    {
+      id: 'CAN-9901-GT4',
+      name: 'Amit Saxena',
+      email: 'amit.sax@procure.gov',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Screening',
+      score: '68%',
+      registeredOn: '01 May 2026, 02:20 PM',
+      phone: '9901234567',
+      source: 'Bulk Upload',
+      attemptedAt: 'May 15, 2026 04:30 PM',
+      interviewStatus: 'Incomplete',
+      cheatProbability: 'Medium',
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-9902-FK6',
+      name: 'Divya Menon',
+      email: 'divya.m@webworks.co',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '05 May 2026, 10:45 AM',
+      phone: '8012345678',
+      source: 'Career Page',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-9903-GT5',
+      name: 'Pooja Deshmukh',
+      email: 'pooja.d@tenders.in',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '08 May 2026, 03:00 PM',
+      phone: '8123456789',
+      source: 'ATS',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-1001-FK7',
+      name: 'Siddharth Rao',
+      email: 'sid.rao@devhub.in',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '12 May 2026, 08:00 AM',
+      phone: '8234567890',
+      source: 'Direct Link',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-1101-FK8',
+      name: 'Tanvi Kulkarni',
+      email: 'tanvi.k@stackops.io',
+      jobApplied: 'Full Stack Developer',
+      status: 'Screening',
+      score: '76%',
+      registeredOn: '14 May 2026, 11:20 AM',
+      phone: '8345678901',
+      source: 'Career Page',
+      attemptedAt: 'May 20, 2026 02:00 PM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 62,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 68
+    },
+    {
+      id: 'CAN-1102-GT6',
+      name: 'Manish Tiwari',
+      email: 'manish.t@govbids.co',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Functional',
+      score: '74%',
+      registeredOn: '16 Mar 2026, 09:30 AM',
+      phone: '8456789012',
+      source: 'Direct Link',
+      attemptedAt: 'Apr 05, 2026 10:45 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Medium',
+      interviewScore: 58,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 72
+    },
+    {
+      id: 'CAN-1103-FK9',
+      name: 'Riya Patel',
+      email: 'riya.p@frontend.dev',
+      jobApplied: 'Full Stack Developer',
+      status: 'Hired',
+      score: '97%',
+      registeredOn: '01 Mar 2026, 08:45 AM',
+      phone: '8567890123',
+      source: 'ATS',
+      attemptedAt: 'Mar 15, 2026 09:00 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 94,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 98
+    },
+    {
+      id: 'CAN-1104-GT7',
+      name: 'Suresh Pandey',
+      email: 'suresh.p@tendermgmt.in',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Hired',
+      score: '89%',
+      registeredOn: '08 Mar 2026, 02:15 PM',
+      phone: '8678901234',
+      source: 'Scheduled',
+      attemptedAt: 'Mar 25, 2026 11:30 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 87,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 91
+    },
+    {
+      id: 'CAN-1105-FK10',
+      name: 'Nikhil Sharma',
+      email: 'nikhil.s@backend.io',
+      jobApplied: 'Full Stack Developer',
+      status: 'Screening',
+      score: '81%',
+      registeredOn: '18 Apr 2026, 10:00 AM',
+      phone: '8789012345',
+      source: 'Scheduled',
+      attemptedAt: 'May 05, 2026 01:30 PM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Medium',
+      interviewScore: 55,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 60
+    },
+    {
+      id: 'CAN-1106-GT8',
+      name: 'Lakshmi Iyer',
+      email: 'lakshmi.i@procurehub.com',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Screening',
+      score: '83%',
+      registeredOn: '22 Mar 2026, 03:40 PM',
+      phone: '8890123456',
+      source: 'Career Page',
+      attemptedAt: 'Apr 10, 2026 09:15 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 73,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 82
+    },
+    {
+      id: 'CAN-1107-FK11',
+      name: 'Abhishek Verma',
+      email: 'abhishek.v@nodestack.dev',
+      jobApplied: 'Full Stack Developer',
+      status: 'Functional',
+      score: '90%',
+      registeredOn: '20 Mar 2026, 01:00 PM',
+      phone: '8901234567',
+      source: 'Direct Link',
+      attemptedAt: 'Apr 08, 2026 11:00 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 81,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 90
+    },
+    {
+      id: 'CAN-1108-GT9',
+      name: 'Fatima Sheikh',
+      email: 'fatima.s@bidconsult.in',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Screening',
+      score: '71%',
+      registeredOn: '25 Mar 2026, 08:50 AM',
+      phone: '9012345679',
+      source: 'Bulk Upload',
+      attemptedAt: null,
+      interviewStatus: 'Not Started',
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-1109-FK12',
+      name: 'Sneha Reddy',
+      email: 'sneha.r@reactlab.co',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '15 May 2026, 04:00 PM',
+      phone: '7123456789',
+      source: 'Career Page',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-1110-GT10',
+      name: 'Rajesh Kumar',
+      email: 'rajesh.k@govpro.org',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '18 May 2026, 09:30 AM',
+      phone: '7234567890',
+      source: 'Direct Link',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-1111-FK13',
+      name: 'Varun Agarwal',
+      email: 'varun.a@clouddev.io',
+      jobApplied: 'Full Stack Developer',
+      status: 'Screening',
+      score: '79%',
+      registeredOn: '28 Apr 2026, 02:30 PM',
+      phone: '7345678901',
+      source: 'ATS',
+      attemptedAt: 'May 12, 2026 10:00 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'High',
+      interviewScore: 38,
+      recruiterScreening: 'Poor fit',
+      recruiterScreeningScore: 35
+    },
+    {
+      id: 'CAN-1112-GT11',
+      name: 'Deepika Nair',
+      email: 'deepika.n@tenderpro.in',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Functional',
+      score: '86%',
+      registeredOn: '10 Mar 2026, 11:45 AM',
+      phone: '7456789012',
+      source: 'ATS',
+      attemptedAt: 'Mar 30, 2026 02:30 PM',
+      interviewStatus: 'Incomplete',
+      cheatProbability: 'Low',
+      interviewScore: null,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 88
+    },
+    {
+      id: 'CAN-1113-FK14',
+      name: 'Harsh Gupta',
+      email: 'harsh.g@apiforge.dev',
+      jobApplied: 'Full Stack Developer',
+      status: 'Hired',
+      score: '95%',
+      registeredOn: '25 Feb 2026, 09:00 AM',
+      phone: '7567890123',
+      source: 'Scheduled',
+      attemptedAt: 'Mar 10, 2026 10:30 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 92,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 96
+    },
+    {
+      id: 'CAN-1114-GT12',
+      name: 'Swati Mishra',
+      email: 'swati.m@compliance.co',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Screening',
+      score: '75%',
+      registeredOn: '28 Mar 2026, 01:20 PM',
+      phone: '7678901234',
+      source: 'Scheduled',
+      attemptedAt: 'Apr 15, 2026 03:00 PM',
+      interviewStatus: 'Incomplete',
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 62
+    },
+    {
+      id: 'CAN-1115-FK15',
+      name: 'Anjali Desai',
+      email: 'anjali.d@microserv.io',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '20 May 2026, 11:00 AM',
+      phone: '7789012345',
+      source: 'Bulk Upload',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-1116-GT13',
+      name: 'Vikrant Chauhan',
+      email: 'vikrant.c@rfpmaster.com',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '22 May 2026, 02:45 PM',
+      phone: '7890123456',
+      source: 'Career Page',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
     }
   ],
 
@@ -549,6 +1088,58 @@ function renderJobCards() {
   });
 }
 
+function renderJobListView() {
+  const container = document.getElementById('jobs-board-container');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const filteredJobs = AppState.jobs.filter(job => {
+    if (AppState.jobsFilter !== 'all' && job.status !== AppState.jobsFilter) return false;
+    if (AppState.globalSearch) {
+      const query = AppState.globalSearch.toLowerCase();
+      return job.roleName.toLowerCase().includes(query) || job.id.toLowerCase().includes(query);
+    }
+    return true;
+  });
+
+  if (filteredJobs.length === 0) {
+    container.innerHTML = '<div class="empty-state card-glass" style="padding:32px;text-align:center;"><p class="type-caption">No jobs match your filters.</p></div>';
+    return;
+  }
+
+  const header = document.createElement('div');
+  header.className = 'job-list-row job-list-header';
+  header.innerHTML = `
+    <span class="jl-col jl-title">Job Title</span>
+    <span class="jl-col jl-status">Status</span>
+    <span class="jl-col jl-created">Created</span>
+    <span class="jl-col jl-total">Total</span>
+    <span class="jl-col jl-resume">Resume</span>
+    <span class="jl-col jl-screening">Screening</span>
+    <span class="jl-col jl-functional">Functional</span>
+    <span class="jl-col jl-action"></span>`;
+  container.appendChild(header);
+
+  filteredJobs.forEach(job => {
+    const row = document.createElement('div');
+    row.className = 'job-list-row';
+    const p = job.pipeline || { total: 0, resume: 0, screening: 0, functional: 0 };
+    const statusLabel = (job.status || 'published').charAt(0).toUpperCase() + (job.status || 'published').slice(1);
+    row.innerHTML = `
+      <span class="jl-col jl-title">${job.cardName || job.roleName}</span>
+      <span class="jl-col jl-status"><span class="status-badge ${job.status || 'published'}"><span class="status-badge-dot"></span>${statusLabel}</span></span>
+      <span class="jl-col jl-created">${job.created || '-'}</span>
+      <span class="jl-col jl-total">${p.total}</span>
+      <span class="jl-col jl-resume">${p.resume || '-'}</span>
+      <span class="jl-col jl-screening">${p.screening || '-'}</span>
+      <span class="jl-col jl-functional">${p.functional || '-'}</span>
+      <span class="jl-col jl-action"><button class="btn-jd-ghost btn-sm" style="font-size:0.72rem;">View</button></span>`;
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', () => navigateToJobDetail(job.id));
+    container.appendChild(row);
+  });
+}
+
 // Update counts displayed on filter tabs
 function updateJobsCounters() {
   const allCount = AppState.jobs.length;
@@ -594,6 +1185,9 @@ function renderAnalyticsTable() {
     let list = [...AppState.jobs];
     if (searchVal) {
       list = list.filter(j => j.roleName.toLowerCase().includes(searchVal) || j.id.toLowerCase().includes(searchVal));
+    }
+    if (AppState.analyticsJobStatusFilter?.length > 0) {
+      list = list.filter(j => AppState.analyticsJobStatusFilter.includes(j.status));
     }
     
     list.sort((a, b) => {
@@ -649,10 +1243,12 @@ function renderAnalyticsTable() {
     
     headers.innerHTML = headerHtml;
 
-    // Filter Candidates by search
-    let list = [...AppState.candidates];
+    let list = filterCandidatesByDateRange(AppState.candidates);
     if (searchVal) {
       list = list.filter(c => c.name.toLowerCase().includes(searchVal) || c.email.toLowerCase().includes(searchVal) || c.jobApplied.toLowerCase().includes(searchVal));
+    }
+    if (AppState.analyticsCandStageFilter?.length > 0) {
+      list = list.filter(c => AppState.analyticsCandStageFilter.includes(c.status));
     }
 
     document.getElementById('analytics-table-showing').textContent = `Showing 1-${list.length} of ${list.length}`;
@@ -700,11 +1296,16 @@ function renderAnalyticsTable() {
         `;
       }
       if (visible.includes('actions')) {
+        const nextStage = c.status === 'Resume' ? 'Screening' : c.status === 'Screening' ? 'Functional' : c.status === 'Functional' ? 'Hired' : null;
         cellsHtml += `
           <td>
-            <button class="table-btn-action btn-view-report-from-table" data-candidate-id="${c.id}" title="View Full Report">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            </button>
+            <div style="display:flex;gap:6px;align-items:center;justify-content:center;">
+              <button class="table-btn-action btn-view-report-from-table" data-candidate-id="${c.id}" title="View Full Report">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+              ${nextStage ? `<button class="btn-stage-advance btn-tbl-advance" data-candidate-id="${c.id}" data-next-stage="${nextStage}" title="Advance to ${nextStage}" style="padding:4px 8px;font-size:0.7rem;">Advance</button>` : ''}
+              ${c.status !== 'Hired' && c.status !== 'Rejected' ? `<button class="btn-stage-reject btn-tbl-reject" data-candidate-id="${c.id}" title="Reject candidate" style="padding:4px 8px;font-size:0.7rem;">Reject</button>` : ''}
+            </div>
           </td>
         `;
       }
@@ -713,11 +1314,27 @@ function renderAnalyticsTable() {
       tbody.appendChild(tr);
     });
     
-    // Bind click handlers to full report buttons in the table
     tbody.querySelectorAll('.btn-view-report-from-table').forEach(btn => {
       btn.addEventListener('click', () => {
         const candId = btn.getAttribute('data-candidate-id');
         openCandidateReport(candId);
+      });
+    });
+
+    tbody.querySelectorAll('.btn-tbl-advance').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.getAttribute('data-candidate-id');
+        const nextStage = btn.getAttribute('data-next-stage');
+        updateCandidateStatus(candId, nextStage);
+        renderAnalyticsTable();
+      });
+    });
+
+    tbody.querySelectorAll('.btn-tbl-reject').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.getAttribute('data-candidate-id');
+        updateCandidateStatus(candId, 'Rejected');
+        renderAnalyticsTable();
       });
     });
   }
@@ -920,58 +1537,117 @@ function updateTeamCounters() {
 }
 
 // 4. Update Summary Metrics (Analytics View Header Stats)
-function updateSummaryMetrics() {
-  let totalApplicants = 0;
-  let resumeCount = 0;
-  let screeningCount = 0;
-  let functionalCount = 0;
+function parseFuzzyDate(str) {
+  if (!str) return null;
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) return d;
+  const m = str.match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{4})/i);
+  if (m) return new Date(`${m[2]} ${m[1]}, ${m[3]}`);
+  const m2 = str.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),?\s+(\d{4})/i);
+  if (m2) return new Date(`${m2[1]} ${m2[2]}, ${m2[3]}`);
+  return null;
+}
 
-  AppState.jobs.forEach(job => {
-    totalApplicants += job.pipeline.total || 0;
-    resumeCount += job.pipeline.resume || 0;
-    screeningCount += job.pipeline.screening || 0;
-    functionalCount += job.pipeline.functional || 0;
+function getDateRangeBounds() {
+  const now = new Date();
+  if (AppState.dateRange === 'custom') {
+    const from = document.getElementById('date-from')?.value || document.getElementById('jd-date-from')?.value || AppState.customDateFrom;
+    const to = document.getElementById('date-to')?.value || document.getElementById('jd-date-to')?.value || AppState.customDateTo;
+    return { start: from ? new Date(from) : null, end: to ? new Date(to + 'T23:59:59') : null };
+  }
+  if (AppState.dateRange === 'all') return { start: null, end: null };
+  const days = { '7d': 7, '30d': 30, '90d': 90 }[AppState.dateRange] || 7;
+  const start = new Date(now); start.setDate(start.getDate() - days);
+  return { start, end: now };
+}
+
+function applyDateRangeGlobally() {
+  const { start, end } = getDateRangeBounds();
+  const rangeLabel = AppState.dateRange === 'all' ? 'All Time' :
+    AppState.dateRange === 'custom' ? 'Custom range' :
+    AppState.dateRange === '7d' ? 'Last 7 days' :
+    AppState.dateRange === '30d' ? 'Last 30 days' : 'Last 90 days';
+
+  recalculateJobPipelines();
+  updateSummaryMetrics();
+  renderAnalyticsTable();
+  renderJobCards();
+
+  const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+  if (activeJob) {
+    const jobCandidates = filterCandidatesByDateRange(
+      AppState.candidates.filter(c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName)
+    );
+    drawFunnelSVG(activeJob, jobCandidates);
+    drawScoreDistributionSVG(activeJob, jobCandidates);
+    renderJobDetailPanes(activeJob);
+  }
+
+  showPremiumToast(`${rangeLabel} — showing ${filterCandidatesByDateRange(AppState.candidates).length} of ${AppState.candidates.length} candidates.`, 'success');
+}
+
+function filterCandidatesByDateRange(candidates) {
+  const { start, end } = getDateRangeBounds();
+  if (!start && !end) return candidates;
+  return candidates.filter(c => {
+    const d = parseFuzzyDate(c.registeredOn);
+    if (!d) return true;
+    if (start && d < start) return false;
+    if (end && d > end) return false;
+    return true;
   });
+}
+
+function updateSummaryMetrics() {
+  const filtered = filterCandidatesByDateRange(AppState.candidates);
+
+  const totalApplicants = filtered.length;
+  const resumeCount = filtered.filter(c => c.status === 'Resume').length;
+  const screeningCount = filtered.filter(c => c.status === 'Screening').length;
+  const functionalCount = filtered.filter(c => c.status === 'Functional').length;
 
   document.getElementById('stat-total-applicants').textContent = totalApplicants;
   document.getElementById('stat-resume-analysis').textContent = resumeCount;
   document.getElementById('stat-recruiter-screening').textContent = screeningCount;
   document.getElementById('stat-functional-interview').textContent = functionalCount;
-  
-  // Sync individual pills under stats cards
-  // Total applicants card pills:
+
+  const bySource = { 'Career Page': 0, 'Bulk Upload': 0, 'Scheduled': 0, 'Direct Link': 0, 'ATS': 0 };
+  filtered.forEach(c => { if (bySource[c.source] !== undefined) bySource[c.source]++; });
+
   const appPills = document.querySelectorAll('.card-metric:nth-child(1) .m-pill .v');
   if (appPills.length >= 4) {
-    appPills[0].textContent = 0; // Career Page
-    appPills[1].textContent = 0; // Bulk Upload
-    appPills[2].textContent = screeningCount; // Scheduled screening
-    appPills[3].textContent = totalApplicants - screeningCount; // Direct Link / Rest
+    appPills[0].textContent = bySource['Career Page'];
+    appPills[1].textContent = bySource['Bulk Upload'];
+    appPills[2].textContent = bySource['Scheduled'];
+    appPills[3].textContent = bySource['Direct Link'];
   }
-  
-  // Resume analysis card pills:
+
   const resPills = document.querySelectorAll('.card-metric:nth-child(2) .m-pill .v');
   if (resPills.length >= 3) {
-    resPills[0].textContent = resumeCount; // Analysed
-    resPills[1].textContent = 0; // Shortlisted
-    resPills[2].textContent = 0; // Waitlisted
+    const analysed = filtered.filter(c => c.status === 'Resume' && c.score !== '—').length;
+    resPills[0].textContent = analysed;
+    resPills[1].textContent = filtered.filter(c => c.status === 'Screening' || c.status === 'Functional').length;
+    resPills[2].textContent = 0;
   }
 
-  // Recruiter screening card pills:
   const scrPills = document.querySelectorAll('.card-metric:nth-child(3) .m-pill .v');
   if (scrPills.length >= 4) {
-    scrPills[0].textContent = screeningCount > 0 ? screeningCount - 1 : 0; // Attempted
-    scrPills[1].textContent = screeningCount > 0 ? 1 : 0; // Scheduled
-    scrPills[2].textContent = 0; // Shortlisted
-    scrPills[3].textContent = 0; // Waitlisted
+    const attempted = filtered.filter(c => c.status === 'Screening' && c.interviewStatus === 'Completed').length;
+    const scheduled = filtered.filter(c => c.status === 'Screening' && c.interviewStatus !== 'Completed').length;
+    scrPills[0].textContent = attempted;
+    scrPills[1].textContent = scheduled;
+    scrPills[2].textContent = 0;
+    scrPills[3].textContent = 0;
   }
 
-  // Functional interview card pills:
   const funPills = document.querySelectorAll('.card-metric:nth-child(4) .m-pill .v');
   if (funPills.length >= 4) {
-    funPills[0].textContent = functionalCount > 0 ? functionalCount - 1 : 0; // Attempted
-    funPills[1].textContent = functionalCount > 0 ? 1 : 0; // Scheduled
-    funPills[2].textContent = 0; // Shortlisted
-    funPills[3].textContent = 0; // Waitlisted
+    const attempted = filtered.filter(c => c.status === 'Functional' && c.interviewStatus === 'Completed').length;
+    const scheduled = filtered.filter(c => c.status === 'Functional' && c.interviewStatus !== 'Completed').length;
+    funPills[0].textContent = attempted;
+    funPills[1].textContent = scheduled;
+    funPills[2].textContent = 0;
+    funPills[3].textContent = 0;
   }
 }
 
@@ -1269,17 +1945,11 @@ function navigateToSubtab(subtabId) {
 
   actionBtn.style.display = 'none';
 
-  if (subtabId === 'settings-password') {
-    breadcrumb.textContent = 'Settings / Security';
-    mainTitle.textContent = 'Admin Password Panel';
-    subText.textContent = 'Change access credentials for Org. Admin';
-    document.getElementById('view-settings-password').classList.add('active-view');
-    soundEngine.playChime([261.63, 293.66, 329.63], 0.1, 0.08);
-  } else if (subtabId === 'settings-cookies') {
-    breadcrumb.textContent = 'Settings / Cookies';
-    mainTitle.textContent = 'Cookie Policies';
-    subText.textContent = 'Manage cookie levels and session trackers';
-    document.getElementById('view-settings-cookies').classList.add('active-view');
+  if (subtabId === 'settings-general') {
+    breadcrumb.textContent = 'Settings';
+    mainTitle.textContent = 'General Settings';
+    subText.textContent = 'Manage your account, notifications, and preferences';
+    document.getElementById('view-settings-general').classList.add('active-view');
     soundEngine.playChime([261.63, 293.66, 329.63], 0.1, 0.08);
   }
 }
@@ -1378,10 +2048,10 @@ function triggerExcelExport(dataType) {
 // ==========================================
 
 function recalculateJobPipelines() {
+  const dateFiltered = filterCandidatesByDateRange(AppState.candidates);
   AppState.jobs.forEach(job => {
-    // Find all candidates for this job
-    const jobCandidates = AppState.candidates.filter(c => c.jobApplied === job.roleName || c.jobApplied === job.cardName);
-    
+    const jobCandidates = dateFiltered.filter(c => c.jobApplied === job.roleName || c.jobApplied === job.cardName);
+
     job.pipeline.total = jobCandidates.length;
     job.pipeline.resume = jobCandidates.filter(c => c.status === 'Resume').length;
     job.pipeline.screening = jobCandidates.filter(c => c.status === 'Screening').length;
@@ -1795,6 +2465,116 @@ function openCandidateReport(candidateId) {
   soundEngine.playChime([392.00, 523.25, 659.25], 0.15, 0.08);
 }
 
+function openReportDrawerForCandidate(candidateId) {
+  const candidate = AppState.candidates.find(c => c.id === candidateId);
+  if (!candidate) return;
+
+  document.getElementById('report-name').textContent = candidate.name;
+  document.getElementById('report-email').textContent = candidate.email;
+  document.getElementById('report-job').textContent = candidate.jobApplied;
+  document.getElementById('report-score').textContent = candidate.score;
+  const initials = candidate.name.split(' ').map(n => n[0]).join('');
+  document.getElementById('report-avatar').textContent = initials;
+
+  const numericScore = parseFloat(candidate.score) || 80;
+  const rubrics = [
+    { label: 'Coding Proficiency', score: (numericScore / 10).toFixed(1) },
+    { label: 'System Design', score: ((numericScore - 4 - Math.random() * 4) / 10).toFixed(1) },
+    { label: 'Communication', score: ((numericScore + 2 - Math.random() * 4) / 10).toFixed(1) },
+    { label: 'Problem Solving', score: ((numericScore - 2 - Math.random() * 3) / 10).toFixed(1) },
+  ];
+
+  const rubricListEl = document.getElementById('report-rubric-list');
+  if (rubricListEl) {
+    rubricListEl.innerHTML = rubrics.map(r => `
+      <div class="rubric-item">
+        <div class="rubric-meta"><span>${r.label}</span><strong class="val">${r.score} / 10</strong></div>
+        <div class="bar-outer"><div class="bar-inner" style="width: ${r.score * 10}%;"></div></div>
+      </div>
+    `).join('');
+  }
+
+  const vetting = getCandidateVettingDetails(candidateId, candidate.name);
+
+  const transcriptFlow = document.getElementById('report-transcript-flow');
+  if (transcriptFlow) {
+    transcriptFlow.innerHTML = vetting.transcript.map(line => `
+      <div class="transcript-chat-line chat-speaker-${line.speaker.toLowerCase()}">
+        <span class="chat-speaker-badge">${line.speaker}:</span>
+        <span class="chat-text-bubble">${line.text}</span>
+      </div>
+    `).join('');
+  }
+
+  const caveatsBody = document.getElementById('report-caveats-body');
+  if (caveatsBody) {
+    const rubricRows = vetting.rubrics.map(r => `
+      <div class="rubric-row">
+        <span class="rubric-lbl">${r.label}</span>
+        <div class="rubric-bar-track"><div class="rubric-bar-fill indigo" style="width: ${r.score * 10}%"></div></div>
+        <span class="rubric-val">${r.score}/10</span>
+      </div>
+    `).join('');
+    const caveatTags = vetting.caveats.map(cav => `
+      <div class="caveat-tag ${cav.type}">
+        <span class="caveat-icon">${cav.type === 'warning' ? '⚠️' : '💡'}</span>
+        <span class="caveat-text">${cav.text}</span>
+      </div>
+    `).join('');
+    caveatsBody.innerHTML = `
+      <div class="rubrics-section"><span class="section-sub-title">AI Vetting Scorecard</span>${rubricRows}</div>
+      <div class="caveats-section"><span class="section-sub-title">AI Caveats & Flags</span><div class="caveats-list-tags">${caveatTags}</div></div>
+      <div class="pros-cons-grid">
+        <div class="pro-col"><span class="section-sub-title pros">Pros</span><ul>${vetting.pros.map(p => `<li><span class="list-bullet pro">✓</span>${p}</li>`).join('')}</ul></div>
+        <div class="con-col"><span class="section-sub-title cons">Cons</span><ul>${vetting.cons.map(cn => `<li><span class="list-bullet con">✗</span>${cn}</li>`).join('')}</ul></div>
+      </div>
+    `;
+  }
+
+  const actionsBody = document.getElementById('report-action-buttons');
+  if (actionsBody) {
+    actionsBody.innerHTML = `
+      <div class="jd-card-actions inline">
+        <button class="btn-stage-reject" data-candidate-id="${candidateId}">Reject</button>
+        <button class="btn-stage-advance" data-candidate-id="${candidateId}" data-next-stage="${candidate.status === 'Screening' ? 'Functional' : 'Hired'}">${candidate.status === 'Screening' ? 'Advance to Functional →' : 'Hire Candidate ✓'}</button>
+      </div>
+    `;
+    actionsBody.querySelector('.btn-stage-reject')?.addEventListener('click', () => {
+      updateCandidateStatus(candidateId, 'Rejected');
+      closeAllDrawers();
+    });
+    actionsBody.querySelector('.btn-stage-advance')?.addEventListener('click', () => {
+      const next = candidate.status === 'Screening' ? 'Functional' : 'Hired';
+      updateCandidateStatus(candidateId, next);
+      closeAllDrawers();
+    });
+  }
+
+  setupWaveformBars();
+  resetWaveformAudio();
+
+  const overlay = document.getElementById('drawer-backdrop');
+  overlay.classList.add('active');
+  const drawerReport = document.getElementById('drawer-report');
+  drawerReport.classList.add('active');
+  drawerReport.style.right = '0';
+
+  const tabs = drawerReport.querySelectorAll('.report-tab-btn');
+  const contents = drawerReport.querySelectorAll('.report-tab-content');
+  tabs.forEach(t => {
+    t.addEventListener('click', () => {
+      tabs.forEach(tb => tb.classList.remove('active'));
+      contents.forEach(ct => ct.classList.remove('active'));
+      t.classList.add('active');
+      const tabName = t.getAttribute('data-report-tab');
+      const target = document.getElementById(`rep-tab-${tabName}`);
+      if (target) target.classList.add('active');
+    });
+  });
+
+  soundEngine.playChime([392.00, 523.25, 659.25], 0.15, 0.08);
+}
+
 // ==========================================
 // JOB DETAIL VIEW
 // ==========================================
@@ -1847,7 +2627,7 @@ function navigateToJobDetail(jobId) {
   document.querySelectorAll('.jd-pane').forEach(p => p.classList.remove('active'));
   document.getElementById('jd-pane-overview').classList.add('active');
 
-  const jobCandidates = AppState.candidates.filter(
+  const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
     c => c.jobApplied === job.roleName || c.jobApplied === job.cardName
   );
 
@@ -1871,6 +2651,36 @@ function renderFunnelStages(job) {
 
   const total = Math.max(job.pipeline.total, 1);
   const completed = job.pipeline.functional > 0 ? 1 : 0;
+
+  const jobCandidates = AppState.candidates.filter(
+    c => c.jobApplied === job.roleName || c.jobApplied === job.cardName
+  );
+
+  const sourceColors = {
+    'Career Page': '#6366f1',
+    'ATS': '#06b6d4',
+    'Bulk Upload': '#f59e0b',
+    'Scheduled': '#ec4899',
+    'Direct Link': '#10b981'
+  };
+
+  function getSourceBreakdown(candidates) {
+    const breakdown = {};
+    candidates.forEach(c => {
+      const src = c.source || 'Unknown';
+      breakdown[src] = (breakdown[src] || 0) + 1;
+    });
+    return breakdown;
+  }
+
+  const stageFilters = {
+    'Total Candidates': () => jobCandidates,
+    'Resume Analysis': () => jobCandidates.filter(c => c.status === 'Resume'),
+    'Recruiter Screening': () => jobCandidates.filter(c => c.status === 'Screening'),
+    'Functional Interview': () => jobCandidates.filter(c => c.status === 'Functional'),
+    'Completed': () => jobCandidates.filter(c => c.status === 'Functional' || c.status === 'Hired'),
+    'Qualified': () => jobCandidates.filter(c => c.status === 'Hired'),
+  };
 
   const stages = [
     { count: job.pipeline.total, label: 'Total Candidates', conv: null },
@@ -1932,14 +2742,18 @@ function drawFunnelSVG(job, candidates) {
   const svgEl = document.getElementById('jd-funnel-svg');
   if (!svgEl) return;
 
-  const W = 460, H = 400;
+  const wrap = svgEl.parentElement;
+  const rect = wrap ? wrap.getBoundingClientRect() : { width: 460, height: 400 };
+  const W = Math.max(rect.width || 460, 200);
+  const H = Math.max(rect.height || 400, 200);
   const cx = W / 2;
-  const maxHW = 148;
+  const maxHW = W * 0.32;
   const padT = 10, padB = 10;
 
   const total = Math.max(job.pipeline.total, 1);
   const completed = job.pipeline.functional > 0 ? 1 : 0;
 
+  const stageLabels = ['Total Candidates', 'Resume Analysis', 'Recruiter Screening', 'Functional Interview', 'Completed', 'Qualified'];
   const stageCounts = [
     job.pipeline.total,
     job.pipeline.resume || 0,
@@ -1957,53 +2771,210 @@ function drawFunnelSVG(job, candidates) {
     return Math.max((c / total) * maxHW, 9);
   });
 
-  // Pink (Scheduled) fraction — proportional to screening candidates
-  const pinkFrac = Math.max(Math.min(job.pipeline.screening / total, 0.85), 0.15) || 0.6;
-
   const pts = stageCounts.map((_, i) => ({
     y: ys[i],
     lx: cx - hws[i],
     rx: cx + hws[i],
-    mx: cx - hws[i] + (2 * hws[i] * pinkFrac),
   }));
-
-  const pinkSegs = [], greenSegs = [];
-  for (let i = 0; i < n - 1; i++) {
-    const p = pts[i], q = pts[i + 1];
-    const midY = (p.y + q.y) / 2;
-
-    pinkSegs.push(
-      `M ${p.lx} ${p.y} L ${p.mx} ${p.y}` +
-      ` C ${p.mx} ${midY} ${q.mx} ${midY} ${q.mx} ${q.y}` +
-      ` L ${q.lx} ${q.y}` +
-      ` C ${q.lx} ${midY} ${p.lx} ${midY} ${p.lx} ${p.y} Z`
-    );
-    greenSegs.push(
-      `M ${p.mx} ${p.y} L ${p.rx} ${p.y}` +
-      ` C ${p.rx} ${midY} ${q.rx} ${midY} ${q.rx} ${q.y}` +
-      ` L ${q.mx} ${q.y}` +
-      ` C ${q.mx} ${midY} ${p.mx} ${midY} ${p.mx} ${p.y} Z`
-    );
-  }
 
   const isLight = document.body.classList.contains('light-theme');
   const dividerStroke = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.065)';
-  
-  // Clean solid flat colors configured separately for light and dark themes
-  const pinkFill = isLight ? '#be185d' : '#ec4899';   // Deep rose for light, vibrant pink for dark
-  const greenFill = isLight ? '#047857' : '#10b981';  // Forest green for light, vibrant emerald for dark
 
-  const dividers = pts.slice(1, -1).map(p =>
-    `<line x1="${p.lx - 14}" y1="${p.y}" x2="${p.rx + 14}" y2="${p.y}"
-      stroke="${dividerStroke}" stroke-width="1" stroke-dasharray="4 3"/>`
-  ).join('');
+  const sourceColors = {
+    'Career Page': '#6366f1', 'ATS': '#06b6d4', 'Bulk Upload': '#f59e0b',
+    'Scheduled': '#ec4899', 'Direct Link': '#10b981'
+  };
+  const sourceOrder = ['Career Page', 'ATS', 'Bulk Upload', 'Scheduled', 'Direct Link'];
+  const stageStatusMap = {
+    'Total Candidates': null, 'Resume Analysis': 'Resume', 'Recruiter Screening': 'Screening',
+    'Functional Interview': 'Functional', 'Completed': 'Functional', 'Qualified': 'Hired'
+  };
+
+  function getBreakdownForStage(stageLabel) {
+    const status = stageStatusMap[stageLabel];
+    let stageCands;
+    if (stageLabel === 'Total Candidates') stageCands = candidates;
+    else if (stageLabel === 'Completed') stageCands = candidates.filter(c => c.status === 'Functional' || c.status === 'Hired');
+    else stageCands = candidates.filter(c => c.status === status);
+    const breakdown = {};
+    stageCands.forEach(c => { const src = c.source || 'Unknown'; breakdown[src] = (breakdown[src] || 0) + 1; });
+    return breakdown;
+  }
+
+  function getSourceFractions(stageIdx) {
+    const label = stageLabels[stageIdx];
+    const breakdown = getBreakdownForStage(label);
+    const stageTotal = Object.values(breakdown).reduce((a, b) => a + b, 0) || 1;
+    const fracs = [];
+    sourceOrder.forEach(src => {
+      if (breakdown[src]) fracs.push({ source: src, frac: breakdown[src] / stageTotal, color: sourceColors[src] });
+    });
+    Object.keys(breakdown).forEach(src => {
+      if (!sourceOrder.includes(src)) fracs.push({ source: src, frac: breakdown[src] / stageTotal, color: '#888' });
+    });
+    if (fracs.length === 0) fracs.push({ source: 'None', frac: 1, color: 'rgba(255,255,255,0.08)' });
+    return fracs;
+  }
 
   svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  svgEl.innerHTML = `
-    ${dividers}
-    ${pinkSegs.map(d => `<path d="${d}" fill="${pinkFill}" opacity="0.9"/>`).join('')}
-    ${greenSegs.map(d => `<path d="${d}" fill="${greenFill}" opacity="0.9"/>`).join('')}
-  `;
+  svgEl.setAttribute('pointer-events', 'all');
+  svgEl.style.cursor = 'pointer';
+
+  while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+
+  pts.slice(1, -1).forEach(p => {
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', p.lx - 14);
+    line.setAttribute('y1', p.y);
+    line.setAttribute('x2', p.rx + 14);
+    line.setAttribute('y2', p.y);
+    line.setAttribute('stroke', dividerStroke);
+    line.setAttribute('stroke-width', '1');
+    line.setAttribute('stroke-dasharray', '4 3');
+    line.setAttribute('pointer-events', 'none');
+    svgEl.appendChild(line);
+  });
+
+  for (let i = 0; i < n - 1; i++) {
+    const g = document.createElementNS(svgNS, 'g');
+    g.setAttribute('data-stage-idx', String(i));
+    g.setAttribute('pointer-events', 'all');
+    g.style.cursor = 'pointer';
+
+    const p = pts[i], q = pts[i + 1];
+    const midY = (p.y + q.y) / 2;
+    const topW = p.rx - p.lx;
+    const botW = q.rx - q.lx;
+    const fracs = getSourceFractions(i);
+
+    let topOffset = 0;
+    let botOffset = 0;
+    fracs.forEach(({ frac, color }) => {
+      const topSlice = topW * frac;
+      const botSlice = botW * frac;
+      const tl = p.lx + topOffset;
+      const tr = tl + topSlice;
+      const bl = q.lx + botOffset;
+      const br = bl + botSlice;
+
+      const d =
+        `M ${tl} ${p.y} L ${tr} ${p.y}` +
+        ` C ${tr} ${midY} ${br} ${midY} ${br} ${q.y}` +
+        ` L ${bl} ${q.y}` +
+        ` C ${bl} ${midY} ${tl} ${midY} ${tl} ${p.y} Z`;
+
+      const path = document.createElementNS(svgNS, 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill', color);
+      path.setAttribute('opacity', '0.9');
+      path.setAttribute('pointer-events', 'all');
+      g.appendChild(path);
+
+      topOffset += topSlice;
+      botOffset += botSlice;
+    });
+
+    svgEl.appendChild(g);
+  }
+
+  let funnelTooltipEl = document.getElementById('funnel-svg-tooltip');
+  if (!funnelTooltipEl) {
+    funnelTooltipEl = document.createElement('div');
+    funnelTooltipEl.id = 'funnel-svg-tooltip';
+    funnelTooltipEl.className = 'funnel-svg-tooltip';
+    document.body.appendChild(funnelTooltipEl);
+  }
+  funnelTooltipEl.style.display = 'none';
+
+  const stageItems = document.querySelectorAll('#jd-funnel-stages .jd-stage-item');
+  const stagesContainer = document.getElementById('jd-funnel-stages');
+  if (stagesContainer && stageItems.length === n) {
+    stagesContainer.style.position = 'relative';
+    stagesContainer.style.gap = '0';
+    stagesContainer.style.height = H + 'px';
+    stageItems.forEach((item, i) => {
+      const segTop = ys[i];
+      const segBot = i < n - 1 ? ys[i + 1] : H - padB;
+      const segH = segBot - segTop;
+      item.style.position = 'absolute';
+      item.style.left = '0';
+      item.style.right = '0';
+      item.style.top = segTop + 'px';
+      item.style.height = segH + 'px';
+      item.style.display = 'flex';
+      item.style.alignItems = 'center';
+    });
+  }
+
+  let activeSegIdx = -1;
+
+  function showTooltip(idx, clientX, clientY) {
+    if (activeSegIdx === idx) {
+      funnelTooltipEl.style.left = (clientX + 14) + 'px';
+      funnelTooltipEl.style.top = (clientY - 10) + 'px';
+      return;
+    }
+    activeSegIdx = idx;
+    const label = stageLabels[idx];
+    const count = stageCounts[idx];
+    const breakdown = getBreakdownForStage(label);
+    const rows = Object.entries(breakdown).map(([src, cnt]) => {
+      const color = sourceColors[src] || '#888';
+      return '<div class="funnel-tooltip-row"><span class="funnel-tooltip-dot" style="background:' + color + '"></span><span>' + src + '</span><strong>' + cnt + '</strong></div>';
+    }).join('');
+
+    funnelTooltipEl.innerHTML = '<div class="funnel-tooltip-title">' + label + ' <span>(' + count + ')</span></div>' + (rows || '<div class="funnel-tooltip-row"><span style="color:var(--color-text-faint)">No candidates</span></div>');
+    funnelTooltipEl.style.display = 'block';
+    funnelTooltipEl.style.left = (clientX + 14) + 'px';
+    funnelTooltipEl.style.top = (clientY - 10) + 'px';
+
+    svgEl.querySelectorAll('g[data-stage-idx]').forEach(g => {
+      const gi = parseInt(g.getAttribute('data-stage-idx'));
+      const paths = g.querySelectorAll('path');
+      if (gi === idx) {
+        paths.forEach(p => { p.setAttribute('opacity', '1'); p.style.filter = 'brightness(1.25)'; });
+      } else {
+        paths.forEach(p => { p.setAttribute('opacity', '0.9'); p.style.filter = ''; });
+      }
+    });
+    stageItems.forEach((si, si_i) => {
+      if (si_i === idx) si.classList.add('funnel-hover-active');
+      else si.classList.remove('funnel-hover-active');
+    });
+  }
+
+  function hideTooltip() {
+    activeSegIdx = -1;
+    funnelTooltipEl.style.display = 'none';
+    svgEl.querySelectorAll('g[data-stage-idx] path').forEach(p => {
+      p.setAttribute('opacity', '0.9');
+      p.style.filter = '';
+    });
+    stageItems.forEach(si => si.classList.remove('funnel-hover-active'));
+  }
+
+  svgEl.addEventListener('mousemove', function(e) {
+    const target = e.target;
+    const g = target.closest ? target.closest('g[data-stage-idx]') : null;
+    if (!g && target.tagName === 'path') {
+      const parent = target.parentElement;
+      if (parent && parent.tagName.toLowerCase() === 'g' && parent.hasAttribute('data-stage-idx')) {
+        showTooltip(parseInt(parent.getAttribute('data-stage-idx')), e.clientX, e.clientY);
+        return;
+      }
+    }
+    if (g) {
+      showTooltip(parseInt(g.getAttribute('data-stage-idx')), e.clientX, e.clientY);
+    } else {
+      hideTooltip();
+    }
+  });
+
+  svgEl.addEventListener('mouseleave', function() {
+    hideTooltip();
+  });
 }
 
 function drawScoreDistributionSVG(job, candidates) {
@@ -2025,7 +2996,10 @@ function drawScoreDistributionSVG(job, candidates) {
   const totalC = Math.max(candidates.length, 1);
   const percs = counts.map(c => (c / totalC) * 100);
 
-  const W = 380, H = 195;
+  const wrap = svgEl.parentElement;
+  const sRect = wrap ? wrap.getBoundingClientRect() : { width: 380, height: 220 };
+  const W = Math.max(sRect.width || 380, 200);
+  const H = Math.max(sRect.height || 220, 150);
   const padL = 42, padR = 12, padT = 18, padB = 36;
   const chartW = W - padL - padR;
   const chartH = H - padT - padB;
@@ -2037,7 +3011,7 @@ function drawScoreDistributionSVG(job, candidates) {
   const labelFill = isLight ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.3)';
   const valFill = isLight ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.65)';
   const bucketFill = isLight ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.35)';
-  const barFill = isLight ? '#4f46e5' : '#6366f1';
+  const bucketColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#10b981'];
 
   const yTicks = [0, 25, 50, 75, 100];
   const yLines = yTicks.map(v => {
@@ -2054,7 +3028,7 @@ function drawScoreDistributionSVG(job, candidates) {
     const x = padL + i * gap + (gap - barW) / 2;
     const y = padT + chartH - barH;
     return `
-      <rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${barFill}" rx="3" opacity="0.9"/>
+      <rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${bucketColors[i]}" rx="3" opacity="0.9"/>
       ${p > 0 ? `<text x="${x + barW / 2}" y="${y - 4}" text-anchor="middle"
         fill="${valFill}" font-size="9.5" font-family="sans-serif">${Math.round(p)}%</text>` : ''}
       <text x="${x + barW / 2}" y="${H - padB + 14}" text-anchor="middle"
@@ -2445,6 +3419,59 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAnalyticsTable();
   });
 
+  const analyticsFilterBtn = document.querySelector('.btn-ctrl-filter');
+  if (analyticsFilterBtn) {
+    analyticsFilterBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      soundEngine.playClick();
+      const existing = analyticsFilterBtn.parentElement.querySelector('.analytics-filter-dropdown');
+      if (existing) { existing.remove(); return; }
+      document.querySelectorAll('.analytics-filter-dropdown').forEach(d => d.remove());
+
+      const dd = document.createElement('div');
+      dd.className = 'analytics-filter-dropdown';
+      dd.addEventListener('click', ev => ev.stopPropagation());
+
+      if (AppState.analyticsSubtab === 'jobs-data') {
+        const statuses = ['Published', 'Draft', 'Archived'];
+        dd.innerHTML = `
+          <div class="afd-title">Filter by Status</div>
+          <div class="afd-items">${statuses.map(s => `<label class="afd-item"><input type="checkbox" value="${s}" ${AppState.analyticsJobStatusFilter?.includes(s) ? 'checked' : ''} /><span>${s}</span></label>`).join('')}</div>
+          <div class="afd-footer"><button class="afd-clear">Clear</button><button class="afd-apply">Apply</button></div>`;
+        dd.querySelector('.afd-apply').addEventListener('click', () => {
+          AppState.analyticsJobStatusFilter = [...dd.querySelectorAll('input:checked')].map(c => c.value);
+          renderAnalyticsTable();
+          dd.remove();
+        });
+        dd.querySelector('.afd-clear').addEventListener('click', () => {
+          AppState.analyticsJobStatusFilter = [];
+          renderAnalyticsTable();
+          dd.remove();
+        });
+      } else {
+        const stages = ['Resume', 'Screening', 'Functional', 'Hired', 'Rejected'];
+        dd.innerHTML = `
+          <div class="afd-title">Filter by Stage</div>
+          <div class="afd-items">${stages.map(s => `<label class="afd-item"><input type="checkbox" value="${s}" ${AppState.analyticsCandStageFilter?.includes(s) ? 'checked' : ''} /><span>${s}</span></label>`).join('')}</div>
+          <div class="afd-footer"><button class="afd-clear">Clear</button><button class="afd-apply">Apply</button></div>`;
+        dd.querySelector('.afd-apply').addEventListener('click', () => {
+          AppState.analyticsCandStageFilter = [...dd.querySelectorAll('input:checked')].map(c => c.value);
+          renderAnalyticsTable();
+          dd.remove();
+        });
+        dd.querySelector('.afd-clear').addEventListener('click', () => {
+          AppState.analyticsCandStageFilter = [];
+          renderAnalyticsTable();
+          dd.remove();
+        });
+      }
+      analyticsFilterBtn.parentElement.style.position = 'relative';
+      analyticsFilterBtn.parentElement.appendChild(dd);
+      const close = (ev) => { if (!dd.contains(ev.target) && ev.target !== analyticsFilterBtn) { dd.remove(); document.removeEventListener('click', close); } };
+      setTimeout(() => document.addEventListener('click', close), 0);
+    });
+  }
+
   const teamSearchInput = document.getElementById('team-search');
   teamSearchInput.addEventListener('input', () => {
     renderTeamTable();
@@ -2610,39 +3637,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2000);
   });
 
-  document.getElementById('password-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const newPass = document.getElementById('new-pass').value;
-    const confirmPass = document.getElementById('confirm-pass').value;
-    const alertBox = document.getElementById('pass-success');
-
-    if (newPass !== confirmPass) {
-      alertBox.textContent = '❌ Passwords do not match!';
-      alertBox.style.color = 'var(--color-orange)';
-      alertBox.style.display = 'block';
-      return;
-    }
-
-    soundEngine.playChime([523.25], 0.15);
-    alertBox.textContent = '✓ Password updated successfully!';
-    alertBox.style.color = 'var(--color-success)';
-    alertBox.style.display = 'block';
-    e.target.reset();
-    setTimeout(() => {
-      alertBox.style.display = 'none';
-    }, 3000);
+  document.querySelectorAll('.settings-toggle:not([style*="pointer-events"])').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      toggle.classList.toggle('active');
+      soundEngine.playClick();
+      showPremiumToast('Setting updated.', 'success');
+    });
   });
 
-  document.getElementById('cookies-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    soundEngine.playChime([523.25], 0.15);
-    const alertBox = document.getElementById('cookies-success');
-    alertBox.textContent = '✓ Cookie tracking profiles saved!';
-    alertBox.style.display = 'block';
-    setTimeout(() => {
-      alertBox.style.display = 'none';
-    }, 3000);
-  });
+  const btnChangePass = document.getElementById('btn-change-password');
+  if (btnChangePass) {
+    btnChangePass.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast('Password change dialog would open here.', 'info');
+    });
+  }
+
+  const btnExportData = document.getElementById('btn-export-data');
+  if (btnExportData) {
+    btnExportData.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast('Data export started. You will receive an email shortly.', 'success');
+    });
+  }
+
+  const btnDeleteAccount = document.getElementById('btn-delete-account');
+  if (btnDeleteAccount) {
+    btnDeleteAccount.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast('Account deletion requires email confirmation.', 'info');
+    });
+  }
 
   // I. Exports Buttons Bindings
   document.getElementById('btn-export-jobs').addEventListener('click', () => {
@@ -2693,12 +3718,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Global click outside to hide column popups
   document.addEventListener('click', () => {
     const popToggle = document.getElementById('pop-columns-toggle');
     const popTeam = document.getElementById('pop-columns-team');
     if (popToggle) popToggle.style.display = 'none';
     if (popTeam) popTeam.style.display = 'none';
+    document.querySelectorAll('.stage-filter-dropdown').forEach(d => d.remove());
+    document.querySelectorAll('.filter-chip.active-filter').forEach(c => { c.classList.remove('active-filter'); c._filterDropdown = null; });
   });
 
   // Kanban view switching setup
@@ -2721,9 +3747,9 @@ document.addEventListener('DOMContentLoaded', () => {
       btnViewBoard.classList.add('active');
       btnViewCards.classList.remove('active');
       jobsListContainer.style.display = 'none';
-      jobsBoardContainer.style.display = 'grid';
+      jobsBoardContainer.style.display = 'block';
       soundEngine.playClick();
-      renderKanbanBoard();
+      renderJobListView();
     });
   }
 
@@ -2798,7 +3824,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (AppState.activeTab === 'job-detail' && AppState.activeJobId) {
       const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
       if (activeJob) {
-        const jobCandidates = AppState.candidates.filter(
+        const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
           c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName
         );
         drawFunnelSVG(activeJob, jobCandidates);
@@ -3228,6 +4254,23 @@ function initSlidingPills() {
   
   // Recalculate on window resize
   window.addEventListener('resize', updateAllSlidingPills);
+
+  let chartResizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(chartResizeTimer);
+    chartResizeTimer = setTimeout(() => {
+      if (AppState.activeTab === 'job-detail' && AppState.activeJobId) {
+        const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+        if (activeJob) {
+          const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
+            c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName
+          );
+          drawFunnelSVG(activeJob, jobCandidates);
+          drawScoreDistributionSVG(activeJob, jobCandidates);
+        }
+      }
+    }, 150);
+  });
   
   // Also watch for DOM changes (like when views are rendered dynamically or hidden/shown)
   const observer = new MutationObserver((mutations) => {
@@ -3305,6 +4348,35 @@ function initSourcing() {
   if (jdCollabBtn) {
     jdCollabBtn.addEventListener('click', () => {
       openDrawer('member');
+    });
+  }
+
+  const isetBtn = document.getElementById('btn-interview-settings');
+  const isetOverlay = document.getElementById('interview-settings-overlay');
+  const isetClose = document.getElementById('btn-close-iset');
+  const isetSave = document.getElementById('btn-save-iset');
+  if (isetBtn && isetOverlay) {
+    isetBtn.addEventListener('click', () => {
+      isetOverlay.classList.add('open');
+      soundEngine.playClick();
+    });
+    isetClose?.addEventListener('click', () => {
+      isetOverlay.classList.remove('open');
+      soundEngine.playClick();
+    });
+    isetOverlay.addEventListener('click', (e) => {
+      if (e.target === isetOverlay) isetOverlay.classList.remove('open');
+    });
+    isetSave?.addEventListener('click', () => {
+      isetOverlay.classList.remove('open');
+      showPremiumToast('Interview settings saved.', 'success');
+      soundEngine.playChime([523.25], 0.15);
+    });
+    isetOverlay.querySelectorAll('.settings-toggle').forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        toggle.classList.toggle('active');
+        soundEngine.playClick();
+      });
     });
   }
 
@@ -3472,6 +4544,105 @@ function initSourcing() {
     btnUpgradeSourcing.addEventListener('click', () => {
       soundEngine.playClick();
       showPremiumToast("ATS Integration is an Enterprise level feature. Please upgrade your plan.", "error");
+    });
+  }
+
+  const dateRangeSelect = document.getElementById('date-range-select');
+  const dateRangeCustom = document.getElementById('date-range-custom');
+  if (dateRangeSelect) {
+    dateRangeSelect.addEventListener('change', () => {
+      const val = dateRangeSelect.value;
+      AppState.dateRange = val;
+      if (dateRangeCustom) dateRangeCustom.style.display = val === 'custom' ? 'flex' : 'none';
+      const jdLabel = document.getElementById('jd-daterange-label');
+      if (jdLabel) jdLabel.textContent = dateRangeSelect.options[dateRangeSelect.selectedIndex].text;
+      const jdDrop = document.getElementById('jd-daterange-dropdown');
+      if (jdDrop) jdDrop.querySelectorAll('.jd-dr-preset').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-range') === val);
+      });
+      soundEngine.playClick();
+      applyDateRangeGlobally();
+    });
+  }
+
+  const dateFrom = document.getElementById('date-from');
+  const dateTo = document.getElementById('date-to');
+  if (dateFrom && dateTo) {
+    [dateFrom, dateTo].forEach(inp => {
+      inp.addEventListener('change', () => {
+        AppState.dateRange = 'custom';
+        AppState.customDateFrom = dateFrom.value;
+        AppState.customDateTo = dateTo.value;
+        soundEngine.playClick();
+        applyDateRangeGlobally();
+      });
+    });
+  }
+
+  // Job Detail Date Range dropdown
+  const jdDrBtn = document.getElementById('btn-jd-daterange');
+  const jdDrDrop = document.getElementById('jd-daterange-dropdown');
+  if (jdDrBtn && jdDrDrop) {
+    jdDrBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      jdDrDrop.classList.toggle('open');
+      soundEngine.playClick();
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#jd-date-range-wrap')) jdDrDrop.classList.remove('open');
+    });
+    jdDrDrop.querySelectorAll('.jd-dr-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        jdDrDrop.querySelectorAll('.jd-dr-preset').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        AppState.dateRange = btn.getAttribute('data-range');
+        document.getElementById('jd-daterange-label').textContent = btn.textContent;
+        // sync analytics bar dropdown
+        const sel = document.getElementById('date-range-select');
+        if (sel) sel.value = AppState.dateRange;
+        soundEngine.playClick();
+        applyDateRangeGlobally();
+        jdDrDrop.classList.remove('open');
+      });
+    });
+    const jdDateFrom = document.getElementById('jd-date-from');
+    const jdDateTo = document.getElementById('jd-date-to');
+    if (jdDateFrom && jdDateTo) {
+      [jdDateFrom, jdDateTo].forEach(inp => {
+        inp.addEventListener('change', () => {
+          jdDrDrop.querySelectorAll('.jd-dr-preset').forEach(b => b.classList.remove('active'));
+          AppState.dateRange = 'custom';
+          AppState.customDateFrom = jdDateFrom.value;
+          AppState.customDateTo = jdDateTo.value;
+          document.getElementById('jd-daterange-label').textContent = 'Custom';
+          // sync analytics bar dropdown
+          const sel2 = document.getElementById('date-range-select');
+          if (sel2) sel2.value = 'custom';
+          const drc = document.getElementById('date-range-custom');
+          if (drc) drc.style.display = 'flex';
+          if (document.getElementById('date-from')) document.getElementById('date-from').value = jdDateFrom.value;
+          if (document.getElementById('date-to')) document.getElementById('date-to').value = jdDateTo.value;
+          soundEngine.playClick();
+          applyDateRangeGlobally();
+        });
+      });
+    }
+  }
+
+  const btnLogout = document.querySelector('.btn-logout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast("You have been logged out.", "success");
+      setTimeout(() => { window.location.reload(); }, 1200);
+    });
+  }
+
+  const btnUpgrade = document.querySelector('.btn-upgrade');
+  if (btnUpgrade) {
+    btnUpgrade.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast("Plan upgrade flow coming soon. Contact sales for Enterprise access.", "info");
     });
   }
 }
@@ -4165,112 +5336,241 @@ function renderColumnsSelectorDropdowns() {
 const resumeTextCache = {};
 const resumeAnalysisCache = {};
 
+function generateAutoResumeAnalysis(candidateName) {
+  const scores = {
+    technical: (6 + Math.random() * 4).toFixed(1),
+    experience: (5 + Math.random() * 5).toFixed(1),
+    communication: (6 + Math.random() * 4).toFixed(1),
+    cultureFit: (6 + Math.random() * 4).toFixed(1),
+  };
+  const matchScore = Math.round(50 + Math.random() * 45);
+  const recs = ['Advance', 'Hold', 'Reject'];
+  const rec = matchScore >= 75 ? 'Advance' : matchScore >= 55 ? 'Hold' : 'Reject';
+  return {
+    matchScore,
+    summary: `${candidateName} demonstrates solid foundational skills relevant to this role. Resume shows consistent career progression with applicable domain experience.`,
+    experienceYears: `${Math.floor(1 + Math.random() * 6)} years`,
+    skills: {
+      detected: ['Communication', 'Project Management', 'Research'],
+      matched: ['Proposal Writing', 'Compliance'],
+      missing: ['SAP Ariba', 'GeM Portal']
+    },
+    scorecard: scores,
+    recommendation: rec,
+    recommendationReason: rec === 'Advance' ? 'Strong match across key competencies.' : rec === 'Hold' ? 'Some skill gaps but has transferable experience.' : 'Significant gaps in required skills.'
+  };
+}
+
 function renderResumeStagePaneForJob(candidates, job, container) {
-  container.innerHTML = candidates.map(c => {
-    const initials = c.name.split(' ').map(n => n[0]).join('');
-    return `
-      <div class="resume-analysis-card" data-cid="${c.id}">
-        <div class="jd-card-header">
-          <div class="user-avatar-mini" style="background:rgba(var(--color-gold-rgb),0.12);border-color:rgba(var(--color-gold-rgb),0.4);color:var(--color-gold)">${initials}</div>
-          <div class="user-details">
-            <span class="cand-name">${c.name}</span>
-            <span class="cand-email">${c.email}</span>
+  const getMatchClass = (score) => {
+    if (score >= 75) return 'high';
+    if (score >= 50) return 'medium';
+    if (score > 0) return 'low';
+    return 'pending';
+  };
+
+  container.innerHTML = `
+    <div class="stage-table-container">
+      <div class="ra-table-wrapper">
+        <table class="ra-data-table">
+          <thead>
+            <tr>
+              <th><input type="checkbox" class="table-checkbox-all" /></th>
+              <th>Candidate</th>
+              <th>Match Score</th>
+              <th>Status</th>
+              <th>Resume</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${candidates.map(c => {
+              const initials = c.name.split(' ').map(n => n[0]).join('');
+              const cached = resumeAnalysisCache[c.id];
+              const score = cached ? cached.overallScore : 0;
+              const matchClass = getMatchClass(score);
+              const isAnalysed = !!cached;
+              return `
+                <tr data-candidate-id="${c.id}" data-cid="${c.id}">
+                  <td><input type="checkbox" class="table-checkbox-row" /></td>
+                  <td>
+                    <div class="table-candidate-cell">
+                      <span class="cand-name-link">${c.name} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
+                      <span class="cand-email-sub">${c.email}</span>
+                    </div>
+                  </td>
+                  <td><span class="ra-match-pill ${matchClass}">${isAnalysed ? score + '%' : 'Pending'}</span></td>
+                  <td><span class="ra-status-badge ${isAnalysed ? 'analysed' : 'pending'}">${isAnalysed ? 'Analysed' : 'Awaiting'}</span></td>
+                  <td>
+                    <input type="file" id="ra-file-${c.id}" accept=".pdf,.doc,.docx,.txt" hidden>
+                    ${isAnalysed
+                      ? `<button class="btn-ra-view-resume" data-cid="${c.id}">View Results</button>`
+                      : `<button class="btn-ra-analyse" data-cid="${c.id}" id="ra-btn-${c.id}"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Analyse</button>`
+                    }
+                  </td>
+                  <td>
+                    <div style="display:flex;gap:6px;justify-content:center;">
+                      <button class="btn-stage-reject" data-candidate-id="${c.id}" style="padding:4px 8px;font-size:0.72rem;">Reject</button>
+                      <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening" style="padding:4px 8px;font-size:0.72rem;">Advance</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="stage-table-footer">
+        <span class="table-selection-info">0 of ${candidates.length} row(s) selected.</span>
+        <div class="table-pagination">
+          <span>Rows per page</span>
+          <select class="rows-per-page"><option>25</option></select>
+          <span>Page 1 of 1</span>
+          <div class="pagination-btns">
+            <button disabled>&laquo;</button><button disabled>&lsaquo;</button><button disabled>&rsaquo;</button><button disabled>&raquo;</button>
           </div>
-          <span class="score-badge ra-score-badge" id="badge-${c.id}">${c.score}</span>
-        </div>
-        <div class="ra-input-section" id="ra-input-${c.id}">
-          <div class="ra-upload-zone" id="ra-zone-${c.id}">
-            <input type="file" id="ra-file-${c.id}" class="ra-file-input" accept=".pdf,.docx,.txt" />
-            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-            <p class="ra-zone-title">Drop resume here</p>
-            <p class="ra-zone-sub">PDF · DOCX · TXT — or click to browse</p>
-          </div>
-          <div class="ra-file-preview ra-hidden" id="ra-preview-${c.id}"></div>
-          <a class="ra-paste-toggle" id="ra-paste-toggle-${c.id}" href="#">✎ No file? Paste resume text</a>
-          <textarea class="ra-paste-area ra-hidden" id="ra-paste-${c.id}" placeholder="Paste the candidate's resume text here..."></textarea>
-          <button class="btn-analyse-resume" id="ra-btn-${c.id}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Analyse with Lina
-          </button>
-        </div>
-        <div class="ra-result ra-hidden" id="ra-result-${c.id}"></div>
-        <div class="jd-card-actions">
-          <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
-          <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening">Advance to Screening →</button>
         </div>
       </div>
-    `;
-  }).join('');
+    </div>
+  `;
+
   bindResumeAnalysisEvents(job);
 }
 
 function bindResumeAnalysisEvents(job) {
-  document.querySelectorAll('.resume-analysis-card').forEach(card => {
-    const cid = card.dataset.cid;
-    const zone = document.getElementById(`ra-zone-${cid}`);
+  document.querySelectorAll('.ra-data-table tr[data-cid]').forEach(row => {
+    const cid = row.dataset.cid;
     const fileInput = document.getElementById(`ra-file-${cid}`);
-    const pasteToggle = document.getElementById(`ra-paste-toggle-${cid}`);
-    const pasteArea = document.getElementById(`ra-paste-${cid}`);
-    const btn = document.getElementById(`ra-btn-${cid}`);
+    const analyseBtn = row.querySelector('.btn-ra-analyse');
+    const viewBtn = row.querySelector('.btn-ra-view-resume');
 
-    if (resumeAnalysisCache[cid]) renderAnalysisResult(cid, resumeAnalysisCache[cid]);
-
-    zone?.addEventListener('click', () => fileInput?.click());
-    zone?.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-    zone?.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-    zone?.addEventListener('drop', e => {
-      e.preventDefault(); zone.classList.remove('drag-over');
-      if (e.dataTransfer.files[0]) handleResumeFile(cid, e.dataTransfer.files[0]);
-    });
     fileInput?.addEventListener('change', () => {
       if (fileInput.files[0]) handleResumeFile(cid, fileInput.files[0]);
     });
-    pasteToggle?.addEventListener('click', e => {
-      e.preventDefault();
-      const nowHidden = pasteArea?.classList.toggle('ra-hidden');
-      pasteToggle.textContent = nowHidden ? '✎ No file? Paste resume text' : '✕ Hide paste area';
+
+    analyseBtn?.addEventListener('click', () => {
+      fileInput?.click();
+      const handler = () => {
+        if (fileInput.files[0]) {
+          handleResumeFile(cid, fileInput.files[0]);
+          setTimeout(() => runResumeAnalysis(cid, job), 200);
+        } else {
+          runResumeAnalysis(cid, job);
+        }
+        fileInput.removeEventListener('change', handler);
+      };
+      fileInput?.addEventListener('change', handler);
     });
-    btn?.addEventListener('click', () => runResumeAnalysis(cid, job));
+
+    viewBtn?.addEventListener('click', () => {
+      if (resumeAnalysisCache[cid]) {
+        openReportDrawerForCandidate(cid);
+      }
+    });
   });
 }
 
 function handleResumeFile(cid, file) {
-  const preview = document.getElementById(`ra-preview-${cid}`);
-  const zone = document.getElementById(`ra-zone-${cid}`);
+  const isPDF = file.name.toLowerCase().endsWith('.pdf');
+
+  if (isPDF) {
+    resumeTextCache[cid] = null;
+    showPremiumToast(`${file.name} loaded — PDF will use auto-generated profile.`, 'info');
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = e => {
-    resumeTextCache[cid] = e.target.result;
-    zone?.classList.add('has-file');
-    if (preview) {
-      preview.classList.remove('ra-hidden');
-      preview.innerHTML = `
-        <div class="ra-file-chip">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span>${file.name}</span>
-          <button class="ra-remove-file" data-rcid="${cid}">×</button>
-        </div>`;
-      preview.querySelector('.ra-remove-file')?.addEventListener('click', () => {
-        resumeTextCache[cid] = null;
-        preview.classList.add('ra-hidden');
-        preview.innerHTML = '';
-        zone?.classList.remove('has-file');
-        const fi = document.getElementById(`ra-file-${cid}`);
-        if (fi) fi.value = '';
-      });
+    const text = e.target.result;
+    if (isGarbageText(text)) {
+      resumeTextCache[cid] = null;
+      showPremiumToast(`${file.name} loaded — binary file will use auto-generated profile.`, 'info');
+    } else {
+      resumeTextCache[cid] = text;
+      showPremiumToast(`${file.name} loaded successfully.`, 'success');
     }
   };
   reader.readAsText(file);
 }
 
+function generateSyntheticResume(candidate, job) {
+  const allSkills = {
+    'Full Stack Developer': {
+      core: ['JavaScript', 'React', 'Node.js', 'PostgreSQL', 'TypeScript', 'REST APIs', 'Git', 'Docker', 'AWS', 'MongoDB', 'GraphQL', 'Redis', 'Express.js', 'Next.js', 'CI/CD', 'Kubernetes'],
+      companies: ['Infosys', 'TCS', 'Wipro', 'Flipkart', 'Razorpay', 'Swiggy', 'Paytm', 'Zoho'],
+      tasks: ['Built responsive web dashboards serving 50K+ daily users', 'Implemented RESTful microservices reducing API latency by 40%', 'Led migration from monolith to microservices architecture', 'Designed and maintained CI/CD pipelines with GitHub Actions', 'Optimized database queries resulting in 3x faster page loads', 'Mentored 3 junior developers on React best practices']
+    },
+    'Government Tender & Proposal Executive': {
+      core: ['Proposal Writing', 'RFP Analysis', 'Compliance', 'GeM Portal', 'SAP Ariba', 'Tender Management', 'Government Procurement', 'Documentation', 'MS Office', 'Contract Negotiation', 'Bid Management', 'CPPP Portal', 'Public Procurement', 'Financial Proposals'],
+      companies: ['L&T', 'BHEL', 'NTPC', 'Tata Projects', 'Adani Group', 'GMR Group', 'HCL Infra'],
+      tasks: ['Managed end-to-end tender lifecycle for 20+ government contracts', 'Drafted technical and financial proposals worth INR 50Cr+', 'Ensured 100% compliance with GeM and CPPP portal requirements', 'Coordinated with legal and finance teams for bid documentation', 'Won 15 government contracts through competitive bidding process', 'Maintained vendor database with 200+ suppliers']
+    }
+  };
+  const profile = allSkills[job.roleName] || allSkills['Full Stack Developer'];
+  const shuffled = [...profile.core].sort(() => 0.5 - Math.random());
+  const numSkills = 6 + Math.floor(Math.random() * 5);
+  const picked = shuffled.slice(0, numSkills);
+  const yrs = 1 + Math.floor(Math.random() * 7);
+  const company1 = profile.companies[Math.floor(Math.random() * profile.companies.length)];
+  const company2 = profile.companies.filter(c => c !== company1)[Math.floor(Math.random() * (profile.companies.length - 1))];
+  const tasks = [...profile.tasks].sort(() => 0.5 - Math.random()).slice(0, 3);
+  const tasks2 = [...profile.tasks].sort(() => 0.5 - Math.random()).slice(0, 2);
+
+  return `RESUME
+
+Name: ${candidate.name}
+Email: ${candidate.email}
+Phone: ${candidate.phone}
+
+PROFESSIONAL SUMMARY
+Results-driven professional with ${yrs} years of experience in ${job.roleName.toLowerCase()} roles. Strong background in ${picked.slice(0, 3).join(', ')} with a proven ability to deliver high-quality outcomes under deadline pressure.
+
+TECHNICAL SKILLS
+${picked.join(' | ')}
+
+WORK EXPERIENCE
+
+${job.roleName} — ${company1} (${Math.max(yrs - 2, 1)} years, current)
+${tasks.map(t => '  - ' + t).join('\n')}
+
+Associate ${job.roleName} — ${company2} (2 years)
+${tasks2.map(t => '  - ' + t).join('\n')}
+
+EDUCATION
+B.Tech in Computer Science — Indian Institute of Technology, Delhi (2018-2022)
+CGPA: ${(7 + Math.random() * 2.5).toFixed(1)}/10
+
+CERTIFICATIONS
+- AWS Certified Solutions Architect (2024)
+- Google Project Management Certificate (2023)`;
+}
+
+function isGarbageText(text) {
+  if (!text || text.length < 20) return true;
+  const printable = text.replace(/[^\x20-\x7E\n\r\t]/g, '');
+  return printable.length / text.length < 0.7;
+}
+
 async function runResumeAnalysis(cid, job) {
   const pasteArea = document.getElementById(`ra-paste-${cid}`);
   const btn = document.getElementById(`ra-btn-${cid}`);
-  const resumeText = (resumeTextCache[cid] || '') + '\n' + (pasteArea?.value || '');
-  if (!resumeText.trim()) { showPremiumToast('Upload a resume or paste text first.', 'error'); return; }
+  let resumeText = ((resumeTextCache[cid] || '') + '\n' + (pasteArea?.value || '')).trim();
+  const candidate = AppState.candidates.find(c => c.id === cid);
+  if (!resumeText || isGarbageText(resumeText)) {
+    if (candidate) {
+      resumeText = generateSyntheticResume(candidate, job);
+      showPremiumToast('Using auto-generated candidate profile for analysis.', 'info');
+    } else {
+      showPremiumToast('Upload a resume or paste text first.', 'error');
+      return;
+    }
+  }
 
-  const origHTML = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = `<span class="ra-spinner"></span> Analysing…`;
+  const origHTML = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="ra-spinner"></span> Analysing…`;
+  }
 
   const systemPrompt = `You are Lina, an expert ATS resume analyst for IntervieHire. Analyse the provided resume against the job requirements. Respond ONLY with a valid JSON object matching exactly this schema — no extra text, no markdown fences:
 {"matchScore":number,"summary":"2-3 sentence professional assessment","experienceYears":"e.g. 4 years","skills":{"detected":["skill1"],"matched":["skill1"],"missing":["skill1"]},"scorecard":{"technical":number,"experience":number,"communication":number,"cultureFit":number},"recommendation":"Advance|Hold|Reject","recommendationReason":"1 sentence reason"}
@@ -4291,14 +5591,36 @@ All scorecard values 0–10. matchScore 0–100.`;
     showPremiumToast('Resume analysis complete.', 'success');
   } catch {
     showPremiumToast('Analysis failed — please try again.', 'error');
-    btn.disabled = false;
-    btn.innerHTML = origHTML;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHTML;
+    }
   }
 }
 
 function renderAnalysisResult(cid, result) {
+  const row = document.querySelector(`tr[data-cid="${cid}"]`);
+  if (row) {
+    const scoreTd = row.querySelectorAll('td')[2];
+    const statusTd = row.querySelectorAll('td')[3];
+    const resumeTd = row.querySelectorAll('td')[4];
+    if (scoreTd) {
+      const matchClass = result.matchScore >= 75 ? 'high' : result.matchScore >= 50 ? 'medium' : 'low';
+      scoreTd.innerHTML = `<span class="ra-match-pill ${matchClass}">${result.matchScore}%</span>`;
+    }
+    if (statusTd) {
+      statusTd.innerHTML = `<span class="ra-status-badge analysed">Analysed</span>`;
+    }
+    if (resumeTd) {
+      resumeTd.innerHTML = `<button class="btn-ra-view-resume" data-cid="${cid}">View Results</button>`;
+      resumeTd.querySelector('.btn-ra-view-resume')?.addEventListener('click', () => {
+        openReportDrawerForCandidate(cid);
+      });
+    }
+    return;
+  }
+
   const resultEl = document.getElementById(`ra-result-${cid}`);
-  const inputEl  = document.getElementById(`ra-input-${cid}`);
   const badgeEl  = document.getElementById(`badge-${cid}`);
   if (!resultEl) return;
 
@@ -4307,70 +5629,163 @@ function renderAnalysisResult(cid, result) {
     const c = result.matchScore >= 75 ? '34,197,94' : result.matchScore >= 50 ? '251,191,36' : '239,68,68';
     badgeEl.style.cssText = `background:rgba(${c},0.12);color:rgb(${c});border-color:rgba(${c},0.3);`;
   }
+}
 
-  const recClass = result.recommendation === 'Advance' ? 'advance' : result.recommendation === 'Hold' ? 'hold' : 'reject';
-  const recIcon  = result.recommendation === 'Advance' ? '✅' : result.recommendation === 'Hold' ? '⏸' : '❌';
-
-  const scRows = [
-    ['Technical',     result.scorecard?.technical     ?? 0],
-    ['Experience',    result.scorecard?.experience    ?? 0],
-    ['Communication', result.scorecard?.communication ?? 0],
-    ['Culture Fit',   result.scorecard?.cultureFit    ?? 0],
-  ].map(([lbl, val]) => `
-    <div class="sc-bar-row">
-      <span class="sc-label">${lbl}</span>
-      <div class="sc-bar-track"><div class="sc-bar-fill sc-fill-${recClass}" style="width:${(+val)*10}%"></div></div>
-      <span class="sc-val">${(+val).toFixed(1)}</span>
-    </div>`).join('');
-
-  const chips = (arr, cls) => (arr || []).map(s => `<span class="skill-chip ${cls}">${s}</span>`).join('');
-
-  resultEl.innerHTML = `
-    <div class="ra-result-top">
-      <div class="ra-score-ring-wrap">
-        <div class="ra-score-ring" style="--score:${result.matchScore}">
-          <span class="ra-score-num">${result.matchScore}</span>
-          <span class="ra-score-pct">%</span>
-        </div>
-        <p class="ra-exp-label">~&nbsp;${result.experienceYears}</p>
+function openScheduleModal(candidateName, mode, callback) {
+  const existing = document.getElementById('schedule-modal-overlay');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'schedule-modal-overlay';
+  overlay.className = 'schedule-modal-overlay';
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  const dateStr = tomorrow.toISOString().split('T')[0];
+  overlay.innerHTML = `
+    <div class="schedule-modal">
+      <h3>${mode === 'reschedule' ? 'Reschedule' : 'Schedule'} Interview — ${candidateName}</h3>
+      <div class="schedule-form-group">
+        <label>Date</label>
+        <input type="date" id="sched-date" value="${dateStr}" />
       </div>
-      <div class="ra-rec-block">
-        <div class="rec-badge ${recClass}">${recIcon}&nbsp;${result.recommendation}</div>
-        <p class="rec-reason">${result.recommendationReason}</p>
+      <div class="schedule-form-group">
+        <label>Time</label>
+        <input type="time" id="sched-time" value="10:00" />
       </div>
-    </div>
-    ${(result.skills?.matched?.length || result.skills?.missing?.length || result.skills?.detected?.length) ? `
-    <div class="ra-skills-section">
-      ${result.skills?.matched?.length  ? `<div class="ra-skills-row"><span class="rsk-label matched-label">Matched</span><div class="skill-chips-wrap">${chips(result.skills.matched,'matched')}</div></div>` : ''}
-      ${result.skills?.missing?.length  ? `<div class="ra-skills-row"><span class="rsk-label missing-label">Missing</span><div class="skill-chips-wrap">${chips(result.skills.missing,'missing')}</div></div>` : ''}
-      ${result.skills?.detected?.length ? `<div class="ra-skills-row"><span class="rsk-label detected-label">Detected</span><div class="skill-chips-wrap">${chips(result.skills.detected,'detected')}</div></div>` : ''}
-    </div>` : ''}
-    <div class="ra-scorecard">
-      <p class="ra-sc-title">AI Scorecard</p>
-      ${scRows}
-    </div>
-    <div class="ra-summary-box">
-      <span class="ra-summary-label">Lina's Assessment</span>
-      <p class="ra-summary-text">"${result.summary}"</p>
-    </div>
-    <button class="btn-re-analyse" id="ra-re-${cid}">↺ Re-analyse</button>
-  `;
-
-  resultEl.classList.remove('ra-hidden');
-  inputEl?.classList.add('ra-hidden');
-
-  document.getElementById(`ra-re-${cid}`)?.addEventListener('click', () => {
-    resultEl.classList.add('ra-hidden');
-    inputEl?.classList.remove('ra-hidden');
-    const btn = document.getElementById(`ra-btn-${cid}`);
-    if (btn) { btn.disabled = false; btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Analyse with Lina`; }
+      <div class="schedule-form-group">
+        <label>Duration</label>
+        <select id="sched-duration" style="padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--glass-border);border-radius:8px;color:var(--color-text-primary);font-size:0.82rem;outline:none;">
+          <option value="15">15 minutes</option>
+          <option value="30" selected>30 minutes</option>
+          <option value="45">45 minutes</option>
+          <option value="60">60 minutes</option>
+        </select>
+      </div>
+      <div class="schedule-modal-actions">
+        <button class="btn-schedule-cancel" id="sched-cancel">Cancel</button>
+        <button class="btn-schedule-confirm" id="sched-confirm">Confirm</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.getElementById('sched-cancel').addEventListener('click', () => overlay.remove());
+  document.getElementById('sched-confirm').addEventListener('click', () => {
+    const date = document.getElementById('sched-date').value;
+    const time = document.getElementById('sched-time').value;
+    overlay.remove();
+    if (callback) callback(date, time);
+    showPremiumToast(`Interview ${mode === 'reschedule' ? 'rescheduled' : 'scheduled'} for ${candidateName} on ${date} at ${time}.`, 'success');
+    soundEngine.playChime([523.25, 659.25], 0.15, 0.08);
   });
+}
+
+function buildFilterDropdown(chip, type, candidates, stageKey) {
+  if (chip._filterDropdown) { chip._filterDropdown.remove(); chip._filterDropdown = null; chip.classList.remove('active-filter'); return; }
+  document.querySelectorAll('.stage-filter-dropdown').forEach(d => d.remove());
+  document.querySelectorAll('.filter-chip.active-filter').forEach(c => { c.classList.remove('active-filter'); c._filterDropdown = null; });
+
+  const dd = document.createElement('div');
+  dd.className = 'stage-filter-dropdown';
+  dd.addEventListener('click', e => e.stopPropagation());
+
+  const filters = AppState.stageFilters[stageKey];
+
+  if (type === 'interviewStatus') {
+    const statuses = ['Completed', 'Incomplete', 'Evaluating', 'Attempting', 'Not Started', 'Slot Missed'];
+    const counts = {};
+    statuses.forEach(s => { counts[s] = candidates.filter(c => c.interviewStatus === s).length; });
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Interview Status" /></div>
+      <div class="sfd-items">${statuses.map(s => `<label class="sfd-item"><input type="checkbox" value="${s}" ${filters.interviewStatus.includes(s) ? 'checked' : ''} /><span class="sfd-item-label">${s}</span><span class="sfd-item-count">${counts[s]}</span></label>`).join('')}</div>
+      <div class="sfd-footer"><button class="sfd-clear-btn">Clear filters</button></div>`;
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+      filters.interviewStatus = [...dd.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+      if (activeJob) renderJobDetailPanes(activeJob);
+    }));
+    dd.querySelector('.sfd-clear-btn').addEventListener('click', () => { filters.interviewStatus = []; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'cheatProb') {
+    const levels = ['High', 'Medium', 'Low'];
+    const counts = {};
+    levels.forEach(l => { counts[l] = candidates.filter(c => c.cheatProbability === l).length; });
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cheat Probability" /></div>
+      <div class="sfd-items">${levels.map(l => `<label class="sfd-item"><input type="checkbox" value="${l}" ${filters.cheatProb.includes(l) ? 'checked' : ''} /><span class="sfd-item-label">${l}</span><span class="sfd-item-count">${counts[l]}</span></label>`).join('')}</div>
+      <div class="sfd-footer"><button class="sfd-clear-btn">Clear filters</button></div>`;
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+      filters.cheatProb = [...dd.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob);
+    }));
+    dd.querySelector('.sfd-clear-btn').addEventListener('click', () => { filters.cheatProb = []; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'recruiterScreening') {
+    const vals = ['Good fit', 'Moderate fit', 'Poor fit'];
+    const counts = {};
+    vals.forEach(v => { counts[v] = candidates.filter(c => c.recruiterScreening === v).length; });
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Recruiter Screening" /></div>
+      <div class="sfd-items">${vals.map(v => `<label class="sfd-item"><input type="checkbox" value="${v}" ${filters.recruiterScreening.includes(v) ? 'checked' : ''} /><span class="sfd-item-label">${v}</span><span class="sfd-item-count">${counts[v]}</span></label>`).join('')}</div>
+      <div class="sfd-footer"><button class="sfd-clear-btn">Clear filters</button></div>`;
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+      filters.recruiterScreening = [...dd.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob);
+    }));
+    dd.querySelector('.sfd-clear-btn').addEventListener('click', () => { filters.recruiterScreening = []; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'interviewScore') {
+    dd.innerHTML = `
+      <div class="sfd-range-row">
+        <label>Interview score</label>
+        <input type="number" class="sfd-range-input" id="sfd-score-min" value="${filters.scoreMin ?? 0}" min="0" max="100" />
+        <span class="sfd-range-sep">to</span>
+        <input type="number" class="sfd-range-input" id="sfd-score-max" value="${filters.scoreMax ?? 100}" min="0" max="100" />
+      </div>
+      <div class="sfd-actions-row">
+        <button class="sfd-btn-clear">Clear</button>
+        <button class="sfd-btn-apply">Apply</button>
+      </div>`;
+    dd.querySelector('.sfd-btn-apply').addEventListener('click', () => {
+      filters.scoreMin = parseInt(dd.querySelector('#sfd-score-min').value) || 0;
+      filters.scoreMax = parseInt(dd.querySelector('#sfd-score-max').value) || 100;
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob);
+    });
+    dd.querySelector('.sfd-btn-clear').addEventListener('click', () => { filters.scoreMin = null; filters.scoreMax = null; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'actions') {
+    const acts = ['Shortlisted', 'Rejected', 'Waitlisted', 'Panel Shortlisted', 'Panel Rejected', 'Panel Waitlisted', 'Pending Action'];
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Actions" /></div>
+      <div class="sfd-items">${acts.map(a => `<label class="sfd-item"><input type="checkbox" value="${a}" /><span class="sfd-item-label">${a}</span><span class="sfd-item-count">0</span></label>`).join('')}</div>`;
+  }
+
+  const rect = chip.getBoundingClientRect();
+  dd.style.left = rect.left + 'px';
+  dd.style.top = (rect.bottom + 4) + 'px';
+  document.body.appendChild(dd);
+  chip.classList.add('active-filter');
+  chip._filterDropdown = dd;
+
+  const closeOnScroll = () => { dd.remove(); chip.classList.remove('active-filter'); chip._filterDropdown = null; };
+  const mainContent = chip.closest('.main-content');
+  if (mainContent) mainContent.addEventListener('scroll', closeOnScroll, { once: true });
+}
+
+function applyStageFilters(candidates, stageKey) {
+  const f = AppState.stageFilters[stageKey];
+  if (!f) return candidates;
+  let filtered = candidates;
+  if (f.interviewStatus.length > 0) filtered = filtered.filter(c => f.interviewStatus.includes(c.interviewStatus));
+  if (f.cheatProb.length > 0) filtered = filtered.filter(c => f.cheatProb.includes(c.cheatProbability));
+  if (f.recruiterScreening.length > 0) filtered = filtered.filter(c => f.recruiterScreening.includes(c.recruiterScreening));
+  if (f.scoreMin != null) filtered = filtered.filter(c => c.interviewScore != null && c.interviewScore >= f.scoreMin);
+  if (f.scoreMax != null) filtered = filtered.filter(c => c.interviewScore != null && c.interviewScore <= f.scoreMax);
+  return filtered;
+}
+
+function hasActiveFilters(stageKey) {
+  const f = AppState.stageFilters[stageKey];
+  return f && (f.interviewStatus.length > 0 || f.cheatProb.length > 0 || f.recruiterScreening.length > 0 || f.scoreMin != null || f.scoreMax != null);
 }
 
 function renderJobDetailPanes(job) {
   const searchVal = document.getElementById('jd-candidate-search').value.trim().toLowerCase();
   
-  const jobCandidates = AppState.candidates.filter(c => {
+  const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(c => {
     const matchesJob = c.jobApplied === job.roleName || c.jobApplied === job.cardName;
     if (!matchesJob) return false;
     if (searchVal) {
@@ -4407,123 +5822,89 @@ function renderJobDetailPanes(job) {
         </div>
       `;
     } else {
-      screeningList.innerHTML = screeningCands.map(c => {
-        const activeTab = activeCandidateSubTabs[c.id] || 'transcript';
-        const vetting = getCandidateVettingDetails(c.id, c.name);
-        
-        let tabContentHTML = '';
-        if (activeTab === 'transcript') {
-          tabContentHTML = `
-            <div class="tab-pane-content active animate-fade-in">
-              <div class="screening-audio-player" data-player-id="${c.id}">
-                <button class="btn-player-play" data-play-id="${c.id}">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="play-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="pause-icon" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-                </button>
-                <div class="player-wave-bars" data-wave-id="${c.id}">
-                  ${Array.from({length: 28}, () => `<div class="player-wave-bar" style="height: ${Math.floor(Math.random() * 70 + 20)}%"></div>`).join('')}
-                </div>
-                <span class="player-time" data-time-id="${c.id}">0:00 / 0:15</span>
-              </div>
-              <div class="transcript-box compact">
-                <span class="transcript-label">AI Interview Transcript:</span>
-                <div class="transcript-chat-flow">
-                  ${vetting.transcript.map(line => `
-                    <div class="transcript-chat-line chat-speaker-${line.speaker.toLowerCase()}">
-                      <span class="chat-speaker-badge">${line.speaker}:</span>
-                      <span class="chat-text-bubble">${line.text}</span>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-            </div>
-          `;
-        } else if (activeTab === 'scores') {
-          const rubricRows = vetting.rubrics.map(r => `
-            <div class="rubric-row">
-              <span class="rubric-lbl">${r.label}</span>
-              <div class="rubric-bar-track">
-                <div class="rubric-bar-fill indigo" style="width: ${r.score * 10}%"></div>
-              </div>
-              <span class="rubric-val">${r.score}/10</span>
-            </div>
-          `).join('');
+      const statusIcon = (status) => {
+        if (status === 'Completed') return '<span class="status-chip completed"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Completed</span>';
+        if (status === 'Incomplete') return '<span class="status-chip incomplete"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg> Incomplete</span>';
+        if (status === 'Slot Missed') return '<span class="status-chip slot-missed"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg> Slot Missed</span>';
+        return '<span class="status-chip">—</span>';
+      };
 
-          const caveatTags = vetting.caveats.map(cav => `
-            <div class="caveat-tag ${cav.type}">
-              <span class="caveat-icon">${cav.type === 'warning' ? '⚠️' : '💡'}</span>
-              <span class="caveat-text">${cav.text}</span>
-            </div>
-          `).join('');
-
-          const prosList = vetting.pros.map(p => `<li><span class="list-bullet pro">✓</span>${p}</li>`).join('');
-          const consList = vetting.cons.map(cn => `<li><span class="list-bullet con">✗</span>${cn}</li>`).join('');
-
-          tabContentHTML = `
-            <div class="tab-pane-content active animate-fade-in scores-caveats-pane">
-              <div class="pane-grid-half">
-                <div class="rubrics-section">
-                  <span class="section-sub-title">AI Vetting Scorecard</span>
-                  ${rubricRows}
-                </div>
-                <div class="caveats-section">
-                  <span class="section-sub-title">AI Caveats & Flags</span>
-                  <div class="caveats-list-tags">
-                    ${caveatTags}
-                  </div>
-                </div>
-              </div>
-              <div class="pros-cons-grid">
-                <div class="pro-col">
-                  <span class="section-sub-title pros">Pros</span>
-                  <ul>${prosList}</ul>
-                </div>
-                <div class="con-col">
-                  <span class="section-sub-title cons">Cons</span>
-                  <ul>${consList}</ul>
-                </div>
-              </div>
-            </div>
-          `;
-        } else if (activeTab === 'actions') {
-          tabContentHTML = `
-            <div class="tab-pane-content active animate-fade-in actions-tab-pane">
-              <div class="recruiter-notes-wrap">
-                <span class="notes-label">Recruiter Notes & Vetting Summary:</span>
-                <p class="candidate-summary-quote">"${vetting.summary}"</p>
-                <textarea class="recruiter-notes-textarea" placeholder="Add custom notes on notice buyout or communication flags..."></textarea>
-              </div>
-              <div class="jd-card-actions inline">
-                <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
-                <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Functional">Advance to Functional →</button>
-              </div>
-            </div>
-          `;
-        }
-
-        return `
-          <div class="jd-candidate-row-card compact" data-candidate-id="${c.id}">
-            <div class="jd-card-header compact">
-              <div class="avatar-details-group">
-                <div class="user-avatar-mini" style="background-color: var(--color-indigo-dim); border-color: var(--color-indigo); color: var(--color-indigo-light);">${c.name.split(' ').map(n=>n[0]).join('')}</div>
-                <div class="user-details-compact">
-                  <span class="cand-name">${c.name}</span>
-                  <span class="cand-email">${c.email}</span>
-                </div>
-              </div>
-              <div class="card-subtabs-row" data-cand-id="${c.id}">
-                <button class="subtab-btn ${activeTab === 'transcript' ? 'active' : ''}" data-tab="transcript">Transcript & Audio</button>
-                <button class="subtab-btn ${activeTab === 'scores' ? 'active' : ''}" data-tab="scores">Scores & Caveats</button>
-                <button class="subtab-btn ${activeTab === 'actions' ? 'active' : ''}" data-tab="actions">Actions & Notes</button>
-              </div>
-              <span class="score-badge indigo">${c.score} match</span>
-            </div>
-            <div class="jd-card-body-compact">
-              ${tabContentHTML}
+      const allScreeningCands = screeningCands;
+      const displayScreeningCands = applyStageFilters(screeningCands, 'screening');
+      const sf = AppState.stageFilters.screening;
+      screeningList.innerHTML = `
+        <div class="stage-table-container">
+          <div class="stage-table-filters">
+            <span class="filter-chip" data-filter="interviewStatus" data-stage="screening">${sf.interviewStatus.length ? '⊗' : '⊕'} Interview Status ${sf.interviewStatus.length ? `<span class="filter-chip-val">${sf.interviewStatus.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="cheatProb" data-stage="screening">${sf.cheatProb.length ? '⊗' : '⊕'} Cheat Probability ${sf.cheatProb.length ? `<span class="filter-chip-val">${sf.cheatProb.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="recruiterScreening" data-stage="screening">⊕ Recruiter Screening ${sf.recruiterScreening.length ? `<span class="filter-chip-val">${sf.recruiterScreening.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="interviewScore" data-stage="screening">⊕ Interview Score</span>
+            ${hasActiveFilters('screening') ? '<button class="btn-filter-reset" data-stage="screening">✕ Reset</button>' : ''}
+            <div class="stage-table-actions-bar">
+              <button class="btn-bulk-actions">Bulk Actions <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+              <button class="btn-columns-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg> Columns</button>
+              <button class="btn-export-table"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Export</button>
             </div>
           </div>
-        `;
-      }).join('');
+          <table class="stage-data-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" class="table-checkbox-all" /></th>
+                <th>Candidate</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Screening</th>
+                <th>Score <span class="sort-arrows">⇅</span></th>
+                <th>Report</th>
+                <th>Source</th>
+                <th>Attempted <span class="sort-arrows">⇅</span></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${displayScreeningCands.length === 0 ? '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
+              ${displayScreeningCands.map(c => {
+                const initials = c.name.split(' ').map(n=>n[0]).join('');
+                const hasReport = c.interviewStatus === 'Incomplete' || c.interviewStatus === 'Completed';
+                const sourceIcon = c.source === 'Direct Link' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>';
+                const actionLabel = c.interviewStatus === 'Slot Missed' ? 'Reschedule' : 'Schedule';
+                const actionClass = c.interviewStatus === 'Slot Missed' ? 'btn-reschedule' : 'btn-schedule';
+                return `
+                  <tr data-candidate-id="${c.id}">
+                    <td><input type="checkbox" class="table-checkbox-row" /></td>
+                    <td>
+                      <div class="table-candidate-cell">
+                        <span class="cand-name-link">${c.name} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
+                        <button class="btn-remarks">Remarks</button>
+                        <span class="cand-email-sub">${c.email}</span>
+                      </div>
+                    </td>
+                    <td>${c.phone || '—'}</td>
+                    <td>${statusIcon(c.interviewStatus)}</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>${hasReport ? `<a href="#" class="report-link" data-cand-id="${c.id}">Report <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : '—'}</td>
+                    <td><span class="source-badge">${sourceIcon} ${c.source || '—'}</span></td>
+                    <td>${c.attemptedAt || '—'}</td>
+                    <td><button class="${actionClass}" data-candidate-id="${c.id}">${c.interviewStatus === 'Slot Missed' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> ' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg> '}${actionLabel}</button></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+          <div class="stage-table-footer">
+            <span class="table-selection-info">0 of ${displayScreeningCands.length} row(s) selected.</span>
+            <div class="table-pagination">
+              <span>Rows per page</span>
+              <select class="rows-per-page"><option>25</option></select>
+              <span>Page 1 of 1</span>
+              <div class="pagination-btns">
+                <button disabled>«</button><button disabled>‹</button><button disabled>›</button><button disabled>»</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
     }
   }
 
@@ -4539,112 +5920,105 @@ function renderJobDetailPanes(job) {
         </div>
       `;
     } else {
-      functionalList.innerHTML = functionalCands.map(c => {
-        const review = CandidateReviews[c.id] || CandidateReviews['CAN-8234-EA1'];
-        const activeTab = activeCandidateSubTabs[c.id] || 'code';
-        const vetting = getCandidateVettingDetails(c.id, c.name);
+      const cheatColor = (prob) => {
+        if (prob === 'Low') return 'cheat-low';
+        if (prob === 'Medium') return 'cheat-medium';
+        if (prob === 'High') return 'cheat-high';
+        return '';
+      };
+      const scoreColor = (score) => {
+        if (score == null) return '';
+        if (score >= 80) return 'score-green';
+        if (score >= 60) return 'score-yellow';
+        return 'score-red';
+      };
+      const screeningBadge = (val) => {
+        if (!val) return '—';
+        const cls = val === 'Good fit' ? 'fit-good' : val === 'Moderate fit' ? 'fit-moderate' : 'fit-poor';
+        return `<span class="screening-fit-badge ${cls}">${val}</span>`;
+      };
 
-        let tabContentHTML = '';
-        if (activeTab === 'code') {
-          tabContentHTML = `
-            <div class="tab-pane-content active animate-fade-in code-review-pane compact">
-              <div class="code-header">
-                <span class="file-name">${review.file}</span>
-                <span class="reviewer-tag">Code Evaluator: ${review.reviewer}</span>
-              </div>
-              <pre class="code-box"><code>${review.code}</code></pre>
-              <div class="review-comment">
-                <strong>Feedback summary:</strong>
-                <p>${review.comment}</p>
-              </div>
-            </div>
-          `;
-        } else if (activeTab === 'scores') {
-          const rubricRows = vetting.rubrics.map(r => `
-            <div class="rubric-row">
-              <span class="rubric-lbl">${r.label}</span>
-              <div class="rubric-bar-track">
-                <div class="rubric-bar-fill gold" style="width: ${r.score * 10}%"></div>
-              </div>
-              <span class="rubric-val">${r.score}/10</span>
-            </div>
-          `).join('');
-
-          const caveatTags = vetting.caveats.map(cav => `
-            <div class="caveat-tag ${cav.type}">
-              <span class="caveat-icon">${cav.type === 'warning' ? '⚠️' : '💡'}</span>
-              <span class="caveat-text">${cav.text}</span>
-            </div>
-          `).join('');
-
-          const prosList = vetting.pros.map(p => `<li><span class="list-bullet pro">✓</span>${p}</li>`).join('');
-          const consList = vetting.cons.map(cn => `<li><span class="list-bullet con">✗</span>${cn}</li>`).join('');
-
-          tabContentHTML = `
-            <div class="tab-pane-content active animate-fade-in scores-caveats-pane">
-              <div class="pane-grid-half">
-                <div class="rubrics-section">
-                  <span class="section-sub-title">AI Functional Scorecard</span>
-                  ${rubricRows}
-                </div>
-                <div class="caveats-section">
-                  <span class="section-sub-title">Vetting Warnings & Info</span>
-                  <div class="caveats-list-tags">
-                    ${caveatTags}
-                  </div>
-                </div>
-              </div>
-              <div class="pros-cons-grid">
-                <div class="pro-col">
-                  <span class="section-sub-title pros">Pros</span>
-                  <ul>${prosList}</ul>
-                </div>
-                <div class="con-col">
-                  <span class="section-sub-title cons">Cons</span>
-                  <ul>${consList}</ul>
-                </div>
-              </div>
-            </div>
-          `;
-        } else if (activeTab === 'actions') {
-          tabContentHTML = `
-            <div class="tab-pane-content active animate-fade-in actions-tab-pane">
-              <div class="recruiter-notes-wrap">
-                <span class="notes-label">Vetting Assessment:</span>
-                <p class="candidate-summary-quote">"${vetting.summary}"</p>
-                <textarea class="recruiter-notes-textarea" placeholder="Add feedback comments or executive vetting notes..."></textarea>
-              </div>
-              <div class="jd-card-actions inline">
-                <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
-                <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Hired">Hire Candidate ✓</button>
-              </div>
-            </div>
-          `;
-        }
-
-        return `
-          <div class="jd-candidate-row-card compact" data-candidate-id="${c.id}">
-            <div class="jd-card-header compact">
-              <div class="avatar-details-group">
-                <div class="user-avatar-mini" style="background-color: var(--color-gold-dim); border-color: var(--color-gold); color: var(--color-gold-light);">${c.name.split(' ').map(n=>n[0]).join('')}</div>
-                <div class="user-details-compact">
-                  <span class="cand-name">${c.name}</span>
-                  <span class="cand-email">${c.email}</span>
-                </div>
-              </div>
-              <div class="card-subtabs-row" data-cand-id="${c.id}">
-                <button class="subtab-btn ${activeTab === 'code' ? 'active' : ''}" data-tab="code">Code Evaluation</button>
-                <button class="subtab-btn ${activeTab === 'scores' ? 'active' : ''}" data-tab="scores">Scores & Caveats</button>
-                <button class="subtab-btn ${activeTab === 'actions' ? 'active' : ''}" data-tab="actions">Actions & Notes</button>
-              </div>
-              <span class="score-badge gold">${c.score} match</span>
-            </div>
-            <div class="jd-card-body-compact">
-              ${tabContentHTML}
+      const allFunctionalCands = functionalCands;
+      const displayFunctionalCands = applyStageFilters(functionalCands, 'functional');
+      const ff = AppState.stageFilters.functional;
+      functionalList.innerHTML = `
+        <div class="stage-table-container">
+          <div class="stage-table-filters">
+            <span class="filter-chip" data-filter="interviewStatus" data-stage="functional">${ff.interviewStatus.length ? '⊗' : '⊕'} Interview Status ${ff.interviewStatus.length ? `<span class="filter-chip-val">${ff.interviewStatus.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="cheatProb" data-stage="functional">${ff.cheatProb.length ? '⊗' : '⊕'} Cheat Probability ${ff.cheatProb.length ? `<span class="filter-chip-val">${ff.cheatProb.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="interviewScore" data-stage="functional">⊕ Interview Score</span>
+            <span class="filter-chip" data-filter="recruiterScreening" data-stage="functional">⊕ Recruiter Screening ${ff.recruiterScreening.length ? `<span class="filter-chip-val">${ff.recruiterScreening.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="actions" data-stage="functional">⊕ Actions</span>
+            ${hasActiveFilters('functional') ? '<button class="btn-filter-reset" data-stage="functional">✕ Reset</button>' : ''}
+            <div class="stage-table-actions-bar">
+              <button class="btn-bulk-actions">Bulk Reschedule <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+              <button class="btn-columns-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg> Columns</button>
+              <button class="btn-export-table"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Export</button>
             </div>
           </div>
-        `;
-      }).join('');
+          <table class="stage-data-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" class="table-checkbox-all" /></th>
+                <th>Candidate</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Report</th>
+                <th>Score <span class="sort-arrows">⇅</span></th>
+                <th>Cheat <span class="sort-arrows">⇅</span></th>
+                <th>Source</th>
+                <th>Screening</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${displayFunctionalCands.length === 0 ? '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
+              ${displayFunctionalCands.map(c => {
+                const initials = c.name.split(' ').map(n=>n[0]).join('');
+                const sourceIcon = c.source === 'Direct Link' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>';
+                return `
+                  <tr data-candidate-id="${c.id}">
+                    <td><input type="checkbox" class="table-checkbox-row" /></td>
+                    <td>
+                      <div class="table-candidate-cell">
+                        <span class="cand-name-link">${c.name} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
+                        <button class="btn-remarks">Remarks</button>
+                        <span class="cand-email-sub">${c.email}</span>
+                      </div>
+                    </td>
+                    <td>${c.phone || '—'}</td>
+                    <td><span class="status-chip completed"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Completed</span></td>
+                    <td><a href="#" class="report-link report-new" data-cand-id="${c.id}">Report <span class="new-badge">New</span> <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a></td>
+                    <td><span class="interview-score-dot ${scoreColor(c.interviewScore)}"></span> ${c.interviewScore != null ? c.interviewScore : '—'}</td>
+                    <td><span class="cheat-prob-badge ${cheatColor(c.cheatProbability)}">${c.cheatProbability ? '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg> ' + c.cheatProbability : '—'}</span></td>
+                    <td><span class="source-badge">${sourceIcon} ${c.source || '—'}</span></td>
+                    <td>${screeningBadge(c.recruiterScreening)}</td>
+                    <td>
+                      <select class="action-select-status">
+                        <option value="">Select Sta...</option>
+                        <option value="advance">Advance</option>
+                        <option value="reject">Reject</option>
+                        <option value="hold">Hold</option>
+                      </select>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+          <div class="stage-table-footer">
+            <span class="table-selection-info">0 of ${displayFunctionalCands.length} row(s) selected.</span>
+            <div class="table-pagination">
+              <span>Rows per page</span>
+              <select class="rows-per-page"><option>25</option></select>
+              <span>Page 1 of 1</span>
+              <div class="pagination-btns">
+                <button disabled>«</button><button disabled>‹</button><button disabled>›</button><button disabled>»</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
     }
   }
 
@@ -4686,6 +6060,190 @@ function renderJobDetailPanes(job) {
         toggleCardPlayer(candId);
       });
     });
+
+    pane.querySelectorAll('.report-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const candId = link.getAttribute('data-cand-id');
+        openReportDrawerForCandidate(candId);
+      });
+    });
+
+    pane.querySelectorAll('.table-checkbox-all').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const table = cb.closest('table');
+        const rows = table.querySelectorAll('.table-checkbox-row');
+        rows.forEach(r => { r.checked = cb.checked; });
+        const info = cb.closest('.stage-table-container').querySelector('.table-selection-info');
+        if (info) info.textContent = `${cb.checked ? rows.length : 0} of ${rows.length} row(s) selected.`;
+        soundEngine.playClick();
+      });
+    });
+
+    pane.querySelectorAll('.table-checkbox-row').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const table = cb.closest('table');
+        const rows = table.querySelectorAll('.table-checkbox-row');
+        const checked = table.querySelectorAll('.table-checkbox-row:checked').length;
+        const info = cb.closest('.stage-table-container').querySelector('.table-selection-info');
+        if (info) info.textContent = `${checked} of ${rows.length} row(s) selected.`;
+      });
+    });
+
+    const jobCands = AppState.candidates.filter(c => c.jobApplied === job.roleName || c.jobApplied === job.cardName);
+    const stageStatusMap = { screening: 'Screening', functional: 'Functional' };
+    pane.querySelectorAll('.filter-chip[data-filter]').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundEngine.playClick();
+        const filterType = chip.getAttribute('data-filter');
+        const stageKey = chip.getAttribute('data-stage');
+        const stageStatus = stageStatusMap[stageKey];
+        const stageCands = stageStatus ? jobCands.filter(c => c.status === stageStatus) : jobCands;
+        buildFilterDropdown(chip, filterType, stageCands, stageKey);
+      });
+    });
+
+    pane.querySelectorAll('.btn-filter-reset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        soundEngine.playClick();
+        const stageKey = btn.getAttribute('data-stage');
+        if (stageKey && AppState.stageFilters[stageKey]) {
+          AppState.stageFilters[stageKey] = { interviewStatus: [], cheatProb: [], recruiterScreening: [], scoreMin: null, scoreMax: null, actions: [] };
+          renderJobDetailPanes(job);
+        }
+      });
+    });
+
+    pane.querySelectorAll('.btn-bulk-actions').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundEngine.playClick();
+        const existing = btn.parentElement.querySelector('.bulk-actions-dropdown');
+        if (existing) { existing.remove(); return; }
+        document.querySelectorAll('.bulk-actions-dropdown').forEach(d => d.remove());
+
+        const container = btn.closest('.stage-table-container');
+        const checked = container?.querySelectorAll('.table-checkbox-row:checked') || [];
+
+        const getSelected = () => {
+          const ids = [], names = [];
+          checked.forEach(cb => {
+            const row = cb.closest('tr');
+            const cid = row?.getAttribute('data-candidate-id');
+            const name = row?.querySelector('.cand-name-link')?.textContent?.trim();
+            if (cid) ids.push(cid);
+            if (name) names.push(name);
+          });
+          return { ids, names };
+        };
+
+        const dd = document.createElement('div');
+        dd.className = 'bulk-actions-dropdown';
+        dd.innerHTML = `
+          <button class="bulk-dd-item" data-action="advance"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg> Advance</button>
+          <button class="bulk-dd-item" data-action="reject"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Reject</button>
+          <button class="bulk-dd-item" data-action="schedule"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg> Schedule</button>
+          <button class="bulk-dd-item" data-action="reschedule"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> Reschedule</button>
+          <button class="bulk-dd-item" data-action="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Export</button>`;
+        dd.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const item = ev.target.closest('.bulk-dd-item');
+          if (!item) return;
+          const action = item.getAttribute('data-action');
+          const { ids, names } = getSelected();
+          if (ids.length === 0 && action !== 'export') {
+            showPremiumToast("Select candidates using checkboxes first.", "info");
+            dd.remove();
+            return;
+          }
+          const label = names.length <= 3 ? names.join(', ') : `${names.slice(0, 2).join(', ')} +${names.length - 2} more`;
+          if (action === 'advance') {
+            const stages = ['Resume', 'Screening', 'Functional', 'Hired'];
+            ids.forEach(cid => {
+              const cand = AppState.candidates.find(c => c.id === cid);
+              if (cand) {
+                const idx = stages.indexOf(cand.status);
+                if (idx < stages.length - 1) cand.status = stages[idx + 1];
+              }
+            });
+            saveStateToLocalStorage();
+            renderJobDetailPanes(job);
+            showPremiumToast(`Advanced ${ids.length} candidate(s) to next stage.`, 'success');
+          } else if (action === 'reject') {
+            ids.forEach(cid => {
+              const cand = AppState.candidates.find(c => c.id === cid);
+              if (cand) cand.status = 'Rejected';
+            });
+            saveStateToLocalStorage();
+            renderJobDetailPanes(job);
+            showPremiumToast(`Rejected ${ids.length} candidate(s).`, 'success');
+          } else if (action === 'schedule' || action === 'reschedule') {
+            openScheduleModal(label, action, (date, time) => {
+              ids.forEach(cid => {
+                const cand = AppState.candidates.find(c => c.id === cid);
+                if (cand) {
+                  cand.attemptedAt = `${date} ${time}`;
+                  cand.interviewStatus = action === 'reschedule' ? 'Incomplete' : 'Not Started';
+                }
+              });
+              saveStateToLocalStorage();
+              renderJobDetailPanes(job);
+              showPremiumToast(`${action === 'schedule' ? 'Scheduled' : 'Rescheduled'} ${ids.length} candidate(s) to ${date} at ${time}.`, 'success');
+            });
+          } else if (action === 'export') {
+            triggerExcelExport('candidates');
+          }
+          dd.remove();
+        });
+        const actionsBar = btn.closest('.stage-table-actions-bar') || btn.parentElement;
+        actionsBar.appendChild(dd);
+        const closeDD = (ev) => { if (!dd.contains(ev.target) && ev.target !== btn) { dd.remove(); document.removeEventListener('click', closeDD); } };
+        setTimeout(() => document.addEventListener('click', closeDD), 0);
+      });
+    });
+
+    pane.querySelectorAll('.btn-export-table').forEach(btn => {
+      btn.addEventListener('click', () => {
+        soundEngine.playClick();
+        triggerExcelExport('candidates');
+      });
+    });
+
+    pane.querySelectorAll('.btn-reschedule, .btn-schedule').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundEngine.playClick();
+        const name = btn.closest('tr')?.querySelector('.cand-name-link')?.textContent?.trim() || 'Candidate';
+        const mode = btn.classList.contains('btn-reschedule') ? 'reschedule' : 'schedule';
+        const candId = btn.getAttribute('data-candidate-id');
+        openScheduleModal(name, mode, (date, time) => {
+          const cand = AppState.candidates.find(c => c.id === candId);
+          if (cand) {
+            cand.interviewStatus = mode === 'reschedule' ? 'Incomplete' : 'Not Started';
+            cand.attemptedAt = `${date} ${time}`;
+            saveStateToLocalStorage();
+            renderJobDetailPanes(job);
+          }
+        });
+      });
+    });
+
+    pane.querySelectorAll('.action-select-status').forEach(sel => {
+      sel.addEventListener('change', () => {
+        soundEngine.playClick();
+        const candId = sel.getAttribute('data-cand-id');
+        const newVal = sel.value;
+        if (candId && newVal) {
+          const cand = AppState.candidates.find(c => c.id === candId);
+          if (cand) {
+            if (newVal === 'advance') updateCandidateStatus(candId, 'Hired');
+            else if (newVal === 'reject') updateCandidateStatus(candId, 'Rejected');
+            else showPremiumToast(`${cand.name} placed on hold.`, 'info');
+          }
+        }
+      });
+    });
   }
   renderQuestionsPane(job);
 }
@@ -4723,12 +6281,12 @@ function updateCandidateStatus(candId, newStatus) {
     renderFunnelStages(activeJob);
     renderFunnelInsights(activeJob);
     
-    const jobCandidates = AppState.candidates.filter(
+    const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
       c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName
     );
     drawFunnelSVG(activeJob, jobCandidates);
     drawScoreDistributionSVG(activeJob, jobCandidates);
-    
+
     renderJobDetailPanes(activeJob);
   }
   
@@ -5007,15 +6565,19 @@ function renderQuestionsPane(job) {
       <div class="jd-empty-pane" style="text-align: center; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity: 0.85;">
         <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
         <p style="color: var(--color-text-muted); font-size: 0.9rem;">No interview questions defined yet.</p>
-        <p style="color: var(--color-text-faint); font-size: 0.8rem; max-width: 320px; margin-top: -6px;">Enter a job description on the left and click "Generate Questions Set" to auto-design a premium interview rubric.</p>
+        <p style="color: var(--color-text-faint); font-size: 0.8rem; max-width: 320px; margin-top: -6px;">Click "JD" to expand the job description panel, then click "Generate Questions" to auto-design a premium interview rubric.</p>
       </div>
     `;
   } else {
     listQuestions.innerHTML = job.questions.map((q, qIndex) => `
       <div class="card-glass jd-question-card" data-q-id="${q.id}" style="margin-bottom: 16px; padding: 16px; border-radius: 12px; border: 1px solid var(--glass-border); transition: var(--spring-fast);">
         <div class="q-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 12px;">
-          <span class="q-type-badge ${q.type || 'technical'}" style="padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;">${q.type || 'technical'}</span>
-          <select class="q-difficulty-select" data-field="difficulty" style="background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); color: var(--color-text-primary); border-radius: 6px; padding: 2px 6px; font-size: 0.78rem; font-family: var(--font-body); outline: none;">
+          <select class="q-type-select" data-field="type" style="padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); color: var(--color-text-primary); font-family: var(--font-body); outline: none; cursor: pointer;">
+            <option value="technical" ${(q.type || 'technical') === 'technical' ? 'selected' : ''}>Technical</option>
+            <option value="behavioral" ${q.type === 'behavioral' ? 'selected' : ''}>Behavioral</option>
+            <option value="situational" ${q.type === 'situational' ? 'selected' : ''}>Situational</option>
+          </select>
+          <select class="q-difficulty-select" data-field="difficulty" style="background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); color: var(--color-text-primary); border-radius: 6px; padding: 2px 6px; font-size: 0.78rem; font-family: var(--font-body); outline: none; cursor: pointer;">
             <option value="beginner" ${q.difficulty === 'beginner' ? 'selected' : ''}>Beginner</option>
             <option value="intermediate" ${q.difficulty === 'intermediate' ? 'selected' : ''}>Intermediate</option>
             <option value="advanced" ${q.difficulty === 'advanced' ? 'selected' : ''}>Advanced</option>
@@ -5081,17 +6643,19 @@ function renderQuestionsPane(job) {
         const questionText = card.querySelector('.q-question-text').value.trim();
         const rubricText = card.querySelector('.q-rubric-text').value.trim();
         const difficulty = card.querySelector('.q-difficulty-select').value;
-        
+        const qType = card.querySelector('.q-type-select')?.value || 'technical';
+
         const followUps = [];
         card.querySelectorAll('.q-followup-input').forEach(inp => {
           if (inp.value.trim() !== '') {
             followUps.push(inp.value.trim());
           }
         });
-        
+
         job.questions[idx].question = questionText;
         job.questions[idx].rubric = rubricText;
         job.questions[idx].difficulty = difficulty;
+        job.questions[idx].type = qType;
         job.questions[idx].follow_ups = followUps;
         
         saveStateToLocalStorage();
@@ -5140,50 +6704,84 @@ function renderQuestionsPane(job) {
       
       soundEngine.playChime([392, 440], 0.1, 0.1);
 
-      const systemPrompt = `You are a senior hiring manager and domain expert.
-Your task is to generate a set of 3 to 5 high-quality interview questions based on the given job description.
+      const numQ = document.getElementById('cfg-num-questions')?.value || '5';
+      const qTypes = document.getElementById('cfg-question-types')?.value || 'mixed';
+      const qDiff = document.getElementById('cfg-difficulty')?.value || 'mixed';
+      const qDuration = document.getElementById('cfg-duration')?.value || '30';
+      const qFollowups = document.getElementById('cfg-followups')?.value || '2';
 
-Requirements:
-- Include different types of questions: technical, behavioral, and situational.
-- For each question, provide:
-  1. "type": either "technical", "behavioral", or "situational".
-  2. "question": a clear, direct, and professional question.
-  3. "difficulty": either "beginner", "intermediate", or "advanced".
-  4. "rubric": a brief evaluation rubric (what a good answer should include).
-  5. "follow_ups": a list of 2 suggested follow-up questions.
-- Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdown or add explanations.`;
+      const typeInstruction = qTypes === 'mixed'
+        ? 'Include a mix of technical, behavioral, and situational questions.'
+        : `Generate only ${qTypes} questions.`;
+      const diffInstruction = qDiff === 'mixed'
+        ? 'Include a mix of beginner, intermediate, and advanced difficulty levels.'
+        : `All questions should be ${qDiff} difficulty.`;
+
+      const systemPrompt = `You are a senior hiring manager and domain expert.
+Generate exactly ${numQ} high-quality interview questions based on the given job description.
+The interview is planned for ${qDuration} minutes.
+
+${typeInstruction}
+${diffInstruction}
+
+Return ONLY a JSON object in this exact format (no markdown, no explanation, no extra text):
+{"questions":[{"type":"technical","question":"Your question here?","difficulty":"intermediate","rubric":"What a good answer includes.","follow_ups":["Follow-up 1","Follow-up 2"]}]}
+
+Rules:
+- "type" must be one of: "technical", "behavioral", "situational"
+- "difficulty" must be one of: "beginner", "intermediate", "advanced"
+- "rubric" should describe what a strong candidate answer covers
+- "follow_ups" must contain exactly ${qFollowups} follow-up question strings
+- Generate exactly ${numQ} question objects in the array`;
 
       try {
         const responseText = await callDeepSeekAPI([
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate questions for this job description:\n\n${desc}` }
+          { role: "user", content: `Generate ${numQ} interview questions for this job description:\n\n${desc}` }
         ], true);
 
         const cleanText = sanitizeJSONResponse(responseText);
         const parsed = JSON.parse(cleanText);
-        
-        if (parsed && parsed.questions) {
-          currentStagedQuestions = parsed.questions.map((q, idx) => ({
+
+        const questionsArr = parsed.questions || parsed.interview_questions || (Array.isArray(parsed) ? parsed : null);
+        if (questionsArr && questionsArr.length > 0) {
+          currentStagedQuestions = questionsArr.map((q, idx) => ({
             id: `q-gen-${Date.now()}-${idx}`,
-            type: q.type || 'technical',
-            question: q.question,
-            difficulty: q.difficulty || 'intermediate',
-            rubric: q.rubric || '',
-            follow_ups: q.follow_ups || []
+            type: q.type || q.category || 'technical',
+            question: q.question || q.text || '',
+            difficulty: q.difficulty || q.level || 'intermediate',
+            rubric: q.rubric || q.evaluation_rubric || q.expected_answer || '',
+            follow_ups: q.follow_ups || q.followups || q.follow_up_questions || []
           }));
-          
+
           showStagingArea(job);
         } else {
-          throw new Error("Invalid response format. Missing 'questions' array.");
+          throw new Error("Invalid response format. Could not find questions array.");
         }
       } catch (err) {
         console.error("Failed to generate questions:", err);
-        showPremiumToast("Failed to generate questions. Please verify your prompt or API status.", "error");
+        const errMsg = err.message || 'Unknown error';
+        if (errMsg.includes('API response error')) {
+          showPremiumToast(`API error: ${errMsg}`, "error");
+        } else if (errMsg.includes('aborted')) {
+          showPremiumToast("Request timed out. The API took too long to respond.", "error");
+        } else {
+          showPremiumToast(`Failed to generate questions: ${errMsg}`, "error");
+        }
       } finally {
         newBtnGen.disabled = false;
         loaderSpan.remove();
         textSpan.style.display = 'inline-block';
       }
+    });
+  }
+
+  const btnToggleJd = document.getElementById('btn-toggle-jd');
+  const jdDetails = document.getElementById('qg-jd-details');
+  if (btnToggleJd && jdDetails) {
+    btnToggleJd.addEventListener('click', () => {
+      jdDetails.classList.toggle('open');
+      soundEngine.playClick();
     });
   }
 
@@ -5296,13 +6894,37 @@ function showStagingArea(job) {
   stagingList.innerHTML = currentStagedQuestions.map((q, idx) => `
     <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 10px; margin-bottom: 8px; position: relative;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--color-indigo);">${q.type}</span>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <select class="staging-type-select" data-idx="${idx}" style="padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:700; text-transform:uppercase; background:rgba(0,0,0,0.25); border:1px solid var(--glass-border); color:var(--color-text-primary); font-family:var(--font-body); outline:none; cursor:pointer;">
+            <option value="technical" ${q.type === 'technical' ? 'selected' : ''}>Technical</option>
+            <option value="behavioral" ${q.type === 'behavioral' ? 'selected' : ''}>Behavioral</option>
+            <option value="situational" ${q.type === 'situational' ? 'selected' : ''}>Situational</option>
+          </select>
+          <select class="staging-diff-select" data-idx="${idx}" style="padding:2px 6px; border-radius:4px; font-size:0.7rem; background:rgba(0,0,0,0.25); border:1px solid var(--glass-border); color:var(--color-text-muted); font-family:var(--font-body); outline:none; cursor:pointer;">
+            <option value="beginner" ${q.difficulty === 'beginner' ? 'selected' : ''}>Beginner</option>
+            <option value="intermediate" ${q.difficulty === 'intermediate' ? 'selected' : ''}>Intermediate</option>
+            <option value="advanced" ${q.difficulty === 'advanced' ? 'selected' : ''}>Advanced</option>
+          </select>
+        </div>
         <button class="btn-staging-discard-item" data-idx="${idx}" style="background:none; border:none; color:#ef4444; font-size:0.9rem; cursor:pointer; padding:0 4px;">&times;</button>
       </div>
       <div style="font-size:0.82rem; color:var(--color-text-primary); line-height:1.4;">${q.question}</div>
       <div style="font-size:0.76rem; color:var(--color-text-muted); margin-top:4px; font-style:italic;">Rubric: ${q.rubric}</div>
     </div>
   `).join('');
+
+  stagingList.querySelectorAll('.staging-type-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const idx = parseInt(sel.getAttribute('data-idx'));
+      currentStagedQuestions[idx].type = sel.value;
+    });
+  });
+  stagingList.querySelectorAll('.staging-diff-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const idx = parseInt(sel.getAttribute('data-idx'));
+      currentStagedQuestions[idx].difficulty = sel.value;
+    });
+  });
 
   stagingList.querySelectorAll('.btn-staging-discard-item').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -5494,7 +7116,7 @@ function initCrystalAnimations() {
       const fragmentShader = `
         uniform float u_time;
         uniform vec2 u_resolution;
-        uniform float u_theme; // 0.0 for dark (purple/blue), 1.0 for light (beige/orange/yellow)
+        uniform float u_theme; // 0.0 for dark (black/grey), 1.0 for light (off-white/grey)
         uniform vec2 u_mouse;
         
         varying vec2 vUv;
@@ -5548,25 +7170,25 @@ function initCrystalAnimations() {
           
           float f = fbm(p + 1.1 * r);
           
-          // Theme 1 (Dark Mode): Deep Subtle Purples and Midnight Blues (Darker for readability)
-          vec3 darkBg = vec3(0.008, 0.006, 0.018);     // Extremely dark midnight purple-slate
-          vec3 darkPurple = vec3(0.12, 0.04, 0.25);    // Subtle deep violet
-          vec3 darkBlue = vec3(0.03, 0.08, 0.22);      // Subtle deep sapphire
-          vec3 darkAccent = vec3(0.05, 0.02, 0.12);    // Subtle deep indigo
-          
-          vec3 darkColor = mix(darkBg, darkPurple, f * 0.6);
-          darkColor = mix(darkColor, darkBlue, r.x * 0.5);
-          darkColor = mix(darkColor, darkAccent, q.y * 0.3);
-          
-          // Theme 2 (Light Mode): Muted Soft Beige/Cream and Light Pastel Accents (Toned down for readability)
-          vec3 lightBg = vec3(0.975, 0.970, 0.955);     // Clean, pale warm cream
-          vec3 lightOrange = vec3(0.985, 0.925, 0.880); // Ultra pale, soft pastel peach
-          vec3 lightYellow = vec3(0.990, 0.965, 0.910); // Ultra pale, soft champagne
-          vec3 lightAccent = vec3(0.965, 0.945, 0.915); // Very soft beige
-          
-          vec3 lightColor = mix(lightBg, lightOrange, f * 0.35);
-          lightColor = mix(lightColor, lightYellow, r.y * 0.25);
-          lightColor = mix(lightColor, lightAccent, q.x * 0.2);
+          // Theme 1 (Dark Mode): Blackish grey tones
+          vec3 darkBg = vec3(0.0, 0.0, 0.0);
+          vec3 darkGrey1 = vec3(0.06, 0.06, 0.07);
+          vec3 darkGrey2 = vec3(0.04, 0.04, 0.045);
+          vec3 darkGrey3 = vec3(0.08, 0.08, 0.085);
+
+          vec3 darkColor = mix(darkBg, darkGrey1, f * 0.7);
+          darkColor = mix(darkColor, darkGrey2, r.x * 0.5);
+          darkColor = mix(darkColor, darkGrey3, q.y * 0.3);
+
+          // Theme 2 (Light Mode): Off-white with subtle grey hues
+          vec3 lightBg = vec3(0.98, 0.98, 0.975);
+          vec3 lightGrey1 = vec3(0.94, 0.94, 0.935);
+          vec3 lightGrey2 = vec3(0.96, 0.955, 0.95);
+          vec3 lightGrey3 = vec3(0.92, 0.92, 0.915);
+
+          vec3 lightColor = mix(lightBg, lightGrey1, f * 0.4);
+          lightColor = mix(lightColor, lightGrey2, r.y * 0.3);
+          lightColor = mix(lightColor, lightGrey3, q.x * 0.2);
           
           // Smooth crossfade based on active theme uniform (0.0 to 1.0)
           vec3 finalColor = mix(darkColor, lightColor, u_theme);
@@ -5677,32 +7299,33 @@ function initCrystalAnimations() {
   });
 
   // 2. 3D Card Hover Tilt and Shine Spotlights
+  const isCrystalTheme = !!document.getElementById('crystal-shader-canvas');
+
   function applyTactileTiltEffects() {
+    if (isCrystalTheme) return;
+
     const cards = document.querySelectorAll(
       '.job-card, .card-metric, .panel-setting, .agent-card, .terminal-box, .table-card, .panel-preview, .sourcing-tab-card'
     );
-    
+
     cards.forEach(card => {
-      // Avoid duplicate listener bindings
       if (card.dataset.tiltInitialized) return;
       card.dataset.tiltInitialized = 'true';
 
-      // Set initial variables for gradient highlight (shine spotlight)
       card.style.setProperty('--shine-x', '50%');
       card.style.setProperty('--shine-y', '50%');
 
       card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left; 
-        const y = e.clientY - rect.top;  
-        
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
         const xc = rect.width / 2;
         const yc = rect.height / 2;
-        
-        // Tilt limit: 8 degrees for a subtle and high-end feel
-        const angleX = -(y - yc) / (rect.height / 8); 
-        const angleY = (x - xc) / (rect.width / 8);  
-        
+
+        const angleX = -(y - yc) / (rect.height / 8);
+        const angleY = (x - xc) / (rect.width / 8);
+
         gsap.to(card, {
           rotationX: angleX,
           rotationY: angleY,
@@ -5711,11 +7334,11 @@ function initCrystalAnimations() {
           transformPerspective: 800,
           transformOrigin: 'center center'
         });
-        
+
         card.style.setProperty('--shine-x', `${(x / rect.width) * 100}%`);
         card.style.setProperty('--shine-y', `${(y / rect.height) * 100}%`);
       });
-      
+
       card.addEventListener('mouseleave', () => {
         gsap.to(card, {
           rotationX: 0,
@@ -5731,7 +7354,6 @@ function initCrystalAnimations() {
 
   applyTactileTiltEffects();
 
-  // Create observer to automatically apply 3D tilt effects on dynamically loaded/rendered cards (like jobs lists)
   const listObserver = new MutationObserver(() => {
     applyTactileTiltEffects();
   });
