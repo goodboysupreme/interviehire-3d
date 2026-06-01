@@ -1640,14 +1640,14 @@ body.light-theme .theme-icon-sun { display: block; }
 
 .jd-funnel-body { display: flex; gap: 20px; align-items: stretch; flex: 1; }
 .jd-funnel-stages { display: flex; flex-direction: column; gap: 8px; flex: 0 0 38%; position: relative; }
-.jd-funnel-chart-wrap { flex: 1; min-height: 280px; display: flex; align-items: stretch; justify-content: center; }
+.jd-funnel-chart-wrap { flex: 1; min-height: 340px; display: flex; align-items: stretch; justify-content: center; }
 #jd-funnel-svg { width: 100%; height: 100%; }
 
 .jd-stage-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 12px;
+  padding: 8px 14px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 0;
@@ -5893,11 +5893,11 @@ body.light-theme .funnel-svg-tooltip {
 }
 
 /* Bulk Actions Dropdown */
+.stage-table-actions-bar { position: relative; }
 .bulk-actions-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   right: 0;
-  margin-top: 4px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 8px;
@@ -6070,6 +6070,13 @@ body.light-theme .bulk-dd-item:hover {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  text-align: left;
+}
+.stage-data-table tbody td:nth-child(2),
+.stage-data-table thead th:nth-child(2),
+.ra-data-table tbody td:nth-child(2),
+.ra-data-table thead th:nth-child(2) {
+  text-align: left;
 }
 
 .cand-name-link {

@@ -5745,13 +5745,16 @@ function renderJobDetailPanes(job) {
     });
 
     const jobCands = AppState.candidates.filter(c => c.jobApplied === job.roleName || c.jobApplied === job.cardName);
+    const stageStatusMap = { screening: 'Screening', functional: 'Functional' };
     pane.querySelectorAll('.filter-chip[data-filter]').forEach(chip => {
       chip.addEventListener('click', (e) => {
         e.stopPropagation();
         soundEngine.playClick();
         const filterType = chip.getAttribute('data-filter');
         const stageKey = chip.getAttribute('data-stage');
-        buildFilterDropdown(chip, filterType, jobCands, stageKey);
+        const stageStatus = stageStatusMap[stageKey];
+        const stageCands = stageStatus ? jobCands.filter(c => c.status === stageStatus) : jobCands;
+        buildFilterDropdown(chip, filterType, stageCands, stageKey);
       });
     });
 
@@ -5847,8 +5850,8 @@ function renderJobDetailPanes(job) {
           }
           dd.remove();
         });
-        btn.parentElement.style.position = 'relative';
-        btn.parentElement.appendChild(dd);
+        const actionsBar = btn.closest('.stage-table-actions-bar') || btn.parentElement;
+        actionsBar.appendChild(dd);
         const closeDD = (ev) => { if (!dd.contains(ev.target) && ev.target !== btn) { dd.remove(); document.removeEventListener('click', closeDD); } };
         setTimeout(() => document.addEventListener('click', closeDD), 0);
       });
