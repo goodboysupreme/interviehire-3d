@@ -78,6 +78,8 @@ const AppState = {
   jobsFilter: 'all',
   teamFilter: 'all',
   tableSearch: '',
+  analyticsJobStatusFilter: [],
+  analyticsCandStageFilter: [],
   globalSearch: '',
   jobsSortKey: 'id',
   jobsSortAsc: true,
@@ -500,6 +502,278 @@ const AppState = {
       interviewScore: null,
       recruiterScreening: null,
       recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-1101-FK8',
+      name: 'Tanvi Kulkarni',
+      email: 'tanvi.k@stackops.io',
+      jobApplied: 'Full Stack Developer',
+      status: 'Screening',
+      score: '76%',
+      registeredOn: '14 May 2026, 11:20 AM',
+      phone: '8345678901',
+      source: 'Career Page',
+      attemptedAt: 'May 20, 2026 02:00 PM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 62,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 68
+    },
+    {
+      id: 'CAN-1102-GT6',
+      name: 'Manish Tiwari',
+      email: 'manish.t@govbids.co',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Functional',
+      score: '74%',
+      registeredOn: '16 Mar 2026, 09:30 AM',
+      phone: '8456789012',
+      source: 'Direct Link',
+      attemptedAt: 'Apr 05, 2026 10:45 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Medium',
+      interviewScore: 58,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 72
+    },
+    {
+      id: 'CAN-1103-FK9',
+      name: 'Riya Patel',
+      email: 'riya.p@frontend.dev',
+      jobApplied: 'Full Stack Developer',
+      status: 'Hired',
+      score: '97%',
+      registeredOn: '01 Mar 2026, 08:45 AM',
+      phone: '8567890123',
+      source: 'ATS',
+      attemptedAt: 'Mar 15, 2026 09:00 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 94,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 98
+    },
+    {
+      id: 'CAN-1104-GT7',
+      name: 'Suresh Pandey',
+      email: 'suresh.p@tendermgmt.in',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Hired',
+      score: '89%',
+      registeredOn: '08 Mar 2026, 02:15 PM',
+      phone: '8678901234',
+      source: 'Scheduled',
+      attemptedAt: 'Mar 25, 2026 11:30 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 87,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 91
+    },
+    {
+      id: 'CAN-1105-FK10',
+      name: 'Nikhil Sharma',
+      email: 'nikhil.s@backend.io',
+      jobApplied: 'Full Stack Developer',
+      status: 'Screening',
+      score: '81%',
+      registeredOn: '18 Apr 2026, 10:00 AM',
+      phone: '8789012345',
+      source: 'Scheduled',
+      attemptedAt: 'May 05, 2026 01:30 PM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Medium',
+      interviewScore: 55,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 60
+    },
+    {
+      id: 'CAN-1106-GT8',
+      name: 'Lakshmi Iyer',
+      email: 'lakshmi.i@procurehub.com',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Screening',
+      score: '83%',
+      registeredOn: '22 Mar 2026, 03:40 PM',
+      phone: '8890123456',
+      source: 'Career Page',
+      attemptedAt: 'Apr 10, 2026 09:15 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 73,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 82
+    },
+    {
+      id: 'CAN-1107-FK11',
+      name: 'Abhishek Verma',
+      email: 'abhishek.v@nodestack.dev',
+      jobApplied: 'Full Stack Developer',
+      status: 'Functional',
+      score: '90%',
+      registeredOn: '20 Mar 2026, 01:00 PM',
+      phone: '8901234567',
+      source: 'Direct Link',
+      attemptedAt: 'Apr 08, 2026 11:00 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 81,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 90
+    },
+    {
+      id: 'CAN-1108-GT9',
+      name: 'Fatima Sheikh',
+      email: 'fatima.s@bidconsult.in',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Screening',
+      score: '71%',
+      registeredOn: '25 Mar 2026, 08:50 AM',
+      phone: '9012345679',
+      source: 'Bulk Upload',
+      attemptedAt: null,
+      interviewStatus: 'Not Started',
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-1109-FK12',
+      name: 'Sneha Reddy',
+      email: 'sneha.r@reactlab.co',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '15 May 2026, 04:00 PM',
+      phone: '7123456789',
+      source: 'Career Page',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-1110-GT10',
+      name: 'Rajesh Kumar',
+      email: 'rajesh.k@govpro.org',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '18 May 2026, 09:30 AM',
+      phone: '7234567890',
+      source: 'Direct Link',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-1111-FK13',
+      name: 'Varun Agarwal',
+      email: 'varun.a@clouddev.io',
+      jobApplied: 'Full Stack Developer',
+      status: 'Screening',
+      score: '79%',
+      registeredOn: '28 Apr 2026, 02:30 PM',
+      phone: '7345678901',
+      source: 'ATS',
+      attemptedAt: 'May 12, 2026 10:00 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'High',
+      interviewScore: 38,
+      recruiterScreening: 'Poor fit',
+      recruiterScreeningScore: 35
+    },
+    {
+      id: 'CAN-1112-GT11',
+      name: 'Deepika Nair',
+      email: 'deepika.n@tenderpro.in',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Functional',
+      score: '86%',
+      registeredOn: '10 Mar 2026, 11:45 AM',
+      phone: '7456789012',
+      source: 'ATS',
+      attemptedAt: 'Mar 30, 2026 02:30 PM',
+      interviewStatus: 'Incomplete',
+      cheatProbability: 'Low',
+      interviewScore: null,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 88
+    },
+    {
+      id: 'CAN-1113-FK14',
+      name: 'Harsh Gupta',
+      email: 'harsh.g@apiforge.dev',
+      jobApplied: 'Full Stack Developer',
+      status: 'Hired',
+      score: '95%',
+      registeredOn: '25 Feb 2026, 09:00 AM',
+      phone: '7567890123',
+      source: 'Scheduled',
+      attemptedAt: 'Mar 10, 2026 10:30 AM',
+      interviewStatus: 'Completed',
+      cheatProbability: 'Low',
+      interviewScore: 92,
+      recruiterScreening: 'Good fit',
+      recruiterScreeningScore: 96
+    },
+    {
+      id: 'CAN-1114-GT12',
+      name: 'Swati Mishra',
+      email: 'swati.m@compliance.co',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Screening',
+      score: '75%',
+      registeredOn: '28 Mar 2026, 01:20 PM',
+      phone: '7678901234',
+      source: 'Scheduled',
+      attemptedAt: 'Apr 15, 2026 03:00 PM',
+      interviewStatus: 'Incomplete',
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: 'Moderate fit',
+      recruiterScreeningScore: 62
+    },
+    {
+      id: 'CAN-1115-FK15',
+      name: 'Anjali Desai',
+      email: 'anjali.d@microserv.io',
+      jobApplied: 'Full Stack Developer',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '20 May 2026, 11:00 AM',
+      phone: '7789012345',
+      source: 'Bulk Upload',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
+    },
+    {
+      id: 'CAN-1116-GT13',
+      name: 'Vikrant Chauhan',
+      email: 'vikrant.c@rfpmaster.com',
+      jobApplied: 'Government Tender & Proposal Executive',
+      status: 'Resume',
+      score: '—',
+      registeredOn: '22 May 2026, 02:45 PM',
+      phone: '7890123456',
+      source: 'Career Page',
+      attemptedAt: null,
+      interviewStatus: null,
+      cheatProbability: null,
+      interviewScore: null,
+      recruiterScreening: null,
+      recruiterScreeningScore: null
     }
   ],
 
@@ -912,6 +1186,9 @@ function renderAnalyticsTable() {
     if (searchVal) {
       list = list.filter(j => j.roleName.toLowerCase().includes(searchVal) || j.id.toLowerCase().includes(searchVal));
     }
+    if (AppState.analyticsJobStatusFilter?.length > 0) {
+      list = list.filter(j => AppState.analyticsJobStatusFilter.includes(j.status));
+    }
     
     list.sort((a, b) => {
       let valA = a.id;
@@ -970,6 +1247,9 @@ function renderAnalyticsTable() {
     if (searchVal) {
       list = list.filter(c => c.name.toLowerCase().includes(searchVal) || c.email.toLowerCase().includes(searchVal) || c.jobApplied.toLowerCase().includes(searchVal));
     }
+    if (AppState.analyticsCandStageFilter?.length > 0) {
+      list = list.filter(c => AppState.analyticsCandStageFilter.includes(c.status));
+    }
 
     document.getElementById('analytics-table-showing').textContent = `Showing 1-${list.length} of ${list.length}`;
 
@@ -1016,11 +1296,16 @@ function renderAnalyticsTable() {
         `;
       }
       if (visible.includes('actions')) {
+        const nextStage = c.status === 'Resume' ? 'Screening' : c.status === 'Screening' ? 'Functional' : c.status === 'Functional' ? 'Hired' : null;
         cellsHtml += `
           <td>
-            <button class="table-btn-action btn-view-report-from-table" data-candidate-id="${c.id}" title="View Full Report">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            </button>
+            <div style="display:flex;gap:6px;align-items:center;justify-content:center;">
+              <button class="table-btn-action btn-view-report-from-table" data-candidate-id="${c.id}" title="View Full Report">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+              ${nextStage ? `<button class="btn-stage-advance btn-tbl-advance" data-candidate-id="${c.id}" data-next-stage="${nextStage}" title="Advance to ${nextStage}" style="padding:4px 8px;font-size:0.7rem;">Advance</button>` : ''}
+              ${c.status !== 'Hired' && c.status !== 'Rejected' ? `<button class="btn-stage-reject btn-tbl-reject" data-candidate-id="${c.id}" title="Reject candidate" style="padding:4px 8px;font-size:0.7rem;">Reject</button>` : ''}
+            </div>
           </td>
         `;
       }
@@ -1029,11 +1314,27 @@ function renderAnalyticsTable() {
       tbody.appendChild(tr);
     });
     
-    // Bind click handlers to full report buttons in the table
     tbody.querySelectorAll('.btn-view-report-from-table').forEach(btn => {
       btn.addEventListener('click', () => {
         const candId = btn.getAttribute('data-candidate-id');
         openCandidateReport(candId);
+      });
+    });
+
+    tbody.querySelectorAll('.btn-tbl-advance').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.getAttribute('data-candidate-id');
+        const nextStage = btn.getAttribute('data-next-stage');
+        updateCandidateStatus(candId, nextStage);
+        renderAnalyticsTable();
+      });
+    });
+
+    tbody.querySelectorAll('.btn-tbl-reject').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.getAttribute('data-candidate-id');
+        updateCandidateStatus(candId, 'Rejected');
+        renderAnalyticsTable();
       });
     });
   }
@@ -1644,17 +1945,11 @@ function navigateToSubtab(subtabId) {
 
   actionBtn.style.display = 'none';
 
-  if (subtabId === 'settings-password') {
-    breadcrumb.textContent = 'Settings / Security';
-    mainTitle.textContent = 'Admin Password Panel';
-    subText.textContent = 'Change access credentials for Org. Admin';
-    document.getElementById('view-settings-password').classList.add('active-view');
-    soundEngine.playChime([261.63, 293.66, 329.63], 0.1, 0.08);
-  } else if (subtabId === 'settings-cookies') {
-    breadcrumb.textContent = 'Settings / Cookies';
-    mainTitle.textContent = 'Cookie Policies';
-    subText.textContent = 'Manage cookie levels and session trackers';
-    document.getElementById('view-settings-cookies').classList.add('active-view');
+  if (subtabId === 'settings-general') {
+    breadcrumb.textContent = 'Settings';
+    mainTitle.textContent = 'General Settings';
+    subText.textContent = 'Manage your account, notifications, and preferences';
+    document.getElementById('view-settings-general').classList.add('active-view');
     soundEngine.playChime([261.63, 293.66, 329.63], 0.1, 0.08);
   }
 }
@@ -3124,6 +3419,59 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAnalyticsTable();
   });
 
+  const analyticsFilterBtn = document.querySelector('.btn-ctrl-filter');
+  if (analyticsFilterBtn) {
+    analyticsFilterBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      soundEngine.playClick();
+      const existing = analyticsFilterBtn.parentElement.querySelector('.analytics-filter-dropdown');
+      if (existing) { existing.remove(); return; }
+      document.querySelectorAll('.analytics-filter-dropdown').forEach(d => d.remove());
+
+      const dd = document.createElement('div');
+      dd.className = 'analytics-filter-dropdown';
+      dd.addEventListener('click', ev => ev.stopPropagation());
+
+      if (AppState.analyticsSubtab === 'jobs-data') {
+        const statuses = ['Published', 'Draft', 'Archived'];
+        dd.innerHTML = `
+          <div class="afd-title">Filter by Status</div>
+          <div class="afd-items">${statuses.map(s => `<label class="afd-item"><input type="checkbox" value="${s}" ${AppState.analyticsJobStatusFilter?.includes(s) ? 'checked' : ''} /><span>${s}</span></label>`).join('')}</div>
+          <div class="afd-footer"><button class="afd-clear">Clear</button><button class="afd-apply">Apply</button></div>`;
+        dd.querySelector('.afd-apply').addEventListener('click', () => {
+          AppState.analyticsJobStatusFilter = [...dd.querySelectorAll('input:checked')].map(c => c.value);
+          renderAnalyticsTable();
+          dd.remove();
+        });
+        dd.querySelector('.afd-clear').addEventListener('click', () => {
+          AppState.analyticsJobStatusFilter = [];
+          renderAnalyticsTable();
+          dd.remove();
+        });
+      } else {
+        const stages = ['Resume', 'Screening', 'Functional', 'Hired', 'Rejected'];
+        dd.innerHTML = `
+          <div class="afd-title">Filter by Stage</div>
+          <div class="afd-items">${stages.map(s => `<label class="afd-item"><input type="checkbox" value="${s}" ${AppState.analyticsCandStageFilter?.includes(s) ? 'checked' : ''} /><span>${s}</span></label>`).join('')}</div>
+          <div class="afd-footer"><button class="afd-clear">Clear</button><button class="afd-apply">Apply</button></div>`;
+        dd.querySelector('.afd-apply').addEventListener('click', () => {
+          AppState.analyticsCandStageFilter = [...dd.querySelectorAll('input:checked')].map(c => c.value);
+          renderAnalyticsTable();
+          dd.remove();
+        });
+        dd.querySelector('.afd-clear').addEventListener('click', () => {
+          AppState.analyticsCandStageFilter = [];
+          renderAnalyticsTable();
+          dd.remove();
+        });
+      }
+      analyticsFilterBtn.parentElement.style.position = 'relative';
+      analyticsFilterBtn.parentElement.appendChild(dd);
+      const close = (ev) => { if (!dd.contains(ev.target) && ev.target !== analyticsFilterBtn) { dd.remove(); document.removeEventListener('click', close); } };
+      setTimeout(() => document.addEventListener('click', close), 0);
+    });
+  }
+
   const teamSearchInput = document.getElementById('team-search');
   teamSearchInput.addEventListener('input', () => {
     renderTeamTable();
@@ -3289,39 +3637,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2000);
   });
 
-  document.getElementById('password-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const newPass = document.getElementById('new-pass').value;
-    const confirmPass = document.getElementById('confirm-pass').value;
-    const alertBox = document.getElementById('pass-success');
-
-    if (newPass !== confirmPass) {
-      alertBox.textContent = '❌ Passwords do not match!';
-      alertBox.style.color = 'var(--color-orange)';
-      alertBox.style.display = 'block';
-      return;
-    }
-
-    soundEngine.playChime([523.25], 0.15);
-    alertBox.textContent = '✓ Password updated successfully!';
-    alertBox.style.color = 'var(--color-success)';
-    alertBox.style.display = 'block';
-    e.target.reset();
-    setTimeout(() => {
-      alertBox.style.display = 'none';
-    }, 3000);
+  document.querySelectorAll('.settings-toggle:not([style*="pointer-events"])').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      toggle.classList.toggle('active');
+      soundEngine.playClick();
+      showPremiumToast('Setting updated.', 'success');
+    });
   });
 
-  document.getElementById('cookies-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    soundEngine.playChime([523.25], 0.15);
-    const alertBox = document.getElementById('cookies-success');
-    alertBox.textContent = '✓ Cookie tracking profiles saved!';
-    alertBox.style.display = 'block';
-    setTimeout(() => {
-      alertBox.style.display = 'none';
-    }, 3000);
-  });
+  const btnChangePass = document.getElementById('btn-change-password');
+  if (btnChangePass) {
+    btnChangePass.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast('Password change dialog would open here.', 'info');
+    });
+  }
+
+  const btnExportData = document.getElementById('btn-export-data');
+  if (btnExportData) {
+    btnExportData.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast('Data export started. You will receive an email shortly.', 'success');
+    });
+  }
+
+  const btnDeleteAccount = document.getElementById('btn-delete-account');
+  if (btnDeleteAccount) {
+    btnDeleteAccount.addEventListener('click', () => {
+      soundEngine.playClick();
+      showPremiumToast('Account deletion requires email confirmation.', 'info');
+    });
+  }
 
   // I. Exports Buttons Bindings
   document.getElementById('btn-export-jobs').addEventListener('click', () => {
@@ -3378,6 +3724,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (popToggle) popToggle.style.display = 'none';
     if (popTeam) popTeam.style.display = 'none';
     document.querySelectorAll('.stage-filter-dropdown').forEach(d => d.remove());
+    document.querySelectorAll('.filter-chip.active-filter').forEach(c => { c.classList.remove('active-filter'); c._filterDropdown = null; });
   });
 
   // Kanban view switching setup
@@ -4004,6 +4351,35 @@ function initSourcing() {
     });
   }
 
+  const isetBtn = document.getElementById('btn-interview-settings');
+  const isetOverlay = document.getElementById('interview-settings-overlay');
+  const isetClose = document.getElementById('btn-close-iset');
+  const isetSave = document.getElementById('btn-save-iset');
+  if (isetBtn && isetOverlay) {
+    isetBtn.addEventListener('click', () => {
+      isetOverlay.classList.add('open');
+      soundEngine.playClick();
+    });
+    isetClose?.addEventListener('click', () => {
+      isetOverlay.classList.remove('open');
+      soundEngine.playClick();
+    });
+    isetOverlay.addEventListener('click', (e) => {
+      if (e.target === isetOverlay) isetOverlay.classList.remove('open');
+    });
+    isetSave?.addEventListener('click', () => {
+      isetOverlay.classList.remove('open');
+      showPremiumToast('Interview settings saved.', 'success');
+      soundEngine.playChime([523.25], 0.15);
+    });
+    isetOverlay.querySelectorAll('.settings-toggle').forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        toggle.classList.toggle('active');
+        soundEngine.playClick();
+      });
+    });
+  }
+
   // Sourcing mode toggle buttons
   const modeButtons = document.querySelectorAll('.mode-toggle-btn');
   modeButtons.forEach(btn => {
@@ -4171,30 +4547,32 @@ function initSourcing() {
     });
   }
 
-  document.querySelectorAll('.date-preset').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      AppState.dateRange = btn.getAttribute('data-range');
-      // sync job detail dropdown
+  const dateRangeSelect = document.getElementById('date-range-select');
+  const dateRangeCustom = document.getElementById('date-range-custom');
+  if (dateRangeSelect) {
+    dateRangeSelect.addEventListener('change', () => {
+      const val = dateRangeSelect.value;
+      AppState.dateRange = val;
+      if (dateRangeCustom) dateRangeCustom.style.display = val === 'custom' ? 'flex' : 'none';
       const jdLabel = document.getElementById('jd-daterange-label');
-      if (jdLabel) jdLabel.textContent = btn.textContent;
+      if (jdLabel) jdLabel.textContent = dateRangeSelect.options[dateRangeSelect.selectedIndex].text;
       const jdDrop = document.getElementById('jd-daterange-dropdown');
       if (jdDrop) jdDrop.querySelectorAll('.jd-dr-preset').forEach(b => {
-        b.classList.toggle('active', b.getAttribute('data-range') === AppState.dateRange);
+        b.classList.toggle('active', b.getAttribute('data-range') === val);
       });
       soundEngine.playClick();
       applyDateRangeGlobally();
     });
-  });
+  }
 
   const dateFrom = document.getElementById('date-from');
   const dateTo = document.getElementById('date-to');
   if (dateFrom && dateTo) {
     [dateFrom, dateTo].forEach(inp => {
       inp.addEventListener('change', () => {
-        document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
         AppState.dateRange = 'custom';
+        AppState.customDateFrom = dateFrom.value;
+        AppState.customDateTo = dateTo.value;
         soundEngine.playClick();
         applyDateRangeGlobally();
       });
@@ -4219,10 +4597,9 @@ function initSourcing() {
         btn.classList.add('active');
         AppState.dateRange = btn.getAttribute('data-range');
         document.getElementById('jd-daterange-label').textContent = btn.textContent;
-        // sync analytics bar
-        document.querySelectorAll('.date-preset').forEach(b => {
-          b.classList.toggle('active', b.getAttribute('data-range') === AppState.dateRange);
-        });
+        // sync analytics bar dropdown
+        const sel = document.getElementById('date-range-select');
+        if (sel) sel.value = AppState.dateRange;
         soundEngine.playClick();
         applyDateRangeGlobally();
         jdDrDrop.classList.remove('open');
@@ -4238,8 +4615,11 @@ function initSourcing() {
           AppState.customDateFrom = jdDateFrom.value;
           AppState.customDateTo = jdDateTo.value;
           document.getElementById('jd-daterange-label').textContent = 'Custom';
-          // sync analytics bar
-          document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+          // sync analytics bar dropdown
+          const sel2 = document.getElementById('date-range-select');
+          if (sel2) sel2.value = 'custom';
+          const drc = document.getElementById('date-range-custom');
+          if (drc) drc.style.display = 'flex';
           if (document.getElementById('date-from')) document.getElementById('date-from').value = jdDateFrom.value;
           if (document.getElementById('date-to')) document.getElementById('date-to').value = jdDateTo.value;
           soundEngine.playClick();
@@ -4982,107 +5362,120 @@ function generateAutoResumeAnalysis(candidateName) {
 }
 
 function renderResumeStagePaneForJob(candidates, job, container) {
-  container.innerHTML = candidates.map(c => {
-    const initials = c.name.split(' ').map(n => n[0]).join('');
-    const hasCached = !!resumeAnalysisCache[c.id];
+  const getMatchClass = (score) => {
+    if (score >= 75) return 'high';
+    if (score >= 50) return 'medium';
+    if (score > 0) return 'low';
+    return 'pending';
+  };
 
-    return `
-      <div class="resume-analysis-card" data-cid="${c.id}">
-        <div class="jd-card-header">
-          <div class="user-avatar-mini" style="background:rgba(var(--color-gold-rgb),0.12);border-color:rgba(var(--color-gold-rgb),0.4);color:var(--color-gold)">${initials}</div>
-          <div class="user-details">
-            <span class="cand-name">${c.name}</span>
-            <span class="cand-email">${c.email}</span>
+  container.innerHTML = `
+    <div class="stage-table-container">
+      <div class="ra-table-wrapper">
+        <table class="ra-data-table">
+          <thead>
+            <tr>
+              <th><input type="checkbox" class="table-checkbox-all" /></th>
+              <th>Candidate</th>
+              <th>Match Score</th>
+              <th>Status</th>
+              <th>Resume</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${candidates.map(c => {
+              const initials = c.name.split(' ').map(n => n[0]).join('');
+              const cached = resumeAnalysisCache[c.id];
+              const score = cached ? cached.overallScore : 0;
+              const matchClass = getMatchClass(score);
+              const isAnalysed = !!cached;
+              return `
+                <tr data-candidate-id="${c.id}" data-cid="${c.id}">
+                  <td><input type="checkbox" class="table-checkbox-row" /></td>
+                  <td>
+                    <div class="table-candidate-cell">
+                      <span class="cand-name-link">${c.name} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
+                      <span class="cand-email-sub">${c.email}</span>
+                    </div>
+                  </td>
+                  <td><span class="ra-match-pill ${matchClass}">${isAnalysed ? score + '%' : 'Pending'}</span></td>
+                  <td><span class="ra-status-badge ${isAnalysed ? 'analysed' : 'pending'}">${isAnalysed ? 'Analysed' : 'Awaiting'}</span></td>
+                  <td>
+                    <input type="file" id="ra-file-${c.id}" accept=".pdf,.doc,.docx,.txt" hidden>
+                    ${isAnalysed
+                      ? `<button class="btn-ra-view-resume" data-cid="${c.id}">View Results</button>`
+                      : `<button class="btn-ra-analyse" data-cid="${c.id}" id="ra-btn-${c.id}"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Analyse</button>`
+                    }
+                  </td>
+                  <td>
+                    <div style="display:flex;gap:6px;justify-content:center;">
+                      <button class="btn-stage-reject" data-candidate-id="${c.id}" style="padding:4px 8px;font-size:0.72rem;">Reject</button>
+                      <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening" style="padding:4px 8px;font-size:0.72rem;">Advance</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="stage-table-footer">
+        <span class="table-selection-info">0 of ${candidates.length} row(s) selected.</span>
+        <div class="table-pagination">
+          <span>Rows per page</span>
+          <select class="rows-per-page"><option>25</option></select>
+          <span>Page 1 of 1</span>
+          <div class="pagination-btns">
+            <button disabled>&laquo;</button><button disabled>&lsaquo;</button><button disabled>&rsaquo;</button><button disabled>&raquo;</button>
           </div>
-          <span class="score-badge ra-score-badge ${hasCached ? '' : 'ra-hidden'}" id="badge-${c.id}"></span>
-        </div>
-        <div class="ra-input-section" id="ra-input-${c.id}" ${hasCached ? 'class="ra-hidden"' : ''}>
-          <div class="ra-upload-zone" id="ra-zone-${c.id}">
-            <input type="file" id="ra-file-${c.id}" accept=".pdf,.doc,.docx,.txt" hidden>
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <p class="ra-zone-text">Drop resume here or <span class="ra-zone-link">browse</span></p>
-            <p class="ra-zone-hint">.pdf, .doc, .docx, .txt</p>
-          </div>
-          <div class="ra-file-preview ra-hidden" id="ra-preview-${c.id}"></div>
-          <a href="#" class="ra-paste-toggle" id="ra-paste-toggle-${c.id}">No file? Paste resume text</a>
-          <textarea class="ra-paste-area ra-hidden" id="ra-paste-${c.id}" placeholder="Paste the candidate's resume text here..." rows="5"></textarea>
-          <button class="btn-analyse-resume" id="ra-btn-${c.id}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Analyse with Lina
-          </button>
-        </div>
-        <div class="ra-result ra-hidden" id="ra-result-${c.id}"></div>
-        <div class="jd-card-actions">
-          <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
-          <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening">Advance to Screening →</button>
         </div>
       </div>
-    `;
-  }).join('');
+    </div>
+  `;
 
   bindResumeAnalysisEvents(job);
 }
 
 function bindResumeAnalysisEvents(job) {
-  document.querySelectorAll('.resume-analysis-card').forEach(card => {
-    const cid = card.dataset.cid;
-    const zone = document.getElementById(`ra-zone-${cid}`);
+  document.querySelectorAll('.ra-data-table tr[data-cid]').forEach(row => {
+    const cid = row.dataset.cid;
     const fileInput = document.getElementById(`ra-file-${cid}`);
-    const pasteToggle = document.getElementById(`ra-paste-toggle-${cid}`);
-    const pasteArea = document.getElementById(`ra-paste-${cid}`);
-    const btn = document.getElementById(`ra-btn-${cid}`);
+    const analyseBtn = row.querySelector('.btn-ra-analyse');
+    const viewBtn = row.querySelector('.btn-ra-view-resume');
 
-    if (resumeAnalysisCache[cid]) renderAnalysisResult(cid, resumeAnalysisCache[cid]);
-
-    zone?.addEventListener('click', () => fileInput?.click());
-    zone?.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-    zone?.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-    zone?.addEventListener('drop', e => {
-      e.preventDefault(); zone.classList.remove('drag-over');
-      if (e.dataTransfer.files[0]) handleResumeFile(cid, e.dataTransfer.files[0]);
-    });
     fileInput?.addEventListener('change', () => {
       if (fileInput.files[0]) handleResumeFile(cid, fileInput.files[0]);
     });
-    pasteToggle?.addEventListener('click', e => {
-      e.preventDefault();
-      const nowHidden = pasteArea?.classList.toggle('ra-hidden');
-      pasteToggle.textContent = nowHidden ? '✎ No file? Paste resume text' : '✕ Hide paste area';
+
+    analyseBtn?.addEventListener('click', () => {
+      fileInput?.click();
+      const handler = () => {
+        if (fileInput.files[0]) {
+          handleResumeFile(cid, fileInput.files[0]);
+          setTimeout(() => runResumeAnalysis(cid, job), 200);
+        } else {
+          runResumeAnalysis(cid, job);
+        }
+        fileInput.removeEventListener('change', handler);
+      };
+      fileInput?.addEventListener('change', handler);
     });
-    btn?.addEventListener('click', () => runResumeAnalysis(cid, job));
+
+    viewBtn?.addEventListener('click', () => {
+      if (resumeAnalysisCache[cid]) {
+        openReportDrawerForCandidate(cid);
+      }
+    });
   });
 }
 
 function handleResumeFile(cid, file) {
-  const preview = document.getElementById(`ra-preview-${cid}`);
-  const zone = document.getElementById(`ra-zone-${cid}`);
   const isPDF = file.name.toLowerCase().endsWith('.pdf');
-
-  function showFileChip(note) {
-    zone?.classList.add('has-file');
-    if (preview) {
-      preview.classList.remove('ra-hidden');
-      preview.innerHTML = `
-        <div class="ra-file-chip">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span>${file.name}${note ? ` (${note})` : ''}</span>
-          <button class="ra-remove-file" data-rcid="${cid}">×</button>
-        </div>`;
-      preview.querySelector('.ra-remove-file')?.addEventListener('click', () => {
-        resumeTextCache[cid] = null;
-        preview.classList.add('ra-hidden');
-        preview.innerHTML = '';
-        zone?.classList.remove('has-file');
-        const fi = document.getElementById(`ra-file-${cid}`);
-        if (fi) fi.value = '';
-      });
-    }
-  }
 
   if (isPDF) {
     resumeTextCache[cid] = null;
-    showFileChip('PDF — will use AI profile');
-    showPremiumToast('PDF text extraction not available — analysis will use auto-generated profile.', 'info');
+    showPremiumToast(`${file.name} loaded — PDF will use auto-generated profile.`, 'info');
     return;
   }
 
@@ -5091,11 +5484,10 @@ function handleResumeFile(cid, file) {
     const text = e.target.result;
     if (isGarbageText(text)) {
       resumeTextCache[cid] = null;
-      showFileChip('binary — will use AI profile');
-      showPremiumToast('File appears to be binary — analysis will use auto-generated profile.', 'info');
+      showPremiumToast(`${file.name} loaded — binary file will use auto-generated profile.`, 'info');
     } else {
       resumeTextCache[cid] = text;
-      showFileChip();
+      showPremiumToast(`${file.name} loaded successfully.`, 'success');
     }
   };
   reader.readAsText(file);
@@ -5174,9 +5566,11 @@ async function runResumeAnalysis(cid, job) {
     }
   }
 
-  const origHTML = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = `<span class="ra-spinner"></span> Analysing…`;
+  const origHTML = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="ra-spinner"></span> Analysing…`;
+  }
 
   const systemPrompt = `You are Lina, an expert ATS resume analyst for IntervieHire. Analyse the provided resume against the job requirements. Respond ONLY with a valid JSON object matching exactly this schema — no extra text, no markdown fences:
 {"matchScore":number,"summary":"2-3 sentence professional assessment","experienceYears":"e.g. 4 years","skills":{"detected":["skill1"],"matched":["skill1"],"missing":["skill1"]},"scorecard":{"technical":number,"experience":number,"communication":number,"cultureFit":number},"recommendation":"Advance|Hold|Reject","recommendationReason":"1 sentence reason"}
@@ -5197,14 +5591,36 @@ All scorecard values 0–10. matchScore 0–100.`;
     showPremiumToast('Resume analysis complete.', 'success');
   } catch {
     showPremiumToast('Analysis failed — please try again.', 'error');
-    btn.disabled = false;
-    btn.innerHTML = origHTML;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHTML;
+    }
   }
 }
 
 function renderAnalysisResult(cid, result) {
+  const row = document.querySelector(`tr[data-cid="${cid}"]`);
+  if (row) {
+    const scoreTd = row.querySelectorAll('td')[2];
+    const statusTd = row.querySelectorAll('td')[3];
+    const resumeTd = row.querySelectorAll('td')[4];
+    if (scoreTd) {
+      const matchClass = result.matchScore >= 75 ? 'high' : result.matchScore >= 50 ? 'medium' : 'low';
+      scoreTd.innerHTML = `<span class="ra-match-pill ${matchClass}">${result.matchScore}%</span>`;
+    }
+    if (statusTd) {
+      statusTd.innerHTML = `<span class="ra-status-badge analysed">Analysed</span>`;
+    }
+    if (resumeTd) {
+      resumeTd.innerHTML = `<button class="btn-ra-view-resume" data-cid="${cid}">View Results</button>`;
+      resumeTd.querySelector('.btn-ra-view-resume')?.addEventListener('click', () => {
+        openReportDrawerForCandidate(cid);
+      });
+    }
+    return;
+  }
+
   const resultEl = document.getElementById(`ra-result-${cid}`);
-  const inputEl  = document.getElementById(`ra-input-${cid}`);
   const badgeEl  = document.getElementById(`badge-${cid}`);
   if (!resultEl) return;
 
@@ -5213,64 +5629,6 @@ function renderAnalysisResult(cid, result) {
     const c = result.matchScore >= 75 ? '34,197,94' : result.matchScore >= 50 ? '251,191,36' : '239,68,68';
     badgeEl.style.cssText = `background:rgba(${c},0.12);color:rgb(${c});border-color:rgba(${c},0.3);`;
   }
-
-  const recClass = result.recommendation === 'Advance' ? 'advance' : result.recommendation === 'Hold' ? 'hold' : 'reject';
-  const recIcon  = result.recommendation === 'Advance' ? '✅' : result.recommendation === 'Hold' ? '⏸' : '❌';
-
-  const scRows = [
-    ['Technical',     result.scorecard?.technical     ?? 0],
-    ['Experience',    result.scorecard?.experience    ?? 0],
-    ['Communication', result.scorecard?.communication ?? 0],
-    ['Culture Fit',   result.scorecard?.cultureFit    ?? 0],
-  ].map(([lbl, val]) => `
-    <div class="sc-bar-row">
-      <span class="sc-label">${lbl}</span>
-      <div class="sc-bar-track"><div class="sc-bar-fill sc-fill-${recClass}" style="width:${(+val)*10}%"></div></div>
-      <span class="sc-val">${(+val).toFixed(1)}</span>
-    </div>`).join('');
-
-  const chips = (arr, cls) => (arr || []).map(s => `<span class="skill-chip ${cls}">${s}</span>`).join('');
-
-  resultEl.innerHTML = `
-    <div class="ra-result-top">
-      <div class="ra-score-ring-wrap">
-        <div class="ra-score-ring" style="--score:${result.matchScore}">
-          <span class="ra-score-num">${result.matchScore}</span>
-          <span class="ra-score-pct">%</span>
-        </div>
-        <p class="ra-exp-label">~&nbsp;${result.experienceYears}</p>
-      </div>
-      <div class="ra-rec-block">
-        <div class="rec-badge ${recClass}">${recIcon}&nbsp;${result.recommendation}</div>
-        <p class="rec-reason">${result.recommendationReason}</p>
-      </div>
-    </div>
-    ${(result.skills?.matched?.length || result.skills?.missing?.length || result.skills?.detected?.length) ? `
-    <div class="ra-skills-section">
-      ${result.skills?.matched?.length  ? `<div class="ra-skills-row"><span class="rsk-label matched-label">Matched</span><div class="skill-chips-wrap">${chips(result.skills.matched,'matched')}</div></div>` : ''}
-      ${result.skills?.missing?.length  ? `<div class="ra-skills-row"><span class="rsk-label missing-label">Missing</span><div class="skill-chips-wrap">${chips(result.skills.missing,'missing')}</div></div>` : ''}
-      ${result.skills?.detected?.length ? `<div class="ra-skills-row"><span class="rsk-label detected-label">Detected</span><div class="skill-chips-wrap">${chips(result.skills.detected,'detected')}</div></div>` : ''}
-    </div>` : ''}
-    <div class="ra-scorecard">
-      <p class="ra-sc-title">AI Scorecard</p>
-      ${scRows}
-    </div>
-    <div class="ra-summary-box">
-      <span class="ra-summary-label">Lina's Assessment</span>
-      <p class="ra-summary-text">"${result.summary}"</p>
-    </div>
-    <button class="btn-re-analyse" id="ra-re-${cid}">↺ Re-analyse</button>
-  `;
-
-  resultEl.classList.remove('ra-hidden');
-  inputEl?.classList.add('ra-hidden');
-
-  document.getElementById(`ra-re-${cid}`)?.addEventListener('click', () => {
-    resultEl.classList.add('ra-hidden');
-    inputEl?.classList.remove('ra-hidden');
-    const btn = document.getElementById(`ra-btn-${cid}`);
-    if (btn) { btn.disabled = false; btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Analyse with Lina`; }
-  });
 }
 
 function openScheduleModal(candidateName, mode, callback) {
@@ -5320,9 +5678,9 @@ function openScheduleModal(candidateName, mode, callback) {
 }
 
 function buildFilterDropdown(chip, type, candidates, stageKey) {
-  const existing = chip.querySelector('.stage-filter-dropdown');
-  if (existing) { existing.remove(); chip.classList.remove('active-filter'); return; }
-  document.querySelectorAll('.stage-filter-dropdown').forEach(d => { d.remove(); d.closest?.('.filter-chip')?.classList.remove('active-filter'); });
+  if (chip._filterDropdown) { chip._filterDropdown.remove(); chip._filterDropdown = null; chip.classList.remove('active-filter'); return; }
+  document.querySelectorAll('.stage-filter-dropdown').forEach(d => d.remove());
+  document.querySelectorAll('.filter-chip.active-filter').forEach(c => { c.classList.remove('active-filter'); c._filterDropdown = null; });
 
   const dd = document.createElement('div');
   dd.className = 'stage-filter-dropdown';
@@ -5395,8 +5753,16 @@ function buildFilterDropdown(chip, type, candidates, stageKey) {
       <div class="sfd-items">${acts.map(a => `<label class="sfd-item"><input type="checkbox" value="${a}" /><span class="sfd-item-label">${a}</span><span class="sfd-item-count">0</span></label>`).join('')}</div>`;
   }
 
-  chip.appendChild(dd);
+  const rect = chip.getBoundingClientRect();
+  dd.style.left = rect.left + 'px';
+  dd.style.top = (rect.bottom + 4) + 'px';
+  document.body.appendChild(dd);
   chip.classList.add('active-filter');
+  chip._filterDropdown = dd;
+
+  const closeOnScroll = () => { dd.remove(); chip.classList.remove('active-filter'); chip._filterDropdown = null; };
+  const mainContent = chip.closest('.main-content');
+  if (mainContent) mainContent.addEventListener('scroll', closeOnScroll, { once: true });
 }
 
 function applyStageFilters(candidates, stageKey) {
@@ -5486,18 +5852,17 @@ function renderJobDetailPanes(job) {
                 <th><input type="checkbox" class="table-checkbox-all" /></th>
                 <th>Candidate</th>
                 <th>Phone</th>
-                <th>Interview Status</th>
-                <th>Recruiter Screening</th>
-                <th>Recruiter Screening Score <span class="sort-arrows">⇅</span></th>
-                <th>Match Count <span class="sort-arrows">⇅</span></th>
+                <th>Status</th>
+                <th>Screening</th>
+                <th>Score <span class="sort-arrows">⇅</span></th>
                 <th>Report</th>
                 <th>Source</th>
-                <th>Attempted At <span class="sort-arrows">⇅</span></th>
+                <th>Attempted <span class="sort-arrows">⇅</span></th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              ${displayScreeningCands.length === 0 ? '<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
+              ${displayScreeningCands.length === 0 ? '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
               ${displayScreeningCands.map(c => {
                 const initials = c.name.split(' ').map(n=>n[0]).join('');
                 const hasReport = c.interviewStatus === 'Incomplete' || c.interviewStatus === 'Completed';
@@ -5516,7 +5881,6 @@ function renderJobDetailPanes(job) {
                     </td>
                     <td>${c.phone || '—'}</td>
                     <td>${statusIcon(c.interviewStatus)}</td>
-                    <td>—</td>
                     <td>—</td>
                     <td>—</td>
                     <td>${hasReport ? `<a href="#" class="report-link" data-cand-id="${c.id}">Report <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : '—'}</td>
@@ -5598,19 +5962,17 @@ function renderJobDetailPanes(job) {
                 <th><input type="checkbox" class="table-checkbox-all" /></th>
                 <th>Candidate</th>
                 <th>Phone</th>
-                <th>Interview Status</th>
+                <th>Status</th>
                 <th>Report</th>
-                <th>Interview score <span class="sort-arrows">⇅</span></th>
-                <th>Cheat Probability</th>
+                <th>Score <span class="sort-arrows">⇅</span></th>
+                <th>Cheat <span class="sort-arrows">⇅</span></th>
                 <th>Source</th>
-                <th>Recruiter Screening</th>
-                <th>Recruiter Screening Score <span class="sort-arrows">⇅</span></th>
-                <th>Score</th>
+                <th>Screening</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              ${displayFunctionalCands.length === 0 ? '<tr><td colspan="12" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
+              ${displayFunctionalCands.length === 0 ? '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
               ${displayFunctionalCands.map(c => {
                 const initials = c.name.split(' ').map(n=>n[0]).join('');
                 const sourceIcon = c.source === 'Direct Link' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>';
@@ -5631,8 +5993,6 @@ function renderJobDetailPanes(job) {
                     <td><span class="cheat-prob-badge ${cheatColor(c.cheatProbability)}">${c.cheatProbability ? '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg> ' + c.cheatProbability : '—'}</span></td>
                     <td><span class="source-badge">${sourceIcon} ${c.source || '—'}</span></td>
                     <td>${screeningBadge(c.recruiterScreening)}</td>
-                    <td>${c.recruiterScreeningScore != null ? c.recruiterScreeningScore : '—'}</td>
-                    <td>${c.score}</td>
                     <td>
                       <select class="action-select-status">
                         <option value="">Select Sta...</option>
@@ -5731,13 +6091,16 @@ function renderJobDetailPanes(job) {
     });
 
     const jobCands = AppState.candidates.filter(c => c.jobApplied === job.roleName || c.jobApplied === job.cardName);
+    const stageStatusMap = { screening: 'Screening', functional: 'Functional' };
     pane.querySelectorAll('.filter-chip[data-filter]').forEach(chip => {
       chip.addEventListener('click', (e) => {
         e.stopPropagation();
         soundEngine.playClick();
         const filterType = chip.getAttribute('data-filter');
         const stageKey = chip.getAttribute('data-stage');
-        buildFilterDropdown(chip, filterType, jobCands, stageKey);
+        const stageStatus = stageStatusMap[stageKey];
+        const stageCands = stageStatus ? jobCands.filter(c => c.status === stageStatus) : jobCands;
+        buildFilterDropdown(chip, filterType, stageCands, stageKey);
       });
     });
 
@@ -5753,36 +6116,90 @@ function renderJobDetailPanes(job) {
     });
 
     pane.querySelectorAll('.btn-bulk-actions').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         soundEngine.playClick();
+        const existing = btn.parentElement.querySelector('.bulk-actions-dropdown');
+        if (existing) { existing.remove(); return; }
+        document.querySelectorAll('.bulk-actions-dropdown').forEach(d => d.remove());
+
         const container = btn.closest('.stage-table-container');
         const checked = container?.querySelectorAll('.table-checkbox-row:checked') || [];
-        if (checked.length === 0) {
-          showPremiumToast("Select candidates using checkboxes first.", "info");
-          return;
-        }
-        const candIds = [];
-        const names = [];
-        checked.forEach(cb => {
-          const row = cb.closest('tr');
-          const cid = row?.getAttribute('data-candidate-id');
-          const name = row?.querySelector('.cand-name-link')?.textContent?.trim();
-          if (cid) candIds.push(cid);
-          if (name) names.push(name);
-        });
-        const label = names.length <= 3 ? names.join(', ') : `${names.slice(0, 2).join(', ')} +${names.length - 2} more`;
-        openScheduleModal(label, 'reschedule', (date, time) => {
-          candIds.forEach(cid => {
-            const cand = AppState.candidates.find(c => c.id === cid);
-            if (cand) {
-              cand.attemptedAt = `${date} ${time}`;
-              cand.interviewStatus = 'Not Started';
-            }
+
+        const getSelected = () => {
+          const ids = [], names = [];
+          checked.forEach(cb => {
+            const row = cb.closest('tr');
+            const cid = row?.getAttribute('data-candidate-id');
+            const name = row?.querySelector('.cand-name-link')?.textContent?.trim();
+            if (cid) ids.push(cid);
+            if (name) names.push(name);
           });
-          saveStateToLocalStorage();
-          renderJobDetailPanes(job);
-          showPremiumToast(`Bulk rescheduled ${candIds.length} candidate(s) to ${date} at ${time}.`, 'success');
+          return { ids, names };
+        };
+
+        const dd = document.createElement('div');
+        dd.className = 'bulk-actions-dropdown';
+        dd.innerHTML = `
+          <button class="bulk-dd-item" data-action="advance"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg> Advance</button>
+          <button class="bulk-dd-item" data-action="reject"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Reject</button>
+          <button class="bulk-dd-item" data-action="schedule"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg> Schedule</button>
+          <button class="bulk-dd-item" data-action="reschedule"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> Reschedule</button>
+          <button class="bulk-dd-item" data-action="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Export</button>`;
+        dd.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const item = ev.target.closest('.bulk-dd-item');
+          if (!item) return;
+          const action = item.getAttribute('data-action');
+          const { ids, names } = getSelected();
+          if (ids.length === 0 && action !== 'export') {
+            showPremiumToast("Select candidates using checkboxes first.", "info");
+            dd.remove();
+            return;
+          }
+          const label = names.length <= 3 ? names.join(', ') : `${names.slice(0, 2).join(', ')} +${names.length - 2} more`;
+          if (action === 'advance') {
+            const stages = ['Resume', 'Screening', 'Functional', 'Hired'];
+            ids.forEach(cid => {
+              const cand = AppState.candidates.find(c => c.id === cid);
+              if (cand) {
+                const idx = stages.indexOf(cand.status);
+                if (idx < stages.length - 1) cand.status = stages[idx + 1];
+              }
+            });
+            saveStateToLocalStorage();
+            renderJobDetailPanes(job);
+            showPremiumToast(`Advanced ${ids.length} candidate(s) to next stage.`, 'success');
+          } else if (action === 'reject') {
+            ids.forEach(cid => {
+              const cand = AppState.candidates.find(c => c.id === cid);
+              if (cand) cand.status = 'Rejected';
+            });
+            saveStateToLocalStorage();
+            renderJobDetailPanes(job);
+            showPremiumToast(`Rejected ${ids.length} candidate(s).`, 'success');
+          } else if (action === 'schedule' || action === 'reschedule') {
+            openScheduleModal(label, action, (date, time) => {
+              ids.forEach(cid => {
+                const cand = AppState.candidates.find(c => c.id === cid);
+                if (cand) {
+                  cand.attemptedAt = `${date} ${time}`;
+                  cand.interviewStatus = action === 'reschedule' ? 'Incomplete' : 'Not Started';
+                }
+              });
+              saveStateToLocalStorage();
+              renderJobDetailPanes(job);
+              showPremiumToast(`${action === 'schedule' ? 'Scheduled' : 'Rescheduled'} ${ids.length} candidate(s) to ${date} at ${time}.`, 'success');
+            });
+          } else if (action === 'export') {
+            triggerExcelExport('candidates');
+          }
+          dd.remove();
         });
+        const actionsBar = btn.closest('.stage-table-actions-bar') || btn.parentElement;
+        actionsBar.appendChild(dd);
+        const closeDD = (ev) => { if (!dd.contains(ev.target) && ev.target !== btn) { dd.remove(); document.removeEventListener('click', closeDD); } };
+        setTimeout(() => document.addEventListener('click', closeDD), 0);
       });
     });
 
@@ -6148,15 +6565,19 @@ function renderQuestionsPane(job) {
       <div class="jd-empty-pane" style="text-align: center; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity: 0.85;">
         <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
         <p style="color: var(--color-text-muted); font-size: 0.9rem;">No interview questions defined yet.</p>
-        <p style="color: var(--color-text-faint); font-size: 0.8rem; max-width: 320px; margin-top: -6px;">Enter a job description on the left and click "Generate Questions Set" to auto-design a premium interview rubric.</p>
+        <p style="color: var(--color-text-faint); font-size: 0.8rem; max-width: 320px; margin-top: -6px;">Click "JD" to expand the job description panel, then click "Generate Questions" to auto-design a premium interview rubric.</p>
       </div>
     `;
   } else {
     listQuestions.innerHTML = job.questions.map((q, qIndex) => `
       <div class="card-glass jd-question-card" data-q-id="${q.id}" style="margin-bottom: 16px; padding: 16px; border-radius: 12px; border: 1px solid var(--glass-border); transition: var(--spring-fast);">
         <div class="q-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 12px;">
-          <span class="q-type-badge ${q.type || 'technical'}" style="padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;">${q.type || 'technical'}</span>
-          <select class="q-difficulty-select" data-field="difficulty" style="background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); color: var(--color-text-primary); border-radius: 6px; padding: 2px 6px; font-size: 0.78rem; font-family: var(--font-body); outline: none;">
+          <select class="q-type-select" data-field="type" style="padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); color: var(--color-text-primary); font-family: var(--font-body); outline: none; cursor: pointer;">
+            <option value="technical" ${(q.type || 'technical') === 'technical' ? 'selected' : ''}>Technical</option>
+            <option value="behavioral" ${q.type === 'behavioral' ? 'selected' : ''}>Behavioral</option>
+            <option value="situational" ${q.type === 'situational' ? 'selected' : ''}>Situational</option>
+          </select>
+          <select class="q-difficulty-select" data-field="difficulty" style="background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); color: var(--color-text-primary); border-radius: 6px; padding: 2px 6px; font-size: 0.78rem; font-family: var(--font-body); outline: none; cursor: pointer;">
             <option value="beginner" ${q.difficulty === 'beginner' ? 'selected' : ''}>Beginner</option>
             <option value="intermediate" ${q.difficulty === 'intermediate' ? 'selected' : ''}>Intermediate</option>
             <option value="advanced" ${q.difficulty === 'advanced' ? 'selected' : ''}>Advanced</option>
@@ -6222,17 +6643,19 @@ function renderQuestionsPane(job) {
         const questionText = card.querySelector('.q-question-text').value.trim();
         const rubricText = card.querySelector('.q-rubric-text').value.trim();
         const difficulty = card.querySelector('.q-difficulty-select').value;
-        
+        const qType = card.querySelector('.q-type-select')?.value || 'technical';
+
         const followUps = [];
         card.querySelectorAll('.q-followup-input').forEach(inp => {
           if (inp.value.trim() !== '') {
             followUps.push(inp.value.trim());
           }
         });
-        
+
         job.questions[idx].question = questionText;
         job.questions[idx].rubric = rubricText;
         job.questions[idx].difficulty = difficulty;
+        job.questions[idx].type = qType;
         job.questions[idx].follow_ups = followUps;
         
         saveStateToLocalStorage();
@@ -6295,19 +6718,21 @@ function renderQuestionsPane(job) {
         : `All questions should be ${qDiff} difficulty.`;
 
       const systemPrompt = `You are a senior hiring manager and domain expert.
-Your task is to generate exactly ${numQ} high-quality interview questions based on the given job description.
+Generate exactly ${numQ} high-quality interview questions based on the given job description.
 The interview is planned for ${qDuration} minutes.
 
-Requirements:
-- ${typeInstruction}
-- ${diffInstruction}
-- For each question, provide:
-  1. "type": either "technical", "behavioral", or "situational".
-  2. "question": a clear, direct, and professional question.
-  3. "difficulty": either "beginner", "intermediate", or "advanced".
-  4. "rubric": a brief evaluation rubric (what a good answer should include).
-  5. "follow_ups": a list of ${qFollowups} suggested follow-up questions.
-- Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdown or add explanations.`;
+${typeInstruction}
+${diffInstruction}
+
+Return ONLY a JSON object in this exact format (no markdown, no explanation, no extra text):
+{"questions":[{"type":"technical","question":"Your question here?","difficulty":"intermediate","rubric":"What a good answer includes.","follow_ups":["Follow-up 1","Follow-up 2"]}]}
+
+Rules:
+- "type" must be one of: "technical", "behavioral", "situational"
+- "difficulty" must be one of: "beginner", "intermediate", "advanced"
+- "rubric" should describe what a strong candidate answer covers
+- "follow_ups" must contain exactly ${qFollowups} follow-up question strings
+- Generate exactly ${numQ} question objects in the array`;
 
       try {
         const responseText = await callDeepSeekAPI([
@@ -6317,29 +6742,46 @@ Requirements:
 
         const cleanText = sanitizeJSONResponse(responseText);
         const parsed = JSON.parse(cleanText);
-        
-        if (parsed && parsed.questions) {
-          currentStagedQuestions = parsed.questions.map((q, idx) => ({
+
+        const questionsArr = parsed.questions || parsed.interview_questions || (Array.isArray(parsed) ? parsed : null);
+        if (questionsArr && questionsArr.length > 0) {
+          currentStagedQuestions = questionsArr.map((q, idx) => ({
             id: `q-gen-${Date.now()}-${idx}`,
-            type: q.type || 'technical',
-            question: q.question,
-            difficulty: q.difficulty || 'intermediate',
-            rubric: q.rubric || '',
-            follow_ups: q.follow_ups || []
+            type: q.type || q.category || 'technical',
+            question: q.question || q.text || '',
+            difficulty: q.difficulty || q.level || 'intermediate',
+            rubric: q.rubric || q.evaluation_rubric || q.expected_answer || '',
+            follow_ups: q.follow_ups || q.followups || q.follow_up_questions || []
           }));
-          
+
           showStagingArea(job);
         } else {
-          throw new Error("Invalid response format. Missing 'questions' array.");
+          throw new Error("Invalid response format. Could not find questions array.");
         }
       } catch (err) {
         console.error("Failed to generate questions:", err);
-        showPremiumToast("Failed to generate questions. Please verify your prompt or API status.", "error");
+        const errMsg = err.message || 'Unknown error';
+        if (errMsg.includes('API response error')) {
+          showPremiumToast(`API error: ${errMsg}`, "error");
+        } else if (errMsg.includes('aborted')) {
+          showPremiumToast("Request timed out. The API took too long to respond.", "error");
+        } else {
+          showPremiumToast(`Failed to generate questions: ${errMsg}`, "error");
+        }
       } finally {
         newBtnGen.disabled = false;
         loaderSpan.remove();
         textSpan.style.display = 'inline-block';
       }
+    });
+  }
+
+  const btnToggleJd = document.getElementById('btn-toggle-jd');
+  const jdDetails = document.getElementById('qg-jd-details');
+  if (btnToggleJd && jdDetails) {
+    btnToggleJd.addEventListener('click', () => {
+      jdDetails.classList.toggle('open');
+      soundEngine.playClick();
     });
   }
 
@@ -6452,13 +6894,37 @@ function showStagingArea(job) {
   stagingList.innerHTML = currentStagedQuestions.map((q, idx) => `
     <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 10px; margin-bottom: 8px; position: relative;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--color-indigo);">${q.type}</span>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <select class="staging-type-select" data-idx="${idx}" style="padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:700; text-transform:uppercase; background:rgba(0,0,0,0.25); border:1px solid var(--glass-border); color:var(--color-text-primary); font-family:var(--font-body); outline:none; cursor:pointer;">
+            <option value="technical" ${q.type === 'technical' ? 'selected' : ''}>Technical</option>
+            <option value="behavioral" ${q.type === 'behavioral' ? 'selected' : ''}>Behavioral</option>
+            <option value="situational" ${q.type === 'situational' ? 'selected' : ''}>Situational</option>
+          </select>
+          <select class="staging-diff-select" data-idx="${idx}" style="padding:2px 6px; border-radius:4px; font-size:0.7rem; background:rgba(0,0,0,0.25); border:1px solid var(--glass-border); color:var(--color-text-muted); font-family:var(--font-body); outline:none; cursor:pointer;">
+            <option value="beginner" ${q.difficulty === 'beginner' ? 'selected' : ''}>Beginner</option>
+            <option value="intermediate" ${q.difficulty === 'intermediate' ? 'selected' : ''}>Intermediate</option>
+            <option value="advanced" ${q.difficulty === 'advanced' ? 'selected' : ''}>Advanced</option>
+          </select>
+        </div>
         <button class="btn-staging-discard-item" data-idx="${idx}" style="background:none; border:none; color:#ef4444; font-size:0.9rem; cursor:pointer; padding:0 4px;">&times;</button>
       </div>
       <div style="font-size:0.82rem; color:var(--color-text-primary); line-height:1.4;">${q.question}</div>
       <div style="font-size:0.76rem; color:var(--color-text-muted); margin-top:4px; font-style:italic;">Rubric: ${q.rubric}</div>
     </div>
   `).join('');
+
+  stagingList.querySelectorAll('.staging-type-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const idx = parseInt(sel.getAttribute('data-idx'));
+      currentStagedQuestions[idx].type = sel.value;
+    });
+  });
+  stagingList.querySelectorAll('.staging-diff-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const idx = parseInt(sel.getAttribute('data-idx'));
+      currentStagedQuestions[idx].difficulty = sel.value;
+    });
+  });
 
   stagingList.querySelectorAll('.btn-staging-discard-item').forEach(btn => {
     btn.addEventListener('click', () => {
