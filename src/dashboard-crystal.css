@@ -620,7 +620,9 @@ body { position: relative; color: var(--color-text-primary); }
   line-height: 1.2;
   letter-spacing: -0.02em;
 }
-.header-subheading { font-size: 0.78rem; color: var(--color-text-muted); margin-top: 2px; }
+.header-top-row { display: flex; align-items: center; gap: 14px; margin-bottom: 3px; }`r`n.header-separator-dot { color: var(--color-text-faint); font-size: 0.8rem; margin: 0 4px; }
+.header-subheading { font-size: 0.78rem; color: var(--color-text-muted); }
+
 
 .header-right { display: flex; align-items: center; gap: 16px; }
 
@@ -7227,3 +7229,126 @@ body.light-theme .iset-select {
 }
 
 
+
+
+/* ============================================================
+   HEADER ALIGNMENT OVERRIDES
+   ============================================================ */
+.header-top-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 3px;
+}
+.header-top-row .header-heading {
+  font-size: 1.25rem;
+  margin: 0;
+}
+.header-separator-dot {
+  color: var(--color-text-faint);
+  font-size: 0.8rem;
+  margin: 0 4px;
+  user-select: none;
+}
+#header-sub-text {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+
+/* ============================================================
+   HEADER ALIGNMENT OVERRIDES
+   ============================================================ */
+.header-top-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 3px;
+}
+.header-top-row .header-heading {
+  font-size: 1.25rem;
+  margin: 0;
+}
+.header-separator-dot {
+  color: var(--color-text-faint);
+  font-size: 0.8rem;
+  margin: 0 4px;
+  user-select: none;
+}
+#header-sub-text {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+   QUESTION GENERATOR TOOLBAR (Redesigned)
+   ============================================================ */
+.qg-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  flex-wrap: wrap;
+}
+.qg-config-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.qg-config-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 4px 6px 4px 12px;
+  transition: var(--spring-fast);
+}
+.qg-config-pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--glass-border-hover);
+}
+.qg-pill-select {
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: var(--spring-fast);
+}
+.qg-pill-select:hover,
+.qg-pill-select:focus {
+  background: rgba(255, 255, 255, 0.08);
+}
+.qg-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.btn-qg-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--spring-fast);
+  white-space: nowrap;
+}
+.btn-qg-secondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--color-text-primary);
+  border-color: var(--glass-border-hover);
+}
