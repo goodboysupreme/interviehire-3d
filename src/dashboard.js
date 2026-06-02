@@ -1993,7 +1993,7 @@ function closeDrawers() {
   const reportDrawer = document.getElementById('drawer-report');
   if (reportDrawer) {
     reportDrawer.classList.remove('active');
-    reportDrawer.style.right = '-540px';
+    reportDrawer.style.right = '-620px';
   }
 
   const agentDrawer = document.getElementById('drawer-agent-config');
@@ -2650,11 +2650,13 @@ function renderFunnelStages(job) {
   if (!container) return;
 
   const total = Math.max(job.pipeline.total, 1);
-  const completed = job.pipeline.functional > 0 ? 1 : 0;
 
   const jobCandidates = AppState.candidates.filter(
     c => c.jobApplied === job.roleName || c.jobApplied === job.cardName
   );
+
+  const completedCount = jobCandidates.filter(c => c.interviewStatus === 'Completed').length;
+  const qualifiedCount = jobCandidates.filter(c => c.status === 'Hired').length;
 
   const sourceColors = {
     'Career Page': '#6366f1',
@@ -2687,8 +2689,8 @@ function renderFunnelStages(job) {
     { count: job.pipeline.resume,     label: 'Resume Analysis',      conv: Math.round((job.pipeline.resume / total) * 100) },
     { count: job.pipeline.screening,  label: 'Recruiter Screening',  conv: Math.round((job.pipeline.screening / total) * 100) },
     { count: job.pipeline.functional, label: 'Functional Interview', conv: Math.round((job.pipeline.functional / total) * 100) },
-    { count: completed,               label: 'Completed',            conv: Math.round((completed / total) * 100) },
-    { count: completed,               label: 'Qualified',            conv: Math.round((completed / total) * 100) },
+    { count: completedCount,           label: 'Completed',            conv: Math.round((completedCount / total) * 100) },
+    { count: qualifiedCount,           label: 'Qualified',            conv: Math.round((qualifiedCount / total) * 100) },
   ];
 
   container.innerHTML = stages.map(s => `
@@ -2751,7 +2753,8 @@ function drawFunnelSVG(job, candidates) {
   const padT = 10, padB = 10;
 
   const total = Math.max(job.pipeline.total, 1);
-  const completed = job.pipeline.functional > 0 ? 1 : 0;
+  const completedCount = candidates.filter(c => c.interviewStatus === 'Completed').length;
+  const qualifiedCount = candidates.filter(c => c.status === 'Hired').length;
 
   const stageLabels = ['Total Candidates', 'Resume Analysis', 'Recruiter Screening', 'Functional Interview', 'Completed', 'Qualified'];
   const stageCounts = [
@@ -2759,8 +2762,8 @@ function drawFunnelSVG(job, candidates) {
     job.pipeline.resume || 0,
     job.pipeline.screening || 0,
     job.pipeline.functional || 0,
-    completed,
-    completed,
+    completedCount,
+    qualifiedCount,
   ];
   const n = stageCounts.length;
   const ys = stageCounts.map((_, i) => padT + (i / (n - 1)) * (H - padT - padB));
@@ -4548,34 +4551,54 @@ function initSourcing() {
   }
 
   const dateRangeSelect = document.getElementById('date-range-select');
-  const dateRangeCustom = document.getElementById('date-range-custom');
-  if (dateRangeSelect) {
-    dateRangeSelect.addEventListener('change', () => {
-      const val = dateRangeSelect.value;
-      AppState.dateRange = val;
-      if (dateRangeCustom) dateRangeCustom.style.display = val === 'custom' ? 'flex' : 'none';
-      const jdLabel = document.getElementById('jd-daterange-label');
-      if (jdLabel) jdLabel.textContent = dateRangeSelect.options[dateRangeSelect.selectedIndex].text;
-      const jdDrop = document.getElementById('jd-daterange-dropdown');
-      if (jdDrop) jdDrop.querySelectorAll('.jd-dr-preset').forEach(b => {
-        b.classList.toggle('active', b.getAttribute('data-range') === val);
-      });
+
+  const analyticsDrBtn = document.getElementById('btn-analytics-daterange');
+  const analyticsDrDrop = document.getElementById('analytics-daterange-dropdown');
+  if (analyticsDrBtn && analyticsDrDrop) {
+    analyticsDrBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      analyticsDrDrop.classList.toggle('open');
       soundEngine.playClick();
-      applyDateRangeGlobally();
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#analytics-date-range-wrap')) analyticsDrDrop.classList.remove('open');
+    });
+    analyticsDrDrop.querySelectorAll('.dr-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        analyticsDrDrop.querySelectorAll('.dr-preset').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        AppState.dateRange = btn.getAttribute('data-range');
+        document.getElementById('analytics-daterange-label').textContent = btn.textContent;
+        if (dateRangeSelect) dateRangeSelect.value = AppState.dateRange;
+        const jdLabel = document.getElementById('jd-daterange-label');
+        if (jdLabel) jdLabel.textContent = btn.textContent;
+        const jdDrop = document.getElementById('jd-daterange-dropdown');
+        if (jdDrop) jdDrop.querySelectorAll('.jd-dr-preset').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-range') === AppState.dateRange);
+        });
+        soundEngine.playClick();
+        applyDateRangeGlobally();
+        analyticsDrDrop.classList.remove('open');
+      });
     });
   }
 
   const dateFrom = document.getElementById('date-from');
   const dateTo = document.getElementById('date-to');
-  if (dateFrom && dateTo) {
-    [dateFrom, dateTo].forEach(inp => {
-      inp.addEventListener('change', () => {
-        AppState.dateRange = 'custom';
-        AppState.customDateFrom = dateFrom.value;
-        AppState.customDateTo = dateTo.value;
-        soundEngine.playClick();
-        applyDateRangeGlobally();
-      });
+  const drApply = document.getElementById('dr-apply-custom');
+  if (dateFrom && dateTo && drApply) {
+    drApply.addEventListener('click', () => {
+      AppState.dateRange = 'custom';
+      AppState.customDateFrom = dateFrom.value;
+      AppState.customDateTo = dateTo.value;
+      if (dateRangeSelect) dateRangeSelect.value = 'custom';
+      document.getElementById('analytics-daterange-label').textContent = 'Custom Range';
+      if (analyticsDrDrop) {
+        analyticsDrDrop.querySelectorAll('.dr-preset').forEach(b => b.classList.remove('active'));
+        analyticsDrDrop.classList.remove('open');
+      }
+      soundEngine.playClick();
+      applyDateRangeGlobally();
     });
   }
 
@@ -5424,7 +5447,7 @@ function renderResumeStagePaneForJob(candidates, job, container) {
         <span class="table-selection-info">0 of ${candidates.length} row(s) selected.</span>
         <div class="table-pagination">
           <span>Rows per page</span>
-          <select class="rows-per-page"><option>25</option></select>
+          <select class="rows-per-page"><option value="10">10</option><option value="25" selected>25</option><option value="50">50</option><option value="100">100</option></select>
           <span>Page 1 of 1</span>
           <div class="pagination-btns">
             <button disabled>&laquo;</button><button disabled>&lsaquo;</button><button disabled>&rsaquo;</button><button disabled>&raquo;</button>
@@ -5896,7 +5919,7 @@ function renderJobDetailPanes(job) {
             <span class="table-selection-info">0 of ${displayScreeningCands.length} row(s) selected.</span>
             <div class="table-pagination">
               <span>Rows per page</span>
-              <select class="rows-per-page"><option>25</option></select>
+              <select class="rows-per-page"><option value="10">10</option><option value="25" selected>25</option><option value="50">50</option><option value="100">100</option></select>
               <span>Page 1 of 1</span>
               <div class="pagination-btns">
                 <button disabled>«</button><button disabled>‹</button><button disabled>›</button><button disabled>»</button>
@@ -6010,7 +6033,7 @@ function renderJobDetailPanes(job) {
             <span class="table-selection-info">0 of ${displayFunctionalCands.length} row(s) selected.</span>
             <div class="table-pagination">
               <span>Rows per page</span>
-              <select class="rows-per-page"><option>25</option></select>
+              <select class="rows-per-page"><option value="10">10</option><option value="25" selected>25</option><option value="50">50</option><option value="100">100</option></select>
               <span>Page 1 of 1</span>
               <div class="pagination-btns">
                 <button disabled>«</button><button disabled>‹</button><button disabled>›</button><button disabled>»</button>
@@ -6164,7 +6187,15 @@ function renderJobDetailPanes(job) {
               const cand = AppState.candidates.find(c => c.id === cid);
               if (cand) {
                 const idx = stages.indexOf(cand.status);
-                if (idx < stages.length - 1) cand.status = stages[idx + 1];
+                if (idx < stages.length - 1) {
+                  const next = stages[idx + 1];
+                  cand.status = next;
+                  if ((next === 'Screening' || next === 'Functional') && cand.interviewScore == null) {
+                    cand.interviewStatus = 'Completed';
+                    cand.interviewScore = Math.floor(Math.random() * 31) + 60;
+                    if (!cand.cheatProbability) cand.cheatProbability = 'Low';
+                  }
+                }
               }
             });
             saveStateToLocalStorage();
@@ -6196,8 +6227,8 @@ function renderJobDetailPanes(job) {
           }
           dd.remove();
         });
-        const actionsBar = btn.closest('.stage-table-actions-bar') || btn.parentElement;
-        actionsBar.appendChild(dd);
+        btn.style.position = 'relative';
+        btn.appendChild(dd);
         const closeDD = (ev) => { if (!dd.contains(ev.target) && ev.target !== btn) { dd.remove(); document.removeEventListener('click', closeDD); } };
         setTimeout(() => document.addEventListener('click', closeDD), 0);
       });
@@ -6244,6 +6275,40 @@ function renderJobDetailPanes(job) {
         }
       });
     });
+
+    pane.querySelectorAll('.stage-table-container').forEach(container => {
+      const tbody = container.querySelector('tbody');
+      const rppSelect = container.querySelector('.rows-per-page');
+      const pageInfo = container.querySelector('.table-pagination span:nth-child(3)');
+      const selInfo = container.querySelector('.table-selection-info');
+      const pagBtns = container.querySelectorAll('.pagination-btns button');
+      if (!tbody || !rppSelect) return;
+      let currentPage = 1;
+      const allRows = Array.from(tbody.querySelectorAll('tr'));
+      function paginate() {
+        const perPage = parseInt(rppSelect.value) || 25;
+        const totalRows = allRows.length;
+        const totalPages = Math.max(1, Math.ceil(totalRows / perPage));
+        if (currentPage > totalPages) currentPage = totalPages;
+        const start = (currentPage - 1) * perPage;
+        const end = start + perPage;
+        allRows.forEach((row, i) => { row.style.display = (i >= start && i < end) ? '' : 'none'; });
+        if (pageInfo) pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        if (selInfo) selInfo.textContent = `0 of ${Math.min(perPage, totalRows - start)} row(s) selected.`;
+        if (pagBtns.length === 4) {
+          pagBtns[0].disabled = currentPage <= 1; pagBtns[1].disabled = currentPage <= 1;
+          pagBtns[2].disabled = currentPage >= totalPages; pagBtns[3].disabled = currentPage >= totalPages;
+        }
+      }
+      paginate();
+      rppSelect.addEventListener('change', () => { currentPage = 1; paginate(); });
+      if (pagBtns.length === 4) {
+        pagBtns[0].addEventListener('click', () => { currentPage = 1; paginate(); });
+        pagBtns[1].addEventListener('click', () => { currentPage = Math.max(1, currentPage - 1); paginate(); });
+        pagBtns[2].addEventListener('click', () => { const tp = Math.max(1, Math.ceil(allRows.length / (parseInt(rppSelect.value)||25))); currentPage = Math.min(tp, currentPage + 1); paginate(); });
+        pagBtns[3].addEventListener('click', () => { currentPage = Math.max(1, Math.ceil(allRows.length / (parseInt(rppSelect.value)||25))); paginate(); });
+      }
+    });
   }
   renderQuestionsPane(job);
 }
@@ -6254,7 +6319,13 @@ function updateCandidateStatus(candId, newStatus) {
   
   const oldStatus = candidate.status;
   candidate.status = newStatus;
-  
+
+  if ((newStatus === 'Screening' || newStatus === 'Functional') && candidate.interviewScore == null) {
+    candidate.interviewStatus = 'Completed';
+    candidate.interviewScore = Math.floor(Math.random() * 31) + 60;
+    if (!candidate.cheatProbability) candidate.cheatProbability = 'Low';
+  }
+
   if (newStatus === 'Rejected') {
     showPremiumToast(`${candidate.name} has been rejected from the pipeline.`, 'success');
     soundEngine.playChime([392, 293.66], 0.2, 0.1);
@@ -6591,19 +6662,19 @@ function renderQuestionsPane(job) {
             <textarea class="q-rubric-text" data-field="rubric" placeholder="What does a good answer sound like?..." style="width: 100%; min-height: 40px; background: transparent; border: none; color: var(--color-text-muted); font-family: var(--font-body); font-size: 0.82rem; line-height: 1.4; resize: vertical; outline: none; padding: 0;"></textarea>
           </div>
 
-          ${q.follow_ups && q.follow_ups.length > 0 ? `
-            <div class="q-followups-box">
-              <span class="q-followups-label" style="font-size: 0.78rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 6px;">Suggested Follow-Ups:</span>
-              <ul class="q-followups-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px;">
-                ${q.follow_ups.map((f, idx) => `
-                  <li style="display: flex; align-items: center; gap: 6px;">
-                    <span style="color: var(--color-text-faint); font-size: 0.8rem;">•</span>
-                    <input type="text" class="q-followup-input" data-idx="${idx}" value="${f}" style="flex-grow: 1; background: transparent; border: none; border-bottom: 1px dashed rgba(255,255,255,0.1); color: var(--color-text-muted); font-size: 0.82rem; outline: none; padding: 2px 0;" />
-                  </li>
-                `).join('')}
-              </ul>
-            </div>
-          ` : ''}
+          <div class="q-followups-box">
+            <span class="q-followups-label" style="font-size: 0.78rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 6px;">Follow-Ups (${q.follow_ups ? q.follow_ups.length : 0}):</span>
+            <ul class="q-followups-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+              ${(q.follow_ups || []).map((f, idx) => `
+                <li style="display: flex; align-items: center; gap: 6px;">
+                  <span style="color: var(--color-text-faint); font-size: 0.8rem;">•</span>
+                  <input type="text" class="q-followup-input" data-idx="${idx}" value="${f}" style="flex-grow: 1; background: transparent; border: none; border-bottom: 1px dashed rgba(255,255,255,0.1); color: var(--color-text-muted); font-size: 0.82rem; outline: none; padding: 2px 0;" />
+                  <button class="btn-q-remove-followup" data-idx="${idx}" data-q-idx="${qIndex}" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.75rem;padding:2px 4px;" title="Remove">×</button>
+                </li>
+              `).join('')}
+            </ul>
+            <button class="btn-q-add-followup" data-q-idx="${qIndex}" style="margin-top:6px;background:none;border:1px dashed rgba(255,255,255,0.1);color:var(--color-text-muted);font-size:0.75rem;padding:4px 10px;border-radius:6px;cursor:pointer;">+ Add Follow-up</button>
+          </div>
         </div>
         <div class="q-card-actions" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px;">
           <button class="btn-q-delete btn-jd-ghost btn-sm" data-idx="${qIndex}" style="padding: 4px 8px; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #ef4444;" title="Delete this question">Delete</button>
@@ -6677,6 +6748,64 @@ function renderQuestionsPane(job) {
           renderQuestionsPane(job);
           showPremiumToast("Question enhanced successfully.", "success");
         });
+      });
+    });
+
+    listQuestions.querySelectorAll('.q-difficulty-select').forEach(sel => {
+      sel.addEventListener('change', async () => {
+        const card = sel.closest('.jd-question-card');
+        const idx = parseInt(card.querySelector('.btn-q-save')?.getAttribute('data-idx'));
+        if (isNaN(idx) || !job.questions[idx]) return;
+        const q = job.questions[idx];
+        const newDiff = sel.value;
+        q.difficulty = newDiff;
+        const textareaQ = card.querySelector('.q-question-text');
+        const origText = textareaQ.value;
+        textareaQ.value = 'Regenerating for ' + newDiff + ' difficulty...';
+        textareaQ.disabled = true;
+        sel.disabled = true;
+        try {
+          const prompt = `You are an expert interview question designer.\nRewrite this interview question at ${newDiff} difficulty level. Keep the same topic and type (${q.type}).\nReturn ONLY valid JSON: {"question":"...","rubric":"...","follow_ups":["...","..."]}`;
+          const resp = await callDeepSeekAPI([
+            { role: 'system', content: prompt },
+            { role: 'user', content: origText }
+          ], true);
+          const parsed = JSON.parse(sanitizeJSONResponse(resp));
+          q.question = parsed.question || origText;
+          q.rubric = parsed.rubric || q.rubric;
+          q.follow_ups = parsed.follow_ups || q.follow_ups;
+          saveStateToLocalStorage();
+          renderQuestionsPane(job);
+          showPremiumToast(`Question regenerated at ${newDiff} difficulty.`, 'success');
+        } catch (err) {
+          textareaQ.value = origText;
+          textareaQ.disabled = false;
+          sel.disabled = false;
+          showPremiumToast('Failed to regenerate. Difficulty saved.', 'error');
+          saveStateToLocalStorage();
+        }
+      });
+    });
+
+    listQuestions.querySelectorAll('.btn-q-add-followup').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const qIdx = parseInt(btn.getAttribute('data-q-idx'));
+        if (!job.questions[qIdx].follow_ups) job.questions[qIdx].follow_ups = [];
+        job.questions[qIdx].follow_ups.push('');
+        saveStateToLocalStorage();
+        renderQuestionsPane(job);
+      });
+    });
+
+    listQuestions.querySelectorAll('.btn-q-remove-followup').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const qIdx = parseInt(btn.getAttribute('data-q-idx'));
+        const fIdx = parseInt(btn.getAttribute('data-idx'));
+        if (job.questions[qIdx].follow_ups) {
+          job.questions[qIdx].follow_ups.splice(fIdx, 1);
+          saveStateToLocalStorage();
+          renderQuestionsPane(job);
+        }
       });
     });
   }

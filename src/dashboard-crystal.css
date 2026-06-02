@@ -9,172 +9,150 @@
    DESIGN TOKENS
    ============================================================ */
 :root {
-  /* ── Liquid Crystal · Vibrant Violet + Sapphire Blue ── */
-  /* Primary Accent: Purple  oklch(58% 0.22 286) ≈ rgb(139, 92, 246) */
-  --color-gold-rgb:         139, 92, 246;
-  /* Secondary Accent: Blue  oklch(64% 0.21 245) ≈ rgb(59, 130, 246) */
-  --color-indigo-rgb:       59, 130, 246;
-  --color-brand-purple-rgb: 139, 92, 246;
+  /* ── Neutral Dark · Teal accent ── */
+  --color-gold-rgb:         45, 212, 191;
+  --color-indigo-rgb:       100, 160, 220;
+  --color-brand-purple-rgb: 45, 212, 191;
 
-  /* Base — modern black */
-  --color-bg:               #000000;
+  --color-bg:               #0a0a0a;
   --color-surface:          rgba(255, 255, 255, 0.04);
   --color-surface-2:        rgba(255, 255, 255, 0.02);
-  --color-surface-solid:    #0a0a0a;
+  --color-surface-solid:    #111111;
 
-  /* Primary accent — Vibrant Violet */
-  --color-gold:             oklch(58% 0.22 286);
-  --color-gold-light:       oklch(66% 0.18 286);
+  --color-gold:             #2dd4bf;
+  --color-gold-light:       #5eead4;
   --color-gold-dim:         rgba(var(--color-gold-rgb), 0.10);
-  --color-gold-glow:        rgba(var(--color-gold-rgb), 0.20);
-  --color-gold-border:      rgba(var(--color-gold-rgb), 0.30);
+  --color-gold-glow:        rgba(var(--color-gold-rgb), 0.18);
+  --color-gold-border:      rgba(var(--color-gold-rgb), 0.28);
 
-  /* Secondary accent — Sapphire Blue */
-  --color-indigo:           oklch(64% 0.21 245);
+  --color-indigo:           #64a0dc;
   --color-indigo-dim:       rgba(var(--color-indigo-rgb), 0.10);
-  --color-indigo-glow:      rgba(var(--color-indigo-rgb), 0.20);
-  --color-indigo-light:     oklch(70% 0.18 245);
-  --color-orange:           oklch(70% 0.18 40);
-  --color-pink:             oklch(70% 0.17 328);
-  --color-success:          oklch(70% 0.16 152);
+  --color-indigo-glow:      rgba(var(--color-indigo-rgb), 0.18);
+  --color-indigo-light:     #93c5fd;
+  --color-orange:           #fb923c;
+  --color-pink:             #f472b6;
+  --color-success:          #34d399;
   --color-success-dim:      rgba(16, 185, 129, 0.12);
-  --color-warning:          oklch(76% 0.16 60);
+  --color-warning:          #fbbf24;
   --color-warning-dim:      rgba(245, 158, 11, 0.12);
 
-  /* Text — clean white */
-  --color-text:             #f0f0f0;
-  --color-text-primary:     #f0f0f0;
-  --color-text-muted:       #a0a0a0;
-  --color-text-faint:       #666666;
-  --color-bg-dark:          #000000;
+  --color-text:             #e8e8e8;
+  --color-text-primary:     #e8e8e8;
+  --color-text-muted:       #9a9a9a;
+  --color-text-faint:       #5a5a5a;
+  --color-bg-dark:          #0a0a0a;
 
-  /* Glass — white-alpha surfaces over true black */
-  --glass-bg:               rgba(255, 255, 255, 0.035);
-  --glass-bg-hover:         rgba(255, 255, 255, 0.055);
-  --glass-border:           rgba(255, 255, 255, 0.07);
-  --glass-border-hover:     rgba(255, 255, 255, 0.13);
+  --glass-bg:               rgba(255, 255, 255, 0.04);
+  --glass-bg-hover:         rgba(255, 255, 255, 0.06);
+  --glass-border:           rgba(255, 255, 255, 0.08);
+  --glass-border-hover:     rgba(255, 255, 255, 0.14);
   --glass-border-gold:      rgba(var(--color-gold-rgb), 0.30);
-  --glass-shadow:           0 4px 24px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.08);
-  --glass-shadow-hover:     0 12px 40px rgba(0,0,0,0.65), 0 2px 8px rgba(var(--color-gold-rgb),0.14), inset 0 1px 0 rgba(255,255,255,0.13);
-  --glass-blur:             blur(32px) saturate(180%);
-  --glass-blur-heavy:       blur(44px) saturate(210%);
+  --glass-shadow:           0 4px 24px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.06);
+  --glass-shadow-hover:     0 12px 40px rgba(0,0,0,0.65), 0 2px 8px rgba(var(--color-gold-rgb),0.10), inset 0 1px 0 rgba(255,255,255,0.10);
+  --glass-blur:             blur(32px) saturate(150%);
+  --glass-blur-heavy:       blur(44px) saturate(180%);
 
-  /* Card */
   --color-card-bg:          var(--glass-bg);
   --color-card-border:      var(--glass-border);
   --color-card-hover:       var(--glass-bg-hover);
   --color-border:           var(--glass-border);
 
-  /* Gradients — Purple → Sapphire Blue */
-  --gradient-brand:         linear-gradient(135deg, oklch(58% 0.22 286) 0%, oklch(64% 0.21 245) 100%);
-  --gradient-gold:          linear-gradient(135deg, oklch(58% 0.22 286) 0%, oklch(54% 0.20 286) 100%);
-  --gradient-orb-indigo:    radial-gradient(ellipse at center, rgba(var(--color-gold-rgb), 0.16) 0%, transparent 70%);
-  --gradient-orb-gold:      radial-gradient(ellipse at center, rgba(var(--color-indigo-rgb), 0.10) 0%, transparent 70%);
-  --gradient-orb-pink:      radial-gradient(ellipse at center, rgba(var(--color-gold-rgb), 0.10) 0%, transparent 70%);
+  --gradient-brand:         linear-gradient(135deg, #2dd4bf 0%, #64a0dc 100%);
+  --gradient-gold:          linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%);
+  --gradient-orb-indigo:    radial-gradient(ellipse at center, rgba(var(--color-gold-rgb), 0.10) 0%, transparent 70%);
+  --gradient-orb-gold:      radial-gradient(ellipse at center, rgba(var(--color-indigo-rgb), 0.07) 0%, transparent 70%);
+  --gradient-orb-pink:      radial-gradient(ellipse at center, rgba(var(--color-gold-rgb), 0.06) 0%, transparent 70%);
 
-  /* Fonts ── system iOS-style standard sans */
   --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
   --font-body:    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', 'SF Mono', monospace;
 
-  /* Spring physics transitions — unchanged */
   --spring-smooth:  all 0.65s cubic-bezier(0.16, 1, 0.3, 1);
   --spring-fast:    all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   --spring-snappy:  all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-
   --transition-smooth: var(--spring-smooth);
   --transition-fast:   var(--spring-fast);
 
-  /* Ambient Orbs — very subtle on true black */
-  --orb-color-1:            oklch(44% 0.14 286);
-  --orb-opacity-1:          0.14;
-  --orb-color-2:            oklch(40% 0.12 245);
-  --orb-opacity-2:          0.10;
-  --orb-color-3:            oklch(36% 0.10 265);
-  --orb-opacity-3:          0.08;
-  --orb-color-4:            oklch(32% 0.08 255);
-  --orb-opacity-4:          0.06;
+  --orb-color-1:            #1a2e2b;
+  --orb-opacity-1:          0.12;
+  --orb-color-2:            #1a2530;
+  --orb-opacity-2:          0.08;
+  --orb-color-3:            #182428;
+  --orb-opacity-3:          0.06;
+  --orb-color-4:            #1c2226;
+  --orb-opacity-4:          0.05;
 
-  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, rgba(20, 10, 40, 0.4), transparent);
-  --scene-gradient-2:       radial-gradient(ellipse 70% 70% at 86% 74%, rgba(10, 15, 35, 0.3), transparent);
+  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, rgba(15, 25, 25, 0.4), transparent);
+  --scene-gradient-2:       radial-gradient(ellipse 70% 70% at 86% 74%, rgba(12, 20, 28, 0.3), transparent);
 
-  /* Card Glows */
-  --card-glow-indigo:       rgba(var(--color-gold-rgb), 0.14);
-  --card-glow-gold:         rgba(var(--color-indigo-rgb), 0.12);
-  --glass-glow-indigo-hover: 0 0 28px rgba(var(--color-gold-rgb), 0.20);
-  --glass-glow-gold-hover:   0 0 28px rgba(var(--color-indigo-rgb), 0.16);
+  --card-glow-indigo:       rgba(var(--color-gold-rgb), 0.10);
+  --card-glow-gold:         rgba(var(--color-indigo-rgb), 0.08);
+  --glass-glow-indigo-hover: 0 0 28px rgba(var(--color-gold-rgb), 0.14);
+  --glass-glow-gold-hover:   0 0 28px rgba(var(--color-indigo-rgb), 0.12);
 }
 
 /* ============================================================
    LIGHT THEME OVERRIDES
    ============================================================ */
 body.light-theme {
-  /* Primary: deep violet — darker for legibility on white */
-  --color-gold-rgb:         80, 60, 180;
-  /* Secondary: medium blue */
-  --color-indigo-rgb:       18, 117, 168;
-  --color-brand-purple-rgb: 80, 60, 180;
+  --color-gold-rgb:         13, 148, 136;
+  --color-indigo-rgb:       51, 115, 170;
+  --color-brand-purple-rgb: 13, 148, 136;
 
-  /* Modern white background */
-  --color-bg:               #ffffff;
-  --color-surface:          rgba(0, 0, 0, 0.03);
-  --color-surface-2:        rgba(0, 0, 0, 0.015);
-  --color-surface-solid:    #fafafa;
+  --color-bg:               #fafafa;
+  --color-surface:          rgba(0, 0, 0, 0.025);
+  --color-surface-2:        rgba(0, 0, 0, 0.012);
+  --color-surface-solid:    #f5f5f5;
 
-  --color-gold:             oklch(46% 0.18 278);
-  --color-gold-light:       oklch(52% 0.16 278);
+  --color-gold:             #0d9488;
+  --color-gold-light:       #14b8a6;
   --color-gold-dim:         rgba(var(--color-gold-rgb), 0.08);
-  --color-gold-glow:        rgba(var(--color-gold-rgb), 0.14);
-  --color-gold-border:      rgba(var(--color-gold-rgb), 0.24);
+  --color-gold-glow:        rgba(var(--color-gold-rgb), 0.12);
+  --color-gold-border:      rgba(var(--color-gold-rgb), 0.22);
 
-  --color-indigo:           oklch(46% 0.20 210);
+  --color-indigo:           #3373aa;
   --color-indigo-dim:       rgba(var(--color-indigo-rgb), 0.08);
-  --color-indigo-glow:      rgba(var(--color-indigo-rgb), 0.16);
-  --color-indigo-light:     oklch(52% 0.18 210);
+  --color-indigo-glow:      rgba(var(--color-indigo-rgb), 0.12);
+  --color-indigo-light:     #4a90c4;
 
-  /* Text: clean dark */
-  --color-text:             #0a0a0a;
-  --color-text-primary:     #0a0a0a;
-  --color-text-muted:       #555555;
-  --color-text-faint:       #999999;
-  --color-bg-dark:          #ffffff;
+  --color-text:             #1a1a1a;
+  --color-text-primary:     #1a1a1a;
+  --color-text-muted:       #6b6b6b;
+  --color-text-faint:       #a0a0a0;
+  --color-bg-dark:          #fafafa;
 
-  /* Clean white glass */
-  --glass-bg:               rgba(255, 255, 255, 0.80);
+  --glass-bg:               rgba(255, 255, 255, 0.82);
   --glass-bg-hover:         rgba(255, 255, 255, 0.95);
-  --glass-border:           rgba(0, 0, 0, 0.08);
-  --glass-border-hover:     rgba(0, 0, 0, 0.16);
+  --glass-border:           rgba(0, 0, 0, 0.07);
+  --glass-border-hover:     rgba(0, 0, 0, 0.14);
   --glass-border-gold:      rgba(var(--color-gold-rgb), 0.22);
-  --glass-shadow:           0 4px 24px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --glass-shadow-hover:     0 12px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+  --glass-shadow:           0 4px 24px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  --glass-shadow-hover:     0 12px 40px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.05);
   --color-card-bg:          var(--glass-bg);
   --color-card-border:      var(--glass-border);
 
   --color-success:          #047857;
   --color-warning:          #b45309;
 
-  /* Ambient Orbs - Light: soft violet & blue */
-  --orb-color-1:            oklch(72% 0.14 278);
-  --orb-opacity-1:          0.12;
-  --orb-color-2:            oklch(68% 0.14 315);
-  --orb-opacity-2:          0.10;
-  --orb-color-3:            oklch(74% 0.12 232);
-  --orb-opacity-3:          0.08;
-  --orb-color-4:            oklch(70% 0.10 260);
-  --orb-opacity-4:          0.06;
+  --orb-color-1:            #d1fae5;
+  --orb-opacity-1:          0.08;
+  --orb-color-2:            #e0f2fe;
+  --orb-opacity-2:          0.06;
+  --orb-color-3:            #ccfbf1;
+  --orb-opacity-3:          0.05;
+  --orb-color-4:            #e2e8f0;
+  --orb-opacity-4:          0.04;
 
-  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, rgba(100, 80, 200, 0.04), transparent);
-  --scene-gradient-2:       radial-gradient(ellipse 60% 60% at 80% 80%, rgba(60, 130, 246, 0.03), transparent);
+  --scene-gradient-1:       radial-gradient(ellipse 80% 80% at 50% -10%, rgba(13, 148, 136, 0.03), transparent);
+  --scene-gradient-2:       radial-gradient(ellipse 60% 60% at 80% 80%, rgba(100, 160, 220, 0.02), transparent);
 
-  /* Card Glows - Light: muted */
-  --card-glow-indigo:       oklch(46% 0.18 278 / 0.08);
-  --card-glow-gold:         oklch(46% 0.20 210 / 0.07);
-  --glass-glow-indigo-hover: 0 0 24px oklch(46% 0.18 278 / 0.10);
-  --glass-glow-gold-hover:   0 0 24px oklch(46% 0.20 210 / 0.08);
+  --card-glow-indigo:       rgba(var(--color-gold-rgb), 0.06);
+  --card-glow-gold:         rgba(var(--color-indigo-rgb), 0.05);
+  --glass-glow-indigo-hover: 0 0 24px rgba(var(--color-gold-rgb), 0.08);
+  --glass-glow-gold-hover:   0 0 24px rgba(var(--color-indigo-rgb), 0.06);
 
-  /* Gradient overrides for light */
-  --gradient-brand:         linear-gradient(135deg, oklch(46% 0.18 278) 0%, oklch(44% 0.20 300) 100%);
-  --gradient-gold:          linear-gradient(135deg, oklch(46% 0.18 278) 0%, oklch(42% 0.16 278) 100%);
+  --gradient-brand:         linear-gradient(135deg, #0d9488 0%, #3373aa 100%);
+  --gradient-gold:          linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
 }
 
 /* Light theme component overrides */
@@ -198,26 +176,26 @@ body.light-theme .data-table tbody tr:hover { background: rgba(var(--color-gold-
 body.light-theme .pipeline-flow { background: rgba(var(--color-gold-rgb),0.04); }
 body.light-theme .job-card-footer { border-top-color: rgba(var(--color-gold-rgb),0.07); }
 body.light-theme .btn-submit { color: #ffffff; }
-body.light-theme .icon-purple { background: rgba(var(--color-gold-rgb), 0.08); color: oklch(36% 0.20 195); }
+body.light-theme .icon-purple { background: rgba(var(--color-gold-rgb), 0.08); color: #0f766e; }
 body.light-theme .icon-orange { background: rgba(251, 146, 60, 0.08); color: #c2410c; }
-body.light-theme .icon-blue   { background: rgba(var(--color-indigo-rgb), 0.08); color: oklch(34% 0.22 280); }
+body.light-theme .icon-blue   { background: rgba(var(--color-indigo-rgb), 0.08); color: #2563eb; }
 body.light-theme .icon-green  { background: rgba(52, 211, 153, 0.08); color: #047857; }
-body.light-theme .badge-role { background: rgba(var(--color-gold-rgb),0.06); border-color: rgba(var(--color-gold-rgb),0.16); color: oklch(36% 0.20 195); }
-body.light-theme .badge-role.recruiter { background: rgba(var(--color-indigo-rgb),0.06); border-color: rgba(var(--color-indigo-rgb),0.16); color: oklch(34% 0.22 280); }
+body.light-theme .badge-role { background: rgba(var(--color-gold-rgb),0.06); border-color: rgba(var(--color-gold-rgb),0.16); color: #0f766e; }
+body.light-theme .badge-role.recruiter { background: rgba(var(--color-indigo-rgb),0.06); border-color: rgba(var(--color-indigo-rgb),0.16); color: #2563eb; }
 body.light-theme .badge-role.interviewer { background: rgba(52,211,153,0.06); border-color: rgba(52,211,153,0.15); color: #047857; }
 body.light-theme .orb-indigo { opacity: 0.12; }
 body.light-theme .orb-gold   { opacity: 0.10; }
 body.light-theme .orb-pink   { opacity: 0.08; }
 body.light-theme .terminal-box { background: rgba(8,10,20,0.92) !important; }
 body.light-theme .terminal-box .term-log { color: #a3a3a3; }
-body.light-theme .terminal-box .term-log code { color: oklch(80% 0.22 292); }
+body.light-theme .terminal-box .term-log code { color: #2dd4bf; }
 body.light-theme .kanban-column { background: rgba(245,245,245,0.80); border-color: rgba(0,0,0,0.06); }
 body.light-theme .kanban-card { background: rgba(255,255,255,0.90); border-color: rgba(0,0,0,0.08); }
-body.light-theme .spotlight-box { background: rgba(255,255,255,0.96); border-color: rgba(var(--color-gold-rgb),0.10); box-shadow: 0 30px 80px rgba(80,20,140,0.12); }
+body.light-theme .spotlight-box { background: rgba(255,255,255,0.96); border-color: rgba(var(--color-gold-rgb),0.10); box-shadow: 0 30px 80px rgba(0,0,0,0.10); }
 body.light-theme .bar-outer { background: rgba(var(--color-gold-rgb),0.08); }
 body.light-theme .waveform-box { background: rgba(var(--color-gold-rgb),0.03); }
 body.light-theme ::-webkit-scrollbar-thumb { background: rgba(var(--color-gold-rgb),0.20); }
-body.light-theme ::-webkit-scrollbar-thumb:hover { background: oklch(48% 0.24 292); }
+body.light-theme ::-webkit-scrollbar-thumb:hover { background: #0d9488; }
 body.light-theme .ra-score-ring {
   background: conic-gradient(
     rgba(var(--color-gold-rgb), 0.9) calc(var(--score) * 1%),
@@ -1178,7 +1156,7 @@ body.light-theme .theme-icon-sun { display: block; }
   font-size: 0.75rem; font-weight: 700;
   border: 1px solid var(--glass-border);
 }
-.user-details { display: flex; flex-direction: column; }
+.user-details { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
 .user-email-mini { font-size: 0.75rem; color: var(--color-text-muted); }
 
 .badge-role {
@@ -1450,7 +1428,7 @@ body.light-theme .theme-icon-sun { display: block; }
 .terminal-body { flex: 1; padding: 16px; overflow-y: auto; max-height: 340px; display: flex; flex-direction: column; gap: 6px; }
 .term-log { font-family: var(--font-mono); font-size: 0.8rem; color: rgba(163,163,163,0.9); line-height: 1.6; animation: log-in 0.3s ease; }
 @keyframes log-in { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
-.term-log code { color: oklch(80% 0.22 292); }
+.term-log code { color: #2dd4bf; }
 .term-log.font-gold { color: var(--color-gold); }
 .terminal-input-wrap {
   display: flex;
@@ -2827,32 +2805,55 @@ body.light-theme .btn-stage-advance:hover {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  background: var(--color-surface);
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  border-radius: 10px;
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
 }
 .qg-controls-bar .jd-config-row {
   flex: 0 0 auto;
+  background: transparent;
+  border: none;
+  padding: 0;
+  gap: 4px;
 }
+.qg-controls-bar .jd-config-label {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-faint);
+  font-weight: 600;
+}
+.qg-controls-bar .jd-config-select {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  transition: var(--spring-fast);
+}
+.qg-controls-bar .jd-config-select:hover { border-color: var(--glass-border-hover); }
+.qg-controls-bar .jd-config-select:focus { border-color: var(--glass-border-gold); box-shadow: 0 0 0 2px rgba(var(--color-gold-rgb), 0.08); }
 .qg-jd-toggle {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
-  background: rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.04);
   border: 1px solid var(--glass-border);
   color: var(--color-text-muted);
   transition: var(--spring-fast);
 }
 .qg-jd-toggle:hover {
   color: var(--color-text-primary);
-  background: rgba(0,0,0,0.2);
+  border-color: var(--glass-border-hover);
+  background: rgba(255,255,255,0.06);
 }
 .qg-jd-details {
   background: var(--color-surface);
@@ -3434,7 +3435,7 @@ body.light-theme .comp-box-original {
   border-radius: 50%;
   background: conic-gradient(
     oklch(65% 0.22 254) 0%,
-    oklch(72% 0.24 292) calc(var(--score) * 1%),
+    rgba(var(--color-gold-rgb), 0.9) calc(var(--score) * 1%),
     rgba(255,255,255,0.07) calc(var(--score) * 1%)
   );
   display: flex;
@@ -5582,6 +5583,51 @@ body.light-theme .date-range-select { background: rgba(0,0,0,0.04); color: var(-
 .date-input:focus { border-color: var(--glass-border-gold); }
 .date-sep { color: var(--color-text-faint); font-size: 0.76rem; }
 
+/* Calendar Date Range Dropdown */
+.date-range-wrap { position: relative; }
+.btn-date-range-trigger {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 14px; border-radius: 8px;
+  border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2);
+  color: var(--color-text-primary); font-family: var(--font-body);
+  font-size: 0.82rem; font-weight: 500; cursor: pointer;
+  transition: var(--spring-fast);
+}
+.btn-date-range-trigger:hover { border-color: var(--glass-border-gold); }
+body.light-theme .btn-date-range-trigger { background: rgba(0,0,0,0.04); }
+.date-range-dropdown {
+  display: none; position: absolute; top: calc(100% + 6px); left: 0; z-index: 120;
+  background: var(--color-surface-solid); border: 1px solid var(--glass-border);
+  border-radius: 12px; padding: 12px; min-width: 280px;
+  backdrop-filter: var(--glass-blur);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+}
+.date-range-dropdown.open { display: block; }
+body.light-theme .date-range-dropdown { background: rgba(255,255,255,0.98); box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
+.dr-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.dr-preset {
+  padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border);
+  background: transparent; color: var(--color-text-muted);
+  font-size: 0.76rem; font-family: var(--font-body); cursor: pointer;
+  transition: all 0.15s ease;
+}
+.dr-preset:hover { background: rgba(255,255,255,0.05); color: var(--color-text-primary); }
+.dr-preset.active { background: rgba(var(--color-gold-rgb),0.12); border-color: rgba(var(--color-gold-rgb),0.3); color: var(--color-gold); }
+body.light-theme .dr-preset:hover { background: rgba(0,0,0,0.04); }
+.dr-divider { height: 1px; background: var(--glass-border); margin: 10px 0; }
+.dr-label { font-size: 0.76rem; font-weight: 600; color: var(--color-text-muted); margin-bottom: 8px; display: block; }
+.dr-calendar-inputs { display: flex; gap: 10px; margin-bottom: 10px; }
+.dr-cal-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.dr-cal-field label { font-size: 0.72rem; color: var(--color-text-faint); }
+.dr-apply-btn {
+  width: 100%; padding: 7px; border-radius: 8px;
+  border: 1px solid rgba(var(--color-gold-rgb),0.3);
+  background: rgba(var(--color-gold-rgb),0.1); color: var(--color-gold);
+  font-size: 0.78rem; font-weight: 600; font-family: var(--font-body);
+  cursor: pointer; transition: var(--spring-fast);
+}
+.dr-apply-btn:hover { background: rgba(var(--color-gold-rgb),0.2); }
+
 /* Job Detail Date Range Dropdown */
 .jd-date-range-wrap { position: relative; }
 .jd-daterange-dropdown {
@@ -5932,7 +5978,7 @@ body.light-theme .date-range-select { background: rgba(0,0,0,0.04); color: var(-
 .bulk-actions-dropdown {
   position: absolute;
   top: calc(100% + 4px);
-  right: 0;
+  left: 0;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 8px;
