@@ -5159,7 +5159,7 @@ function simulateResumesParsing(files) {
 
       const progressInner = document.getElementById(`progress-inner-\${idx}`);
       if (progressInner) {
-        progressInner.style.width = `\${currentProgress}%`;
+        progressInner.style.setProperty('--progress', currentProgress / 100);
       }
     }, 150 + Math.random() * 150);
   });
@@ -6573,7 +6573,7 @@ function stopActiveCardPlayer() {
     const bars = document.querySelectorAll(`.player-wave-bars[data-wave-id="${oldId}"] .player-wave-bar`);
     bars.forEach(b => {
       b.classList.remove('played');
-      b.style.height = `${Math.floor(Math.random() * 70 + 20)}%`;
+      b.style.setProperty('--wave-height', (Math.floor(Math.random() * 70 + 20)) / 100);
     });
     activeCardPlayerId = null;
   }
