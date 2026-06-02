@@ -1029,10 +1029,46 @@ function renderJobCards() {
           <h3 class="job-title">${cardName}</h3>
           <span class="job-meta-pill">Role: ${roleName}</span>
         </div>
-        <span class="status-badge ${status}">
-          <span class="status-badge-dot"></span>
-          ${status.charAt(0).toUpperCase() + status.slice(1)}
-        </span>
+        <div class="job-card-header-actions">
+          <span class="status-badge ${status}">
+            <span class="status-badge-dot"></span>
+            ${status.charAt(0).toUpperCase() + status.slice(1)}
+          </span>
+          <button class="btn-job-kebab" data-job-id="${jobId}" onclick="event.stopPropagation(); toggleJobKebab(this);" title="Job actions">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          </button>
+          <div class="job-kebab-dropdown" data-job-id="${jobId}">
+            <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'edit-name')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              Edit Job Name
+            </button>
+            <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'view-flow')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              View Job Flow
+            </button>
+            <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'career-page')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              ${job.listedOnCareer ? 'Remove from Career Page' : 'List on Career Page'}
+            </button>
+            <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'duplicate')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Duplicate
+            </button>
+            <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'settings')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Interview Settings
+            </button>
+            <div class="kebab-divider"></div>
+            <button class="kebab-item ${status === 'archived' ? '' : 'kebab-item-danger'}" onclick="event.stopPropagation(); handleJobKebab('${jobId}', '${status === 'archived' ? 'unarchive' : 'archive'}')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+              ${status === 'archived' ? 'Unarchive' : 'Archive'}
+            </button>
+            <button class="kebab-item kebab-item-danger" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'delete')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              Delete
+            </button>
+          </div>
+        </div>
       </div>
       
       <div class="job-card-details">
@@ -3328,7 +3364,158 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.openJobDescriptionDrawer = (jobId) => openDrawer('view-jd', jobId);
-  
+
+  window.toggleJobKebab = function(btn) {
+    const dropdown = btn.nextElementSibling;
+    const isOpen = dropdown.classList.contains('open');
+    document.querySelectorAll('.job-kebab-dropdown.open').forEach(d => d.classList.remove('open'));
+    if (!isOpen) dropdown.classList.add('open');
+  };
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.job-kebab-dropdown.open').forEach(d => d.classList.remove('open'));
+  });
+
+  window.handleJobKebab = function(jobId, action) {
+    document.querySelectorAll('.job-kebab-dropdown.open').forEach(d => d.classList.remove('open'));
+    const job = AppState.jobs.find(j => j.id === jobId);
+    if (!job) return;
+    switch (action) {
+      case 'edit-name':
+        openEditJobModal(jobId);
+        break;
+      case 'view-flow':
+        navigateToJobDetail(jobId);
+        break;
+      case 'career-page': {
+        job.listedOnCareer = !job.listedOnCareer;
+        renderJobCards();
+        const label = job.listedOnCareer ? 'listed on' : 'removed from';
+        showPremiumToast(`"${job.cardName || job.roleName}" ${label} career page.`, 'success');
+        break;
+      }
+      case 'duplicate': {
+        const dup = JSON.parse(JSON.stringify(job));
+        dup.id = 'JOB-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+        dup.cardName = (job.cardName || job.roleName) + ' (Copy)';
+        dup.status = 'draft';
+        dup.listedOnCareer = false;
+        dup.created = new Date().toLocaleString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+        dup.pipeline = { total: 0, resume: 0, screening: 0, functional: 0 };
+        AppState.jobs.push(dup);
+        renderJobCards();
+        updateJobsCounters();
+        showPremiumToast(`Job duplicated as "${dup.cardName}".`, 'success');
+        break;
+      }
+      case 'settings':
+        navigateToJobDetail(jobId);
+        setTimeout(() => {
+          const qTab = document.querySelector('.jd-tab[data-jd-tab="questions"]');
+          if (qTab) qTab.click();
+        }, 100);
+        break;
+      case 'archive':
+        job.status = 'archived';
+        renderJobCards();
+        updateJobsCounters();
+        showPremiumToast(`"${job.cardName || job.roleName}" has been archived.`, 'success');
+        break;
+      case 'unarchive':
+        job.status = 'published';
+        renderJobCards();
+        updateJobsCounters();
+        showPremiumToast(`"${job.cardName || job.roleName}" has been restored.`, 'success');
+        break;
+      case 'delete': {
+        const name = job.cardName || job.roleName;
+        const idx = AppState.jobs.findIndex(j => j.id === jobId);
+        if (idx === -1) break;
+        AppState.jobs.splice(idx, 1);
+        AppState.candidates = AppState.candidates.filter(c => c.jobApplied !== job.roleName && c.jobApplied !== job.cardName);
+        renderJobCards();
+        updateJobsCounters();
+        updateSummaryMetrics();
+        showPremiumToast(`"${name}" has been permanently deleted.`, 'success');
+        break;
+      }
+    }
+  };
+
+  // Edit Job Modal logic
+  let editJobModalTags = [];
+  let editJobModalJobId = null;
+
+  function openEditJobModal(jobId) {
+    const job = AppState.jobs.find(j => j.id === jobId);
+    if (!job) return;
+    editJobModalJobId = jobId;
+    editJobModalTags = Array.isArray(job.tags) ? [...job.tags] : [];
+
+    const modal = document.getElementById('modal-edit-job');
+    document.getElementById('modal-edit-job-name').value = job.cardName || job.roleName || '';
+    document.getElementById('modal-edit-job-id').value = job.customJobId && job.customJobId !== '-' ? job.customJobId : '';
+    renderEditJobTags();
+    modal.style.display = '';
+    setTimeout(() => document.getElementById('modal-edit-job-name').focus(), 50);
+    soundEngine.playChime([392.00, 523.25], 0.12, 0.1);
+  }
+
+  function closeEditJobModal() {
+    document.getElementById('modal-edit-job').style.display = 'none';
+    editJobModalJobId = null;
+    editJobModalTags = [];
+    soundEngine.playClick();
+  }
+
+  function renderEditJobTags() {
+    const list = document.getElementById('modal-edit-tags-list');
+    list.innerHTML = editJobModalTags.map((tag, i) =>
+      `<span class="modal-tag">${tag}<button class="modal-tag-remove" data-idx="${i}">×</button></span>`
+    ).join('');
+    list.querySelectorAll('.modal-tag-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editJobModalTags.splice(parseInt(btn.dataset.idx), 1);
+        renderEditJobTags();
+      });
+    });
+  }
+
+  document.getElementById('modal-edit-job-close').addEventListener('click', closeEditJobModal);
+  document.getElementById('modal-edit-job').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-edit-job') closeEditJobModal();
+  });
+
+  document.getElementById('modal-edit-tags-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = e.target.value.replace(/,/g, '').trim();
+      if (val && !editJobModalTags.includes(val)) {
+        editJobModalTags.push(val);
+        renderEditJobTags();
+      }
+      e.target.value = '';
+    }
+  });
+
+  document.getElementById('modal-edit-job-save').addEventListener('click', () => {
+    const job = AppState.jobs.find(j => j.id === editJobModalJobId);
+    if (!job) return;
+    const nameVal = document.getElementById('modal-edit-job-name').value.trim();
+    if (!nameVal) {
+      showPremiumToast('Job name is required.', 'error');
+      return;
+    }
+    job.cardName = nameVal;
+    const idVal = document.getElementById('modal-edit-job-id').value.trim();
+    if (idVal) job.customJobId = idVal;
+    job.tags = [...editJobModalTags];
+    closeEditJobModal();
+    renderJobCards();
+    updateJobsCounters();
+    showPremiumToast(`Job updated to "${nameVal}".`, 'success');
+  });
+
   const closeReportBtn = document.getElementById('btn-close-drawer-report');
   if (closeReportBtn) {
     closeReportBtn.addEventListener('click', closeDrawers);
@@ -4972,7 +5159,7 @@ function simulateResumesParsing(files) {
 
       const progressInner = document.getElementById(`progress-inner-\${idx}`);
       if (progressInner) {
-        progressInner.style.width = `\${currentProgress}%`;
+        progressInner.style.setProperty('--progress', currentProgress / 100);
       }
     }, 150 + Math.random() * 150);
   });
@@ -6386,7 +6573,7 @@ function stopActiveCardPlayer() {
     const bars = document.querySelectorAll(`.player-wave-bars[data-wave-id="${oldId}"] .player-wave-bar`);
     bars.forEach(b => {
       b.classList.remove('played');
-      b.style.height = `${Math.floor(Math.random() * 70 + 20)}%`;
+      b.style.setProperty('--wave-height', (Math.floor(Math.random() * 70 + 20)) / 100);
     });
     activeCardPlayerId = null;
   }
