@@ -107,6 +107,24 @@ const AppState = {
         screening: 3,
         functional: 4
       },
+      resumeCriteria: {
+        mustHave: [
+          'Experience with government tendering portals (GeM, CPPP, e-Procurement)',
+          'Strong written communication for proposal drafting',
+          'Understanding of compliance requirements for public sector bids'
+        ],
+        redFlags: [
+          'No prior exposure to government or public sector workflows',
+          'Only private-sector sales or marketing background',
+          'Resume lacks mention of documentation, RFP, or bidding processes'
+        ],
+        goodToHave: [
+          'Experience with SAP Ariba or similar procurement platforms',
+          'Knowledge of financial proposal preparation and costing',
+          'Prior coordination with legal teams for contract reviews'
+        ],
+        goodToHaveMinMatch: 1
+      },
       questions: [
         {
           id: 'q-prop-1',
@@ -149,6 +167,24 @@ const AppState = {
         resume: 4,
         screening: 3,
         functional: 3
+      },
+      resumeCriteria: {
+        mustHave: [
+          'Proficiency in React or equivalent frontend framework',
+          'Backend experience with Node.js, Express, or similar',
+          'Database experience with PostgreSQL, MongoDB, or equivalent'
+        ],
+        redFlags: [
+          'Resume lacks specific mention of web development technologies',
+          'Only academic projects with no professional experience',
+          'Experience limited to unrelated fields without transferable skills'
+        ],
+        goodToHave: [
+          'Experience with Docker, Kubernetes, or cloud platforms (AWS/GCP)',
+          'Familiarity with CI/CD pipelines and DevOps practices',
+          'Open source contributions or published technical blog posts'
+        ],
+        goodToHaveMinMatch: 1
       },
       questions: [
         {
@@ -2847,7 +2883,9 @@ function drawFunnelSVG(job, candidates) {
     g.style.cursor = 'pointer';
 
     const p = pts[i], q = pts[i + 1];
-    const midY = (p.y + q.y) / 2;
+    const dy = q.y - p.y;
+    const cp1Y = p.y + dy * 0.35;
+    const cp2Y = p.y + dy * 0.65;
     const topW = p.rx - p.lx;
     const botW = q.rx - q.lx;
     const fracs = getSourceFractions(i);
@@ -2864,9 +2902,9 @@ function drawFunnelSVG(job, candidates) {
 
       const d =
         `M ${tl} ${p.y} L ${tr} ${p.y}` +
-        ` C ${tr} ${midY} ${br} ${midY} ${br} ${q.y}` +
+        ` C ${tr} ${cp1Y} ${br} ${cp2Y} ${br} ${q.y}` +
         ` L ${bl} ${q.y}` +
-        ` C ${bl} ${midY} ${tl} ${midY} ${tl} ${p.y} Z`;
+        ` C ${bl} ${cp2Y} ${tl} ${cp1Y} ${tl} ${p.y} Z`;
 
       const path = document.createElementNS(svgNS, 'path');
       path.setAttribute('d', d);
@@ -2880,6 +2918,63 @@ function drawFunnelSVG(job, candidates) {
     });
 
     svgEl.appendChild(g);
+  }
+
+  /* ── Feathered gradient overlays at stage boundaries ── */
+  if (n > 2) {
+    const defs = document.createElementNS(svgNS, 'defs');
+    for (let i = 1; i <= n - 2; i++) {
+      const bY = pts[i].y;
+      const bandH = 12;
+      const gradId = `funnel-blend-grad-${i}`;
+
+      /* average colour of the two adjacent stages */
+      const fracsAbove = getSourceFractions(i - 1);
+      const fracsBelow = getSourceFractions(i);
+      const pickFirst = (arr) => (arr.length ? arr[0].color : '#888');
+      const cAbove = pickFirst(fracsAbove);
+      const cBelow = pickFirst(fracsBelow);
+
+      /* parse hex → rgb helper */
+      const hexToRgb = (hex) => {
+        const h = hex.replace('#', '');
+        return [parseInt(h.substring(0,2),16), parseInt(h.substring(2,4),16), parseInt(h.substring(4,6),16)];
+      };
+      const [r1,g1,b1] = hexToRgb(cAbove);
+      const [r2,g2,b2] = hexToRgb(cBelow);
+      const mr = Math.round((r1+r2)/2), mg = Math.round((g1+g2)/2), mb = Math.round((b1+b2)/2);
+
+      const grad = document.createElementNS(svgNS, 'linearGradient');
+      grad.setAttribute('id', gradId);
+      grad.setAttribute('x1', '0'); grad.setAttribute('y1', '0');
+      grad.setAttribute('x2', '0'); grad.setAttribute('y2', '1');
+      const stops = [
+        { offset: '0%',   color: `rgba(${mr},${mg},${mb},0)` },
+        { offset: '45%',  color: `rgba(${mr},${mg},${mb},0.15)` },
+        { offset: '55%',  color: `rgba(${mr},${mg},${mb},0.15)` },
+        { offset: '100%', color: `rgba(${mr},${mg},${mb},0)` },
+      ];
+      stops.forEach(s => {
+        const stop = document.createElementNS(svgNS, 'stop');
+        stop.setAttribute('offset', s.offset);
+        stop.setAttribute('stop-color', s.color);
+        grad.appendChild(stop);
+      });
+      defs.appendChild(grad);
+
+      /* overlay rect */
+      const maxLx = Math.min(pts[i-1].lx, pts[i].lx) - 4;
+      const maxRx = Math.max(pts[i-1].rx, pts[i].rx) + 4;
+      const rect = document.createElementNS(svgNS, 'rect');
+      rect.setAttribute('x', maxLx);
+      rect.setAttribute('y', bY - bandH / 2);
+      rect.setAttribute('width', maxRx - maxLx);
+      rect.setAttribute('height', bandH);
+      rect.setAttribute('fill', `url(#${gradId})`);
+      rect.setAttribute('pointer-events', 'none');
+      svgEl.appendChild(rect);
+    }
+    svgEl.insertBefore(defs, svgEl.firstChild);
   }
 
   let funnelTooltipEl = document.getElementById('funnel-svg-tooltip');
@@ -5817,19 +5912,126 @@ function renderJobDetailPanes(job) {
     return true;
   });
 
-  // 1. Resume pane
+  // 1. Resume pane — criteria config + candidates table
   const resumeList = document.getElementById('list-stage-resume');
   if (resumeList) {
     const resumeCands = jobCandidates.filter(c => c.status === 'Resume');
-    if (resumeCands.length === 0) {
-      resumeList.innerHTML = `
-        <div class="jd-empty-pane">
-          <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-          <p>Resume Analysis — No candidates in this stage</p>
+    const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [], goodToHaveMinMatch: 1 };
+
+    const criteriaHTML = `
+      <div class="ra-config-section">
+        <div class="ra-config-header">
+          <div class="ra-config-header-left">
+            <h3 class="ra-config-title">Resume Analysis</h3>
+            <p class="ra-config-subtitle">Parameters created based on your requirements — feel free to edit them</p>
+          </div>
+          <button class="btn-ra-edit-criteria" id="btn-ra-edit-criteria">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit
+          </button>
         </div>
-      `;
-    } else {
-      renderResumeStagePaneForJob(resumeCands, job, resumeList);
+
+        <div class="ra-criteria-group must-have">
+          <div class="ra-criteria-group-header">
+            <span class="ra-criteria-icon must-have">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </span>
+            <div>
+              <h4 class="ra-criteria-group-title must-have">Must Have</h4>
+              <p class="ra-criteria-group-desc">Candidates meeting these criteria will be shortlisted; others waitlisted for review</p>
+            </div>
+          </div>
+          <div class="ra-criteria-items">
+            ${criteria.mustHave.map((item, i) => `
+              <div class="ra-criteria-item must-have">
+                <span class="ra-criteria-num must-have">${i + 1}</span>
+                <span class="ra-criteria-text">${item}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="ra-criteria-divider">
+          <span class="ra-criteria-divider-text">AND</span>
+        </div>
+
+        <div class="ra-criteria-group red-flags">
+          <div class="ra-criteria-group-header">
+            <span class="ra-criteria-icon red-flags">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+            <div>
+              <h4 class="ra-criteria-group-title red-flags">Should Not Have (Red Flags)</h4>
+              <p class="ra-criteria-group-desc">Candidates with no red flags will be shortlisted; others waitlisted for review</p>
+            </div>
+          </div>
+          <div class="ra-criteria-items">
+            ${criteria.redFlags.map((item, i) => `
+              <div class="ra-criteria-item red-flags">
+                <span class="ra-criteria-num red-flags">${i + 1}</span>
+                <span class="ra-criteria-text">${item}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="ra-criteria-divider">
+          <span class="ra-criteria-divider-text">AND</span>
+        </div>
+
+        <div class="ra-criteria-group good-to-have">
+          <div class="ra-criteria-group-header">
+            <span class="ra-criteria-icon good-to-have">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <div>
+              <h4 class="ra-criteria-group-title good-to-have">Good To Have</h4>
+              <p class="ra-criteria-group-desc">Candidates meeting the threshold will be shortlisted; others waitlisted for review.</p>
+            </div>
+          </div>
+          <div class="ra-criteria-min-match">Minimum match: ${criteria.goodToHaveMinMatch} out of ${criteria.goodToHave.length} criteria</div>
+          <div class="ra-criteria-items">
+            ${criteria.goodToHave.map((item, i) => `
+              <div class="ra-criteria-item good-to-have">
+                <span class="ra-criteria-num good-to-have">${i + 1}</span>
+                <span class="ra-criteria-text">${item}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="ra-candidates-section">
+        <div class="ra-candidates-header">
+          <h3 class="ra-candidates-title">Candidates in Resume Analysis</h3>
+          <span class="ra-candidates-count">${resumeCands.length} candidate${resumeCands.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="jd-stage-candidates-list" id="list-stage-resume-candidates"></div>
+      </div>
+    `;
+
+    resumeList.innerHTML = criteriaHTML;
+
+    const resumeCandContainer = document.getElementById('list-stage-resume-candidates');
+    if (resumeCandContainer) {
+      if (resumeCands.length === 0) {
+        resumeCandContainer.innerHTML = `
+          <div class="jd-empty-pane">
+            <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            <p>No candidates in resume analysis stage yet</p>
+          </div>
+        `;
+      } else {
+        renderResumeStagePaneForJob(resumeCands, job, resumeCandContainer);
+      }
+    }
+
+    // Edit criteria button
+    const editBtn = document.getElementById('btn-ra-edit-criteria');
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        toggleResumeCriteriaEdit(job);
+      });
     }
   }
 
@@ -6640,49 +6842,86 @@ function renderQuestionsPane(job) {
       </div>
     `;
   } else {
-    listQuestions.innerHTML = job.questions.map((q, qIndex) => `
-      <div class="card-glass jd-question-card" data-q-id="${q.id}" style="margin-bottom: 16px; padding: 16px; border-radius: 12px; border: 1px solid var(--glass-border); transition: var(--spring-fast);">
-        <div class="q-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 12px;">
-          <select class="q-type-select" data-field="type" style="padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); color: var(--color-text-primary); font-family: var(--font-body); outline: none; cursor: pointer;">
-            <option value="technical" ${(q.type || 'technical') === 'technical' ? 'selected' : ''}>Technical</option>
-            <option value="behavioral" ${q.type === 'behavioral' ? 'selected' : ''}>Behavioral</option>
-            <option value="situational" ${q.type === 'situational' ? 'selected' : ''}>Situational</option>
-          </select>
-          <select class="q-difficulty-select" data-field="difficulty" style="background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); color: var(--color-text-primary); border-radius: 6px; padding: 2px 6px; font-size: 0.78rem; font-family: var(--font-body); outline: none; cursor: pointer;">
-            <option value="beginner" ${q.difficulty === 'beginner' ? 'selected' : ''}>Beginner</option>
-            <option value="intermediate" ${q.difficulty === 'intermediate' ? 'selected' : ''}>Intermediate</option>
-            <option value="advanced" ${q.difficulty === 'advanced' ? 'selected' : ''}>Advanced</option>
-          </select>
+    listQuestions.innerHTML = job.questions.map((q, qIndex) => {
+      const typeColors = {
+        technical: { bg: 'rgba(56,189,248,0.08)', border: 'rgba(56,189,248,0.2)', text: '#38bdf8' },
+        behavioral: { bg: 'rgba(168,85,247,0.08)', border: 'rgba(168,85,247,0.2)', text: '#a855f7' },
+        situational: { bg: 'rgba(52,211,153,0.08)', border: 'rgba(52,211,153,0.2)', text: '#34d399' }
+      };
+      const tc = typeColors[q.type] || typeColors.technical;
+      const diffColors = {
+        beginner: { bg: 'rgba(52,211,153,0.08)', border: 'rgba(52,211,153,0.2)', text: '#34d399' },
+        intermediate: { bg: 'rgba(251,191,36,0.08)', border: 'rgba(251,191,36,0.2)', text: '#fbbf24' },
+        advanced: { bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.2)', text: '#ef4444' }
+      };
+      const dc = diffColors[q.difficulty] || diffColors.intermediate;
+
+      return `
+      <div class="card-glass jd-question-card" data-q-id="${q.id}">
+        <div class="q-card-top-row">
+          <span class="q-number">Q${qIndex + 1}</span>
+          <div class="q-badges">
+            <select class="q-type-select q-badge-select" data-field="type" style="background:${tc.bg};border-color:${tc.border};color:${tc.text};">
+              <option value="technical" ${(q.type || 'technical') === 'technical' ? 'selected' : ''}>Technical</option>
+              <option value="behavioral" ${q.type === 'behavioral' ? 'selected' : ''}>Behavioral</option>
+              <option value="situational" ${q.type === 'situational' ? 'selected' : ''}>Situational</option>
+            </select>
+            <select class="q-difficulty-select q-badge-select" data-field="difficulty" style="background:${dc.bg};border-color:${dc.border};color:${dc.text};">
+              <option value="beginner" ${q.difficulty === 'beginner' ? 'selected' : ''}>Beginner</option>
+              <option value="intermediate" ${q.difficulty === 'intermediate' ? 'selected' : ''}>Intermediate</option>
+              <option value="advanced" ${q.difficulty === 'advanced' ? 'selected' : ''}>Advanced</option>
+            </select>
+          </div>
         </div>
-        <div class="q-card-body" style="display: flex; flex-direction: column; gap: 12px;">
-          <textarea class="q-question-text" data-field="question" placeholder="Enter question wording..." style="width: 100%; min-height: 50px; background: rgba(0,0,0,0.15); border: 1px solid var(--glass-border); border-radius: 8px; padding: 8px; color: var(--color-text-primary); font-family: var(--font-body); font-size: 0.88rem; line-height: 1.4; resize: vertical; outline: none;"></textarea>
-          
-          <div class="q-rubric-box" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 10px;">
-            <span class="q-rubric-label" style="font-size: 0.78rem; font-weight: 600; color: var(--color-gold); display: block; margin-bottom: 4px;">Evaluation Rubric:</span>
-            <textarea class="q-rubric-text" data-field="rubric" placeholder="What does a good answer sound like?..." style="width: 100%; min-height: 40px; background: transparent; border: none; color: var(--color-text-muted); font-family: var(--font-body); font-size: 0.82rem; line-height: 1.4; resize: vertical; outline: none; padding: 0;"></textarea>
+
+        <div class="q-card-body">
+          <textarea class="q-question-text" data-field="question" placeholder="Enter question wording..." rows="2"></textarea>
+
+          <div class="q-rubric-section">
+            <div class="q-rubric-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span>Evaluation Rubric</span>
+            </div>
+            <textarea class="q-rubric-text" data-field="rubric" placeholder="What does a good answer look like?..." rows="2"></textarea>
           </div>
 
-          <div class="q-followups-box">
-            <span class="q-followups-label" style="font-size: 0.78rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 6px;">Follow-Ups (${q.follow_ups ? q.follow_ups.length : 0}):</span>
-            <ul class="q-followups-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+          <div class="q-followups-section">
+            <div class="q-followups-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              <span>Follow-ups</span>
+              <span class="q-followup-count">${q.follow_ups ? q.follow_ups.length : 0}</span>
+            </div>
+            <ul class="q-followups-list">
               ${(q.follow_ups || []).map((f, idx) => `
-                <li style="display: flex; align-items: center; gap: 6px;">
-                  <span style="color: var(--color-text-faint); font-size: 0.8rem;">•</span>
-                  <input type="text" class="q-followup-input" data-idx="${idx}" value="${f}" style="flex-grow: 1; background: transparent; border: none; border-bottom: 1px dashed rgba(255,255,255,0.1); color: var(--color-text-muted); font-size: 0.82rem; outline: none; padding: 2px 0;" />
-                  <button class="btn-q-remove-followup" data-idx="${idx}" data-q-idx="${qIndex}" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.75rem;padding:2px 4px;" title="Remove">×</button>
+                <li class="q-followup-item">
+                  <span class="q-followup-num">${idx + 1}</span>
+                  <input type="text" class="q-followup-input" data-idx="${idx}" value="${f}" />
+                  <button class="btn-q-remove-followup" data-idx="${idx}" data-q-idx="${qIndex}" title="Remove">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
                 </li>
               `).join('')}
             </ul>
-            <button class="btn-q-add-followup" data-q-idx="${qIndex}" style="margin-top:6px;background:none;border:1px dashed rgba(255,255,255,0.1);color:var(--color-text-muted);font-size:0.75rem;padding:4px 10px;border-radius:6px;cursor:pointer;">+ Add Follow-up</button>
+            <button class="btn-q-add-followup" data-q-idx="${qIndex}">+ Add Follow-up</button>
           </div>
         </div>
-        <div class="q-card-actions" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px;">
-          <button class="btn-q-delete btn-jd-ghost btn-sm" data-idx="${qIndex}" style="padding: 4px 8px; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: #ef4444;" title="Delete this question">Delete</button>
-          <button class="btn-q-enhance btn-jd-primary btn-sm" data-idx="${qIndex}" style="padding: 4px 8px; font-size: 0.75rem;" title="Enhance with AI">✨ Enhance</button>
-          <button class="btn-q-save btn-jd-ghost btn-sm" data-idx="${qIndex}" style="padding: 4px 8px; font-size: 0.75rem; color: var(--color-gold); border-color: var(--glass-border-gold);" title="Save changes">Save</button>
+
+        <div class="q-card-footer">
+          <button class="btn-q-delete btn-jd-ghost btn-sm" data-idx="${qIndex}" title="Delete">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Delete
+          </button>
+          <div class="q-card-footer-right">
+            <button class="btn-q-enhance btn-jd-primary btn-sm" data-idx="${qIndex}" title="Enhance with AI">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Enhance
+            </button>
+            <button class="btn-q-save btn-jd-ghost btn-sm" data-idx="${qIndex}" title="Save changes">Save</button>
+          </div>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
 
     job.questions.forEach((q, idx) => {
       const card = listQuestions.children[idx];
@@ -6823,10 +7062,11 @@ function renderQuestionsPane(job) {
       }
 
       newBtnGen.disabled = true;
+      newBtnGen.classList.add('generating');
       const textSpan = newBtnGen.querySelector('.btn-text');
       const loaderSpan = document.createElement('span');
       loaderSpan.innerHTML = `<div class="spinner-mini" style="display:inline-block; width:12px; height:12px; border:2px solid rgba(255,255,255,0.3); border-top-color:#ffffff; border-radius:50%; animation:spin-mini 0.6s linear infinite; margin-right:6px; vertical-align:middle;"></div> Generating...`;
-      
+
       const originalText = textSpan.textContent;
       textSpan.style.display = 'none';
       newBtnGen.appendChild(loaderSpan);
@@ -6899,6 +7139,7 @@ Rules:
         }
       } finally {
         newBtnGen.disabled = false;
+        newBtnGen.classList.remove('generating');
         loaderSpan.remove();
         textSpan.style.display = 'inline-block';
       }
