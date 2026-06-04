@@ -1061,7 +1061,12 @@
                         <h3 class="qg-main-title">Interview rubric</h3>
                         <p class="qg-main-subtitle">Questions, scoring notes, and follow-ups for this role <span class="qg-auto-hint">· edits save instantly</span></p>
                       </div>
-                      <span class="qg-count-chip" id="questions-count-badge">0 questions</span>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" class="btn-jd-ghost btn-sm" id="btn-toggle-all-rubrics" style="padding: 3px 8px; font-size: 0.65rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--color-text-muted); cursor: pointer; transition: all 0.15s ease; white-space: nowrap;">
+                          Collapse All
+                        </button>
+                        <span class="qg-count-chip" id="questions-count-badge">0 questions</span>
+                      </div>
                     </header>
 
                     <div class="qg-staging" id="jd-staging-area" hidden>

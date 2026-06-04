@@ -3432,6 +3432,16 @@ body.light-theme .q-rubric-section { border-left-color: rgba(var(--color-gold-rg
 body.light-theme .q-followups-section { border-top-color: rgba(0,0,0,0.06); }
 body.light-theme .q-card-footer { border-top-color: rgba(0,0,0,0.06); background: rgba(0,0,0,0.02); }
 
+/* Question card collapse/expand styles */
+.jd-question-card.collapsed .q-rubric-section,
+.jd-question-card.collapsed .q-followups-section,
+.jd-question-card.collapsed .q-card-footer {
+  display: none !important;
+}
+.jd-question-card.collapsed .q-card-body {
+  padding-bottom: 12px;
+}
+
 /* Add custom card styling */
 .jd-add-question-card {
   background: rgba(255, 255, 255, 0.015);

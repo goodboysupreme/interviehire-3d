@@ -7594,10 +7594,16 @@ function renderQuestionsPane(job) {
       };
       const dc = diffColors[q.difficulty] || diffColors.intermediate;
 
+      const isCollapsed = q.collapsed === true;
       return `
-      <div class="card-glass jd-question-card" data-q-id="${q.id}" data-idx="${qIndex}">
+      <div class="card-glass jd-question-card ${isCollapsed ? 'collapsed' : ''}" data-q-id="${q.id}" data-idx="${qIndex}">
         <div class="q-card-top-row">
-          <span class="q-number">Q${qIndex + 1}</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button type="button" class="btn-q-collapse-toggle" data-idx="${qIndex}" title="${isCollapsed ? 'Expand Details' : 'Collapse Details'}" style="background:none; border:none; padding:2px; color:var(--color-text-faint); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.2s ease;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="q-collapse-chevron" style="transition:transform 0.2s ease; ${isCollapsed ? 'transform:rotate(-90deg);' : ''}"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <span class="q-number">Q${qIndex + 1}</span>
+          </div>
           <div class="q-badges">
             <select class="q-type-select q-badge-select" data-field="type" style="background:${tc.bg};border-color:${tc.border};color:${tc.text};">
               <option value="technical" ${(q.type || 'technical') === 'technical' ? 'selected' : ''}>Technical</option>
@@ -7818,6 +7824,17 @@ function renderQuestionsPane(job) {
           showPremiumToast('Failed to regenerate. Difficulty saved.', 'error');
           saveStateToLocalStorage();
         }
+      });
+    });
+
+    listQuestions.querySelectorAll('.btn-q-collapse-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-idx'));
+        if (isNaN(idx) || !job.questions[idx]) return;
+        job.questions[idx].collapsed = !job.questions[idx].collapsed;
+        saveStateToLocalStorage();
+        renderQuestionsPane(job);
+        soundEngine.playClick();
       });
     });
 
@@ -8103,6 +8120,30 @@ Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdow
       };
       reader.readAsText(file);
     });
+  }
+
+  // Global rubric collapse/expand toggler
+  const btnToggleAll = document.getElementById('btn-toggle-all-rubrics');
+  if (btnToggleAll && job.questions && job.questions.length > 0) {
+    const isAnyExpanded = job.questions.some(q => !q.collapsed);
+    btnToggleAll.textContent = isAnyExpanded ? 'Collapse All' : 'Expand All';
+    btnToggleAll.style.display = 'inline-flex';
+
+    // clone to remove any stale event listeners
+    const newBtnToggleAll = btnToggleAll.cloneNode(true);
+    btnToggleAll.parentNode.replaceChild(newBtnToggleAll, btnToggleAll);
+
+    newBtnToggleAll.addEventListener('click', () => {
+      const targetState = isAnyExpanded; // if any are expanded, collapse all
+      job.questions.forEach(q => {
+        q.collapsed = targetState;
+      });
+      saveStateToLocalStorage();
+      renderQuestionsPane(job);
+      soundEngine.playClick();
+    });
+  } else if (btnToggleAll) {
+    btnToggleAll.style.display = 'none';
   }
 }
 
