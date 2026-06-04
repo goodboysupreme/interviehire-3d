@@ -7684,12 +7684,13 @@ function renderQuestionsPane(job) {
 
     // AUTO-SAVE (default live mode for entire QG tab): type, text, rubric, follow-ups update instantly on change/blur
     listQuestions.querySelectorAll('.q-type-select').forEach(sel => {
-      sel.addEventListener('change', () => {
+      sel.addEventListener('change', async () => {
         const card = sel.closest('.jd-question-card');
         const idx = parseInt(card.dataset.idx);
         if (isNaN(idx) || !job.questions[idx]) return;
+        const q = job.questions[idx];
         const newType = sel.value;
-        job.questions[idx].type = newType;
+        q.type = newType;
         saveStateToLocalStorage();
 
         // instant restyle this badge for the new type (no re-render, keeps focus)
@@ -7703,10 +7704,32 @@ function renderQuestionsPane(job) {
         sel.style.borderColor = tc.border;
         sel.style.color = tc.text;
 
-        // subtle live feedback
-        card.style.transition = 'border-color 80ms ease';
-        card.style.borderColor = 'rgba(var(--color-gold-rgb, 45,212,191), 0.35)';
-        setTimeout(() => { if (card) card.style.borderColor = ''; }, 280);
+        const textareaQ = card.querySelector('.q-question-text');
+        const origText = textareaQ.value;
+        textareaQ.value = 'Regenerating for ' + newType + ' type...';
+        textareaQ.disabled = true;
+        sel.disabled = true;
+
+        try {
+          const prompt = `You are an expert interview question designer.\nRewrite this interview question to be a ${newType} question. Keep the same topic and difficulty (${q.difficulty}).\nReturn ONLY valid JSON: {"question":"...","rubric":"...","follow_ups":["...","..."]}`;
+          const resp = await callDeepSeekAPI([
+            { role: 'system', content: prompt },
+            { role: 'user', content: origText }
+          ], true);
+          const parsed = JSON.parse(sanitizeJSONResponse(resp));
+          q.question = parsed.question || origText;
+          q.rubric = parsed.rubric || q.rubric;
+          q.follow_ups = parsed.follow_ups || q.follow_ups;
+          saveStateToLocalStorage();
+          renderQuestionsPane(job);
+          showPremiumToast(`Question regenerated as ${newType} type.`, 'success');
+        } catch (err) {
+          textareaQ.value = origText;
+          textareaQ.disabled = false;
+          sel.disabled = false;
+          showPremiumToast('Failed to regenerate. Type saved.', 'error');
+          saveStateToLocalStorage();
+        }
       });
     });
 
@@ -8046,6 +8069,41 @@ Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdow
       };
     });
   });
+
+  // File upload for Question Studio Job Description
+  const btnUploadQgJd = document.getElementById('btn-upload-qg-jd');
+  const qgJdFileInput = document.getElementById('qg-jd-file-input');
+  if (btnUploadQgJd && qgJdFileInput) {
+    // clone to remove any stale event listeners
+    const newBtnUpload = btnUploadQgJd.cloneNode(true);
+    btnUploadQgJd.parentNode.replaceChild(newBtnUpload, btnUploadQgJd);
+    
+    const newFileInput = qgJdFileInput.cloneNode(true);
+    qgJdFileInput.parentNode.replaceChild(newFileInput, qgJdFileInput);
+
+    newBtnUpload.addEventListener('click', () => newFileInput.click());
+    newFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = ev.target.result;
+        const textarea = document.getElementById('jd-raw-description');
+        if (textarea) {
+          textarea.value = text;
+          // Trigger input event to auto-save to localStorage
+          textarea.dispatchEvent(new Event('input', { bubbles: true }));
+          showPremiumToast(`Loaded "${file.name}"`, "success");
+          soundEngine.playChime([523.25], 0.1, 0.08);
+        }
+      };
+      reader.onerror = () => {
+        showPremiumToast("Failed to read file", "error");
+      };
+      reader.readAsText(file);
+    });
+  }
 }
 
 function showStagingArea(job) {
