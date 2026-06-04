@@ -7595,71 +7595,91 @@ function renderQuestionsPane(job) {
       const dc = diffColors[q.difficulty] || diffColors.intermediate;
 
       const isCollapsed = q.collapsed === true;
+      const questionPreview = (q.question || '').length > 120 ? (q.question || '').slice(0, 120) + '…' : (q.question || '');
+      const fuCount = q.follow_ups ? q.follow_ups.length : 0;
+      const hasRubric = !!(q.rubric && q.rubric.trim());
+      const metaHints = [hasRubric ? 'Rubric' : null, fuCount > 0 ? `${fuCount} Follow-up${fuCount > 1 ? 's' : ''}` : null].filter(Boolean).join(' · ');
       return `
       <div class="card-glass jd-question-card ${isCollapsed ? 'collapsed' : ''}" data-q-id="${q.id}" data-idx="${qIndex}">
-        <div class="q-card-top-row">
-          <div style="display:flex; align-items:center; gap:6px;">
-            <button type="button" class="btn-q-collapse-toggle" data-idx="${qIndex}" title="${isCollapsed ? 'Expand Details' : 'Collapse Details'}" style="background:none; border:none; padding:2px; color:var(--color-text-faint); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.2s ease;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="q-collapse-chevron" style="transition:transform 0.2s ease; ${isCollapsed ? 'transform:rotate(-90deg);' : ''}"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </button>
-            <span class="q-number">Q${qIndex + 1}</span>
-          </div>
+
+        <!-- Collapsed: compact summary row -->
+        <div class="q-collapsed-row" data-idx="${qIndex}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="q-collapse-chevron"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          <span class="q-number">Q${qIndex + 1}</span>
+          <span class="q-collapsed-text">${questionPreview || 'Untitled question'}</span>
+          ${metaHints ? `<span class="q-collapsed-meta">${metaHints}</span>` : ''}
           <div class="q-badges">
-            <select class="q-type-select q-badge-select" data-field="type" style="background:${tc.bg};border-color:${tc.border};color:${tc.text};">
-              <option value="technical" ${(q.type || 'technical') === 'technical' ? 'selected' : ''}>Technical</option>
-              <option value="behavioral" ${q.type === 'behavioral' ? 'selected' : ''}>Behavioral</option>
-              <option value="situational" ${q.type === 'situational' ? 'selected' : ''}>Situational</option>
-            </select>
-            <select class="q-difficulty-select q-badge-select" data-field="difficulty" style="background:${dc.bg};border-color:${dc.border};color:${dc.text};">
-              <option value="beginner" ${q.difficulty === 'beginner' ? 'selected' : ''}>Beginner</option>
-              <option value="intermediate" ${q.difficulty === 'intermediate' ? 'selected' : ''}>Intermediate</option>
-              <option value="advanced" ${q.difficulty === 'advanced' ? 'selected' : ''}>Advanced</option>
-            </select>
+            <span class="q-badge-pill" style="background:${tc.bg};border-color:${tc.border};color:${tc.text};">${(q.type || 'technical').charAt(0).toUpperCase() + (q.type || 'technical').slice(1)}</span>
+            <span class="q-badge-pill" style="background:${dc.bg};border-color:${dc.border};color:${dc.text};">${(q.difficulty || 'intermediate').charAt(0).toUpperCase() + (q.difficulty || 'intermediate').slice(1)}</span>
           </div>
         </div>
 
-        <div class="q-card-body">
-          <textarea class="q-question-text" data-field="question" placeholder="Enter question wording..." rows="2"></textarea>
-
-          <div class="q-rubric-section">
-            <div class="q-rubric-header">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-              <span>Evaluation Rubric</span>
+        <!-- Expanded: full editable card -->
+        <div class="q-expanded-content">
+          <div class="q-card-top-row">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button type="button" class="btn-q-collapse-toggle" data-idx="${qIndex}" title="Collapse Details" style="background:none; border:none; padding:2px; color:var(--color-text-faint); cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <span class="q-number">Q${qIndex + 1}</span>
             </div>
-            <textarea class="q-rubric-text" data-field="rubric" placeholder="What does a good answer look like?..." rows="2"></textarea>
+            <div class="q-badges">
+              <select class="q-type-select q-badge-select" data-field="type" style="background:${tc.bg};border-color:${tc.border};color:${tc.text};">
+                <option value="technical" ${(q.type || 'technical') === 'technical' ? 'selected' : ''}>Technical</option>
+                <option value="behavioral" ${q.type === 'behavioral' ? 'selected' : ''}>Behavioral</option>
+                <option value="situational" ${q.type === 'situational' ? 'selected' : ''}>Situational</option>
+              </select>
+              <select class="q-difficulty-select q-badge-select" data-field="difficulty" style="background:${dc.bg};border-color:${dc.border};color:${dc.text};">
+                <option value="beginner" ${q.difficulty === 'beginner' ? 'selected' : ''}>Beginner</option>
+                <option value="intermediate" ${q.difficulty === 'intermediate' ? 'selected' : ''}>Intermediate</option>
+                <option value="advanced" ${q.difficulty === 'advanced' ? 'selected' : ''}>Advanced</option>
+              </select>
+            </div>
           </div>
 
-          <div class="q-followups-section">
-            <div class="q-followups-header">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-              <span>Follow-ups</span>
-              <span class="q-followup-count">${q.follow_ups ? q.follow_ups.length : 0}</span>
-            </div>
-            <ul class="q-followups-list">
-              ${(q.follow_ups || []).map((f, idx) => `
-                <li class="q-followup-item">
-                  <span class="q-followup-num">${idx + 1}</span>
-                  <input type="text" class="q-followup-input" data-idx="${idx}" value="${f}" />
-                  <button class="btn-q-remove-followup" data-idx="${idx}" data-q-idx="${qIndex}" title="Remove">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                </li>
-              `).join('')}
-            </ul>
-            <button class="btn-q-add-followup" data-q-idx="${qIndex}">+ Add Follow-up</button>
-          </div>
-        </div>
+          <div class="q-card-body">
+            <textarea class="q-question-text" data-field="question" placeholder="Enter question wording..." rows="2"></textarea>
 
-        <div class="q-card-footer">
-          <div class="q-card-footer-right">
-            <button class="btn-q-delete btn-jd-ghost btn-sm" data-idx="${qIndex}" title="Delete">
-              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-              Delete
-            </button>
-            <button class="btn-q-enhance btn-jd-primary btn-sm" data-idx="${qIndex}" title="Enhance with AI">
-              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              Enhance
-            </button>
+            <div class="q-rubric-section">
+              <div class="q-rubric-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                <span>Evaluation Rubric</span>
+              </div>
+              <textarea class="q-rubric-text" data-field="rubric" placeholder="What does a good answer look like?..." rows="2"></textarea>
+            </div>
+
+            <div class="q-followups-section">
+              <div class="q-followups-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                <span>Follow-ups</span>
+                <span class="q-followup-count">${fuCount}</span>
+              </div>
+              <ul class="q-followups-list">
+                ${(q.follow_ups || []).map((f, idx) => `
+                  <li class="q-followup-item">
+                    <span class="q-followup-num">${idx + 1}</span>
+                    <input type="text" class="q-followup-input" data-idx="${idx}" value="${f}" />
+                    <button class="btn-q-remove-followup" data-idx="${idx}" data-q-idx="${qIndex}" title="Remove">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </li>
+                `).join('')}
+              </ul>
+              <button class="btn-q-add-followup" data-q-idx="${qIndex}">+ Add Follow-up</button>
+            </div>
+          </div>
+
+          <div class="q-card-footer">
+            <div class="q-card-footer-right">
+              <button class="btn-q-delete btn-jd-ghost btn-sm" data-idx="${qIndex}" title="Delete">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Delete
+              </button>
+              <button class="btn-q-enhance btn-jd-primary btn-sm" data-idx="${qIndex}" title="Enhance with AI">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Enhance
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -7831,7 +7851,18 @@ function renderQuestionsPane(job) {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.getAttribute('data-idx'));
         if (isNaN(idx) || !job.questions[idx]) return;
-        job.questions[idx].collapsed = !job.questions[idx].collapsed;
+        job.questions[idx].collapsed = true;
+        saveStateToLocalStorage();
+        renderQuestionsPane(job);
+        soundEngine.playClick();
+      });
+    });
+
+    listQuestions.querySelectorAll('.q-collapsed-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const idx = parseInt(row.getAttribute('data-idx'));
+        if (isNaN(idx) || !job.questions[idx]) return;
+        job.questions[idx].collapsed = false;
         saveStateToLocalStorage();
         renderQuestionsPane(job);
         soundEngine.playClick();

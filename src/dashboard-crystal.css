@@ -3432,14 +3432,77 @@ body.light-theme .q-rubric-section { border-left-color: rgba(var(--color-gold-rg
 body.light-theme .q-followups-section { border-top-color: rgba(0,0,0,0.06); }
 body.light-theme .q-card-footer { border-top-color: rgba(0,0,0,0.06); background: rgba(0,0,0,0.02); }
 
-/* Question card collapse/expand styles */
-.jd-question-card.collapsed .q-rubric-section,
-.jd-question-card.collapsed .q-followups-section,
-.jd-question-card.collapsed .q-card-footer {
-  display: none !important;
+/* ── Question card collapse / expand ── */
+
+/* Collapsed summary row */
+.q-collapsed-row {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.18s ease;
+  min-height: 0;
 }
-.jd-question-card.collapsed .q-card-body {
-  padding-bottom: 12px;
+.q-collapsed-row:hover {
+  background: rgba(255,255,255,0.035);
+}
+.q-collapsed-row .q-collapse-chevron {
+  flex-shrink: 0;
+  color: var(--color-text-faint);
+  transform: rotate(-90deg);
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
+}
+.q-collapsed-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.q-collapsed-meta {
+  flex-shrink: 0;
+  font-size: 0.66rem;
+  font-weight: 500;
+  color: var(--color-text-faint);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.q-collapsed-row .q-badges {
+  flex-shrink: 0;
+}
+.q-badge-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border: 1px solid;
+  line-height: 1.4;
+}
+
+/* Expanded content */
+.q-expanded-content {
+  display: block;
+}
+
+/* Collapsed state: swap which piece is visible */
+.jd-question-card.collapsed .q-collapsed-row {
+  display: flex;
+}
+.jd-question-card.collapsed .q-expanded-content {
+  display: none;
+}
+
+/* Light theme */
+body.light-theme .q-collapsed-row:hover {
+  background: rgba(0,0,0,0.03);
 }
 
 /* Add custom card styling */
