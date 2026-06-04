@@ -5749,6 +5749,113 @@ function renderAnalysisResult(cid, result) {
   }
 }
 
+function toggleResumeCriteriaEdit(job) {
+  const section = document.querySelector('.ra-config-section');
+  if (!section) return;
+
+  const isEditing = section.classList.contains('editing');
+  if (isEditing) {
+    // Save mode
+    section.classList.remove('editing');
+    const criteria = { mustHave: [], redFlags: [], goodToHave: [], goodToHaveMinMatch: 1 };
+    section.querySelectorAll('.ra-criteria-group.must-have .ra-criteria-edit-input').forEach(input => {
+      if (input.value.trim()) criteria.mustHave.push(input.value.trim());
+    });
+    section.querySelectorAll('.ra-criteria-group.red-flags .ra-criteria-edit-input').forEach(input => {
+      if (input.value.trim()) criteria.redFlags.push(input.value.trim());
+    });
+    section.querySelectorAll('.ra-criteria-group.good-to-have .ra-criteria-edit-input').forEach(input => {
+      if (input.value.trim()) criteria.goodToHave.push(input.value.trim());
+    });
+    const minMatch = section.querySelector('.ra-min-match-input');
+    if (minMatch) criteria.goodToHaveMinMatch = parseInt(minMatch.value) || 1;
+
+    job.resumeCriteria = criteria;
+    saveStateToLocalStorage();
+    showPremiumToast('Resume criteria saved.', 'success');
+
+    // Re-render by triggering the pane render
+    const resumeList = document.getElementById('list-stage-resume');
+    if (resumeList) {
+      const jobCandidates = AppState.candidates.filter(c => {
+        const jTitle = c.jobApplied;
+        return jTitle === job.roleName || jTitle === job.cardName;
+      });
+      const resumeCands = jobCandidates.filter(c => c.status === 'Resume');
+      // trigger full re-render by calling renderJobDetailPanes
+      if (typeof renderJobDetailPanes === 'function') renderJobDetailPanes(job);
+    }
+    return;
+  }
+
+  // Enter edit mode
+  section.classList.add('editing');
+  const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [], goodToHaveMinMatch: 1 };
+
+  const editBtn = document.getElementById('btn-ra-edit-criteria');
+  if (editBtn) {
+    editBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Save';
+  }
+
+  // Transform criteria items into editable inputs
+  section.querySelectorAll('.ra-criteria-items').forEach(itemsContainer => {
+    const group = itemsContainer.closest('.ra-criteria-group');
+    const groupType = group.classList.contains('must-have') ? 'mustHave' : group.classList.contains('red-flags') ? 'redFlags' : 'goodToHave';
+    const items = criteria[groupType] || [];
+
+    itemsContainer.innerHTML = items.map((item, i) => `
+      <div class="ra-criteria-item-edit">
+        <span class="ra-criteria-num ${group.classList[1]}">${i + 1}</span>
+        <input type="text" class="ra-criteria-edit-input" value="${item}" />
+        <button class="btn-ra-remove-criteria" data-group="${groupType}" data-idx="${i}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    `).join('') + `
+      <button class="btn-ra-add-criteria" data-group="${groupType}">+ Add Criterion</button>
+    `;
+
+    // Add button handlers
+    itemsContainer.querySelectorAll('.btn-ra-remove-criteria').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.closest('.ra-criteria-item-edit').remove();
+        // Re-number
+        itemsContainer.querySelectorAll('.ra-criteria-num').forEach((num, idx) => {
+          num.textContent = idx + 1;
+        });
+      });
+    });
+
+    itemsContainer.querySelector('.btn-ra-add-criteria')?.addEventListener('click', () => {
+      const addBtn = itemsContainer.querySelector('.btn-ra-add-criteria');
+      const newItem = document.createElement('div');
+      newItem.className = 'ra-criteria-item-edit';
+      const count = itemsContainer.querySelectorAll('.ra-criteria-item-edit').length + 1;
+      newItem.innerHTML = `
+        <span class="ra-criteria-num ${group.classList[1]}">${count}</span>
+        <input type="text" class="ra-criteria-edit-input" value="" placeholder="Enter criterion..." />
+        <button class="btn-ra-remove-criteria">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      `;
+      itemsContainer.insertBefore(newItem, addBtn);
+      newItem.querySelector('.btn-ra-remove-criteria').addEventListener('click', () => {
+        newItem.remove();
+        itemsContainer.querySelectorAll('.ra-criteria-num').forEach((num, idx) => { num.textContent = idx + 1; });
+      });
+      newItem.querySelector('input').focus();
+    });
+  });
+
+  // Make min match editable
+  const minMatchEl = section.querySelector('.ra-criteria-min-match');
+  if (minMatchEl) {
+    const currentMin = criteria.goodToHaveMinMatch || 1;
+    const totalGood = criteria.goodToHave.length;
+    minMatchEl.innerHTML = `Minimum match: <input type="number" class="ra-min-match-input" value="${currentMin}" min="1" max="${totalGood}" style="width:40px;background:rgba(0,0,0,0.2);border:1px solid var(--glass-border);border-radius:4px;color:var(--color-text-primary);text-align:center;padding:2px;font-size:0.78rem;" /> out of ${totalGood} criteria`;
+  }
+}
+
 function openScheduleModal(candidateName, mode, callback) {
   const existing = document.getElementById('schedule-modal-overlay');
   if (existing) existing.remove();
