@@ -7571,10 +7571,12 @@ function renderQuestionsPane(job) {
 
   if (!job.questions || job.questions.length === 0) {
     listQuestions.innerHTML = `
-      <div class="jd-empty-pane" style="text-align: center; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity: 0.85;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-        <p style="color: var(--color-text-muted); font-size: 0.9rem;">No interview questions defined yet.</p>
-        <p style="color: var(--color-text-faint); font-size: 0.8rem; max-width: 320px; margin-top: -6px;">Click "JD" to expand the job description panel, then click "Generate Questions" to auto-design a premium interview rubric.</p>
+      <div class="qg-empty">
+        <div class="qg-empty-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <p class="qg-empty-title">No rubric questions yet</p>
+        <p class="qg-empty-desc">Add a job description in the left panel, tune generation settings, then run Generate questions to draft your interview set.</p>
       </div>
     `;
   } else {
@@ -7593,7 +7595,7 @@ function renderQuestionsPane(job) {
       const dc = diffColors[q.difficulty] || diffColors.intermediate;
 
       return `
-      <div class="card-glass jd-question-card" data-q-id="${q.id}">
+      <div class="card-glass jd-question-card" data-q-id="${q.id}" data-idx="${qIndex}">
         <div class="q-card-top-row">
           <span class="q-number">Q${qIndex + 1}</span>
           <div class="q-badges">
@@ -7643,16 +7645,15 @@ function renderQuestionsPane(job) {
         </div>
 
         <div class="q-card-footer">
-          <button class="btn-q-delete btn-jd-ghost btn-sm" data-idx="${qIndex}" title="Delete">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            Delete
-          </button>
           <div class="q-card-footer-right">
+            <button class="btn-q-delete btn-jd-ghost btn-sm" data-idx="${qIndex}" title="Delete">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Delete
+            </button>
             <button class="btn-q-enhance btn-jd-primary btn-sm" data-idx="${qIndex}" title="Enhance with AI">
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
               Enhance
             </button>
-            <button class="btn-q-save btn-jd-ghost btn-sm" data-idx="${qIndex}" title="Save changes">Save</button>
           </div>
         </div>
       </div>
@@ -7681,32 +7682,67 @@ function renderQuestionsPane(job) {
       });
     });
 
-    listQuestions.querySelectorAll('.btn-q-save').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.getAttribute('data-idx'));
-        const card = btn.closest('.jd-question-card');
-        
-        const questionText = card.querySelector('.q-question-text').value.trim();
-        const rubricText = card.querySelector('.q-rubric-text').value.trim();
-        const difficulty = card.querySelector('.q-difficulty-select').value;
-        const qType = card.querySelector('.q-type-select')?.value || 'technical';
-
-        const followUps = [];
-        card.querySelectorAll('.q-followup-input').forEach(inp => {
-          if (inp.value.trim() !== '') {
-            followUps.push(inp.value.trim());
-          }
-        });
-
-        job.questions[idx].question = questionText;
-        job.questions[idx].rubric = rubricText;
-        job.questions[idx].difficulty = difficulty;
-        job.questions[idx].type = qType;
-        job.questions[idx].follow_ups = followUps;
-        
+    // AUTO-SAVE (default live mode for entire QG tab): type, text, rubric, follow-ups update instantly on change/blur
+    listQuestions.querySelectorAll('.q-type-select').forEach(sel => {
+      sel.addEventListener('change', () => {
+        const card = sel.closest('.jd-question-card');
+        const idx = parseInt(card.dataset.idx);
+        if (isNaN(idx) || !job.questions[idx]) return;
+        const newType = sel.value;
+        job.questions[idx].type = newType;
         saveStateToLocalStorage();
-        showPremiumToast("Question changes saved.", "success");
-        soundEngine.playChime([392, 523.25], 0.12, 0.1);
+
+        // instant restyle this badge for the new type (no re-render, keeps focus)
+        const typeColors = {
+          technical: { bg: 'rgba(56,189,248,0.08)', border: 'rgba(56,189,248,0.2)', text: '#38bdf8' },
+          behavioral: { bg: 'rgba(168,85,247,0.08)', border: 'rgba(168,85,247,0.2)', text: '#a855f7' },
+          situational: { bg: 'rgba(52,211,153,0.08)', border: 'rgba(52,211,153,0.2)', text: '#34d399' }
+        };
+        const tc = typeColors[newType] || typeColors.technical;
+        sel.style.background = tc.bg;
+        sel.style.borderColor = tc.border;
+        sel.style.color = tc.text;
+
+        // subtle live feedback
+        card.style.transition = 'border-color 80ms ease';
+        card.style.borderColor = 'rgba(var(--color-gold-rgb, 45,212,191), 0.35)';
+        setTimeout(() => { if (card) card.style.borderColor = ''; }, 280);
+      });
+    });
+
+    // note: difficulty select listener below already does live update + AI regen
+
+    // live persist for question + rubric text (on blur to avoid spam during typing)
+    listQuestions.querySelectorAll('.q-question-text').forEach(ta => {
+      ta.addEventListener('blur', () => {
+        const card = ta.closest('.jd-question-card');
+        const idx = parseInt(card.dataset.idx);
+        if (isNaN(idx) || !job.questions[idx]) return;
+        job.questions[idx].question = ta.value.trim();
+        saveStateToLocalStorage();
+        // no toast, silent auto
+      });
+    });
+    listQuestions.querySelectorAll('.q-rubric-text').forEach(ta => {
+      ta.addEventListener('blur', () => {
+        const card = ta.closest('.jd-question-card');
+        const idx = parseInt(card.dataset.idx);
+        if (isNaN(idx) || !job.questions[idx]) return;
+        job.questions[idx].rubric = ta.value.trim();
+        saveStateToLocalStorage();
+      });
+    });
+
+    // live persist follow-up edits on blur
+    listQuestions.querySelectorAll('.q-followup-input').forEach(inp => {
+      inp.addEventListener('blur', () => {
+        const card = inp.closest('.jd-question-card');
+        const qIdx = parseInt(card.dataset.idx);
+        if (isNaN(qIdx) || !job.questions[qIdx]) return;
+        const all = [];
+        card.querySelectorAll('.q-followup-input').forEach(i => { if (i.value.trim()) all.push(i.value.trim()); });
+        job.questions[qIdx].follow_ups = all;
+        saveStateToLocalStorage();
       });
     });
 
@@ -7729,7 +7765,7 @@ function renderQuestionsPane(job) {
     listQuestions.querySelectorAll('.q-difficulty-select').forEach(sel => {
       sel.addEventListener('change', async () => {
         const card = sel.closest('.jd-question-card');
-        const idx = parseInt(card.querySelector('.btn-q-save')?.getAttribute('data-idx'));
+        const idx = parseInt(card.dataset.idx);
         if (isNaN(idx) || !job.questions[idx]) return;
         const q = job.questions[idx];
         const newDiff = sel.value;
@@ -7887,6 +7923,8 @@ Rules:
   if (btnToggleJd && jdDetails) {
     btnToggleJd.addEventListener('click', () => {
       jdDetails.classList.toggle('open');
+      const expanded = jdDetails.classList.contains('open');
+      btnToggleJd.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       soundEngine.playClick();
     });
   }
@@ -7988,6 +8026,26 @@ Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdow
       }
     });
   }
+
+  // Wire pill groups (sleek replacement for Focus/Difficulty selects) — auto mode is default
+  document.querySelectorAll('#jd-pane-questions .qg-pill-group').forEach(group => {
+    const targetId = group.getAttribute('data-target');
+    const hidden = document.getElementById(targetId);
+    if (!hidden) return;
+
+    const pills = group.querySelectorAll('.qg-pill');
+    // sync initial from hidden (or first)
+    const cur = hidden.value || 'mixed';
+    pills.forEach(p => p.classList.toggle('active', p.getAttribute('data-val') === cur));
+
+    pills.forEach(p => {
+      p.onclick = () => {
+        pills.forEach(pp => pp.classList.remove('active'));
+        p.classList.add('active');
+        hidden.value = p.getAttribute('data-val');
+      };
+    });
+  });
 }
 
 function showStagingArea(job) {
@@ -7995,27 +8053,27 @@ function showStagingArea(job) {
   const stagingList = document.getElementById('staging-questions-list');
   if (!stagingArea || !stagingList) return;
   
-  stagingArea.style.display = 'block';
+  stagingArea.hidden = false;
   
   stagingList.innerHTML = currentStagedQuestions.map((q, idx) => `
-    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 10px; margin-bottom: 8px; position: relative;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <div style="display:flex; gap:6px; align-items:center;">
-          <select class="staging-type-select" data-idx="${idx}" style="padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:700; text-transform:uppercase; background:rgba(0,0,0,0.25); border:1px solid var(--glass-border); color:var(--color-text-primary); font-family:var(--font-body); outline:none; cursor:pointer;">
+    <div class="qg-staging-item">
+      <div class="qg-staging-item-top">
+        <div class="qg-staging-item-badges">
+          <select class="staging-type-select qg-staging-select" data-idx="${idx}">
             <option value="technical" ${q.type === 'technical' ? 'selected' : ''}>Technical</option>
             <option value="behavioral" ${q.type === 'behavioral' ? 'selected' : ''}>Behavioral</option>
             <option value="situational" ${q.type === 'situational' ? 'selected' : ''}>Situational</option>
           </select>
-          <select class="staging-diff-select" data-idx="${idx}" style="padding:2px 6px; border-radius:4px; font-size:0.7rem; background:rgba(0,0,0,0.25); border:1px solid var(--glass-border); color:var(--color-text-muted); font-family:var(--font-body); outline:none; cursor:pointer;">
+          <select class="staging-diff-select qg-staging-select" data-idx="${idx}">
             <option value="beginner" ${q.difficulty === 'beginner' ? 'selected' : ''}>Beginner</option>
             <option value="intermediate" ${q.difficulty === 'intermediate' ? 'selected' : ''}>Intermediate</option>
             <option value="advanced" ${q.difficulty === 'advanced' ? 'selected' : ''}>Advanced</option>
           </select>
         </div>
-        <button class="btn-staging-discard-item" data-idx="${idx}" style="background:none; border:none; color:#ef4444; font-size:0.9rem; cursor:pointer; padding:0 4px;">&times;</button>
+        <button type="button" class="btn-staging-discard-item" data-idx="${idx}" aria-label="Remove from batch">&times;</button>
       </div>
-      <div style="font-size:0.82rem; color:var(--color-text-primary); line-height:1.4;">${q.question}</div>
-      <div style="font-size:0.76rem; color:var(--color-text-muted); margin-top:4px; font-style:italic;">Rubric: ${q.rubric}</div>
+      <div class="qg-staging-q">${q.question}</div>
+      <div class="qg-staging-rubric">Rubric: ${q.rubric}</div>
     </div>
   `).join('');
 
@@ -8037,7 +8095,7 @@ function showStagingArea(job) {
       const idx = parseInt(btn.getAttribute('data-idx'));
       currentStagedQuestions.splice(idx, 1);
       if (currentStagedQuestions.length === 0) {
-        stagingArea.style.display = 'none';
+        stagingArea.hidden = true;
       } else {
         showStagingArea(job);
       }
@@ -8051,7 +8109,7 @@ function showStagingArea(job) {
   newBtnReplace.addEventListener('click', () => {
     job.questions = [...currentStagedQuestions];
     saveStateToLocalStorage();
-    stagingArea.style.display = 'none';
+    stagingArea.hidden = true;
     renderQuestionsPane(job);
     showPremiumToast("Interview questions replaced with generated set.", "success");
     soundEngine.playChime([261.63, 392, 523.25], 0.2, 0.08);
@@ -8065,7 +8123,7 @@ function showStagingArea(job) {
     if (!job.questions) job.questions = [];
     job.questions = job.questions.concat(currentStagedQuestions);
     saveStateToLocalStorage();
-    stagingArea.style.display = 'none';
+    stagingArea.hidden = true;
     renderQuestionsPane(job);
     showPremiumToast("Generated questions appended to list.", "success");
     soundEngine.playChime([261.63, 329.63, 392, 523.25], 0.2, 0.08);
@@ -8076,7 +8134,7 @@ function showStagingArea(job) {
   btnCloseStaging.parentNode.replaceChild(newBtnCloseStaging, btnCloseStaging);
   
   newBtnCloseStaging.addEventListener('click', () => {
-    stagingArea.style.display = 'none';
+    stagingArea.hidden = true;
     soundEngine.playClick();
   });
 }

@@ -954,111 +954,138 @@
 
               <!-- Questions Generator Pane -->
               <div class="jd-pane" id="jd-pane-questions">
-                <div class="jd-questions-layout">
+                <div class="qg-studio">
 
-                  <!-- Controls Bar: generation settings in a single row -->
-                  <div class="qg-controls-bar">
-                    <div class="jd-config-row">
-                      <label class="jd-config-label">Questions</label>
-                      <select id="cfg-num-questions" class="jd-config-select">
-                        <option value="3">3</option>
-                        <option value="5" selected>5</option>
-                        <option value="7">7</option>
-                        <option value="10">10</option>
-                      </select>
-                    </div>
-                    <div class="jd-config-row">
-                      <label class="jd-config-label">Types</label>
-                      <select id="cfg-question-types" class="jd-config-select">
-                        <option value="mixed" selected>Mixed</option>
-                        <option value="technical">Technical Only</option>
-                        <option value="behavioral">Behavioral Only</option>
-                        <option value="situational">Situational Only</option>
-                      </select>
-                    </div>
-                    <div class="jd-config-row">
-                      <label class="jd-config-label">Difficulty</label>
-                      <select id="cfg-difficulty" class="jd-config-select">
-                        <option value="mixed" selected>Mixed</option>
-                        <option value="beginner">Beginner</option>
-                        <option value="intermediate">Intermediate</option>
-                        <option value="advanced">Advanced</option>
-                      </select>
-                    </div>
-                    <div class="jd-config-row">
-                      <label class="jd-config-label">Duration</label>
-                      <select id="cfg-duration" class="jd-config-select">
-                        <option value="15">15 min</option>
-                        <option value="30" selected>30 min</option>
-                        <option value="45">45 min</option>
-                        <option value="60">60 min</option>
-                      </select>
-                    </div>
-                    <div class="jd-config-row">
-                      <label class="jd-config-label">Follow-ups</label>
-                      <select id="cfg-followups" class="jd-config-select">
-                        <option value="0">None</option>
-                        <option value="2" selected>2 per question</option>
-                        <option value="3">3 per question</option>
-                      </select>
-                    </div>
-                    <button class="btn-jd-primary" id="btn-generate-questions">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                      <span class="btn-text">Generate Questions</span>
-                    </button>
-                    <button class="qg-jd-toggle" id="btn-toggle-jd">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                      JD
-                    </button>
-                  </div>
-
-                  <!-- Collapsible Job Description textarea -->
-                  <div class="qg-jd-details" id="qg-jd-details">
-                    <div class="qg-jd-label">
-                      <strong>Job Description</strong>
-                      <span>Provide the role requirements, responsibilities, and key skills. The AI uses this context to generate relevant, targeted interview questions.</span>
-                    </div>
-                    <textarea id="jd-raw-description" placeholder="Paste the job description or role requirements here. Include responsibilities, required skills, experience level, and any specific competencies you want to assess..."></textarea>
-                  </div>
-
-                  <!-- Questions header + count -->
-                  <div class="jd-questions-header">
-                    <div class="jd-questions-title-wrap">
-                      <h3 class="jd-section-title">Interview Rubric & Questions</h3>
-                      <p class="jd-section-subtitle">Structured evaluation criteria for candidate assessment</p>
-                    </div>
-                    <span class="questions-count-badge" id="questions-count-badge">0 questions</span>
-                  </div>
-
-                  <!-- Staging area for newly generated questions before importing -->
-                  <div class="card-glass jd-staging-area" id="jd-staging-area" style="display: none;">
-                    <div class="staging-header">
-                      <span class="staging-title">Review Generated Questions</span>
-                      <div class="staging-actions">
-                        <button class="btn-jd-ghost btn-sm" id="btn-staging-replace">Replace List</button>
-                        <button class="btn-jd-primary btn-sm" id="btn-staging-append">Append List</button>
-                        <button class="btn-close-staging" id="btn-close-staging">&times;</button>
+                  <aside class="qg-studio-rail">
+                    <header class="qg-rail-header">
+                      <div class="qg-rail-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"/><path d="M8 6h8"/><path d="M6 9h12"/><path d="M5 12h14"/><path d="M6 15h12"/><path d="M8 18h8"/><path d="M12 21v-3"/></svg>
                       </div>
-                    </div>
-                    <div class="staging-list" id="staging-questions-list"></div>
-                  </div>
-
-                  <!-- Main list of questions -->
-                  <div class="jd-questions-list" id="list-questions">
-                    <!-- Filled by JS -->
-                  </div>
-
-                  <!-- Add Custom Question Card -->
-                  <div class="card-glass jd-add-question-card">
-                    <h4 class="jd-add-title">Add Custom Question</h4>
-                    <div class="jd-add-row">
-                      <textarea id="input-custom-question" placeholder="Draft a raw interview question... (e.g. Tell me about your experience scaling Postgres database tables.)"></textarea>
-                      <div class="jd-add-actions">
-                        <button class="btn-jd-ghost" id="btn-add-question-raw">+ Add As-Is</button>
-                        <button class="btn-jd-primary" id="btn-enhance-custom">Enhance with AI</button>
+                      <div class="qg-rail-heading">
+                        <h2 class="qg-rail-title">Question Studio</h2>
+                        <p class="qg-rail-desc">Tune generation, then build your interview rubric</p>
                       </div>
+                    </header>
+
+                    <section class="qg-rail-block">
+                      <h3 class="qg-block-label">Generation settings</h3>
+                      <div class="qg-config-grid">
+                        <div class="qg-field">
+                          <label class="qg-field-label" for="cfg-num-questions">Count</label>
+                          <select id="cfg-num-questions" class="qg-field-select">
+                            <option value="3">3 questions</option>
+                            <option value="5" selected>5 questions</option>
+                            <option value="7">7 questions</option>
+                            <option value="10">10 questions</option>
+                          </select>
+                        </div>
+                        <div class="qg-field">
+                          <label class="qg-field-label">Focus</label>
+                          <div class="qg-pill-group" data-target="cfg-question-types">
+                            <button type="button" class="qg-pill active" data-val="mixed">Mixed</button>
+                            <button type="button" class="qg-pill" data-val="technical">Technical</button>
+                            <button type="button" class="qg-pill" data-val="behavioral">Behavioral</button>
+                            <button type="button" class="qg-pill" data-val="situational">Situational</button>
+                          </div>
+                          <select id="cfg-question-types" class="qg-field-select" hidden>
+                            <option value="mixed" selected>Mixed types</option>
+                            <option value="technical">Technical</option>
+                            <option value="behavioral">Behavioral</option>
+                            <option value="situational">Situational</option>
+                          </select>
+                        </div>
+                        <div class="qg-field">
+                          <label class="qg-field-label">Difficulty</label>
+                          <div class="qg-pill-group" data-target="cfg-difficulty">
+                            <button type="button" class="qg-pill active" data-val="mixed">Mixed</button>
+                            <button type="button" class="qg-pill" data-val="beginner">Beginner</button>
+                            <button type="button" class="qg-pill" data-val="intermediate">Intermediate</button>
+                            <button type="button" class="qg-pill" data-val="advanced">Advanced</button>
+                          </div>
+                          <select id="cfg-difficulty" class="qg-field-select" hidden>
+                            <option value="mixed" selected>Mixed levels</option>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                          </select>
+                        </div>
+                        <div class="qg-field">
+                          <label class="qg-field-label" for="cfg-duration">Interview length</label>
+                          <select id="cfg-duration" class="qg-field-select">
+                            <option value="15">15 minutes</option>
+                            <option value="30" selected>30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60">60 minutes</option>
+                          </select>
+                        </div>
+                        <div class="qg-field qg-field-full">
+                          <label class="qg-field-label" for="cfg-followups">Follow-ups per question</label>
+                          <select id="cfg-followups" class="qg-field-select">
+                            <option value="0">None</option>
+                            <option value="2" selected>2 follow-ups</option>
+                            <option value="3">3 follow-ups</option>
+                          </select>
+                        </div>
+                      </div>
+                      <button type="button" class="btn-qg-generate" id="btn-generate-questions">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <span class="btn-text">Generate questions</span>
+                      </button>
+                    </section>
+
+                    <section class="qg-rail-block qg-jd-block">
+                      <button type="button" class="qg-jd-head" id="btn-toggle-jd" aria-expanded="true" aria-controls="qg-jd-details">
+                        <span class="qg-jd-head-left">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                          Job description
+                        </span>
+                        <svg class="qg-jd-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                      </button>
+                      <div class="qg-jd-details open" id="qg-jd-details">
+                        <p class="qg-jd-hint">Role context the AI uses to draft targeted questions and rubrics.</p>
+                        <textarea id="jd-raw-description" rows="6" placeholder="Paste responsibilities, required skills, experience level, and competencies to assess..."></textarea>
+                      </div>
+                    </section>
+                  </aside>
+
+                  <div class="qg-studio-main">
+                    <header class="qg-main-header">
+                      <div class="qg-main-heading">
+                        <h3 class="qg-main-title">Interview rubric</h3>
+                        <p class="qg-main-subtitle">Questions, scoring notes, and follow-ups for this role <span class="qg-auto-hint">· edits save instantly</span></p>
+                      </div>
+                      <span class="qg-count-chip" id="questions-count-badge">0 questions</span>
+                    </header>
+
+                    <div class="qg-staging" id="jd-staging-area" hidden>
+                      <div class="qg-staging-head">
+                        <div class="qg-staging-label">
+                          <span class="qg-staging-dot" aria-hidden="true"></span>
+                          <span class="staging-title">Review generated batch</span>
+                        </div>
+                        <div class="staging-actions">
+                          <button type="button" class="btn-jd-ghost btn-sm" id="btn-staging-replace">Replace list</button>
+                          <button type="button" class="btn-jd-primary btn-sm" id="btn-staging-append">Append to rubric</button>
+                          <button type="button" class="btn-close-staging" id="btn-close-staging" aria-label="Dismiss review">&times;</button>
+                        </div>
+                      </div>
+                      <div class="staging-list" id="staging-questions-list"></div>
                     </div>
+
+                    <div class="qg-questions-scroll" id="list-questions"></div>
+
+                    <footer class="qg-composer">
+                      <label class="qg-composer-label" for="input-custom-question">Add a custom question</label>
+                      <div class="qg-composer-row">
+                        <textarea id="input-custom-question" rows="2" placeholder="Draft a question (e.g. How do you prioritize incidents during an on-call rotation?)"></textarea>
+                        <div class="qg-composer-actions">
+                          <button type="button" class="btn-qg-secondary" id="btn-add-question-raw">Add as-is</button>
+                          <button type="button" class="btn-qg-generate btn-qg-generate--compact" id="btn-enhance-custom">Enhance with AI</button>
+                        </div>
+                      </div>
+                    </footer>
                   </div>
+
                 </div>
               </div>
 
