@@ -132,18 +132,21 @@
         <!-- Header Bar -->
         <header class="dashboard-header">
           <div class="header-left">
-            <div class="breadcrumbs">
+                        <div class="header-top-row">
               <button id="btn-toggle-sidebar" class="sidebar-toggle" aria-label="Toggle Sidebar">
                 <svg class="icon-toggle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="m15 18-6-6 6-6"/>
                 </svg>
               </button>
+              <h1 class="header-heading" id="header-main-title">Good morning, Devasri</h1>
+            </div>
+            <div class="breadcrumbs">
               <span class="breadcrumb-link" id="bc-portal-link">Client Portal</span>
               <span class="breadcrumb-separator">/</span>
               <span class="breadcrumb-item active" id="breadcrumb-title">Jobs</span>
+              <span class="header-separator-dot">&middot;</span>
+              <span id="header-sub-text">A squad of AI agents working for you</span>
             </div>
-            <h1 class="header-heading" id="header-main-title">Good morning, Devasri 🌤️</h1>
-            <p class="header-subheading" id="header-sub-text">A squad of AI agents working for you</p>
           </div>
           
           <div class="header-right">
@@ -862,10 +865,14 @@
                       <button class="jd-dr-preset" data-range="90d">90 Days</button>
                     </div>
                     <div class="jd-daterange-custom">
-                      <label>From</label>
-                      <input type="date" id="jd-date-from" class="date-input" />
-                      <label>To</label>
-                      <input type="date" id="jd-date-to" class="date-input" />
+                      <div class="dr-cal-field">
+                        <label>From</label>
+                        <input type="date" id="jd-date-from" class="date-input" />
+                      </div>
+                      <div class="dr-cal-field">
+                        <label>To</label>
+                        <input type="date" id="jd-date-to" class="date-input" />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1059,6 +1066,16 @@
             </div><!-- /jd-panes -->
 
           </section><!-- /view-job-detail -->
+
+          <!-- ===================================== -->
+          <!-- JOB FLOW PIPELINE VIEW -->
+          <!-- ===================================== -->
+          <section class="dashboard-view" id="view-job-flow">
+            <div class="jf-layout">
+              <div class="jf-pipeline-panel" id="jf-pipeline-panel"></div>
+              <div class="jf-config-panel" id="jf-config-panel"></div>
+            </div>
+          </section>
 
           <!-- ===================================== -->
           <!-- SOURCING & MASS ADD APPLICANTS VIEW -->
@@ -1295,6 +1312,36 @@
       <!-- ===================================== -->
       <!-- SLIDE-OUT DRAWERS (FORM SECTIONS) -->
       <!-- ===================================== -->
+      <!-- Modal: Edit Job Name -->
+      <div class="modal-overlay" id="modal-edit-job" style="display: none;">
+        <div class="modal-box">
+          <div class="modal-header">
+            <h2 class="modal-title">Edit Job Name</h2>
+            <button class="modal-close-btn" id="modal-edit-job-close" aria-label="Close">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="modal-field">
+              <label class="modal-label">Job Name <span class="modal-required">*</span></label>
+              <input type="text" id="modal-edit-job-name" class="modal-input" placeholder="Enter job name" />
+            </div>
+            <div class="modal-field">
+              <label class="modal-label">Job Id <span class="modal-optional">(optional)</span></label>
+              <input type="text" id="modal-edit-job-id" class="modal-input" placeholder="e.g. 49298af015c842336b57a62a1" />
+            </div>
+            <div class="modal-field">
+              <label class="modal-label">Tags <span class="modal-optional">(optional)</span></label>
+              <div class="modal-tags-wrap">
+                <div class="modal-tags-list" id="modal-edit-tags-list"></div>
+                <input type="text" id="modal-edit-tags-input" class="modal-input" placeholder="Type and press Enter or comma" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="modal-save-btn" id="modal-edit-job-save">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
       <div class="drawer-overlay" id="drawer-backdrop"></div>
 
       <!-- Drawer: Job Creator -->

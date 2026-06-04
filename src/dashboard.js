@@ -125,6 +125,30 @@ const AppState = {
         ],
         goodToHaveMinMatch: 1
       },
+      pipelineConfig: {
+        careerPage: { enabled: true, listed: true },
+        resumeAnalysis: { enabled: false },
+        recruiterScreening: { enabled: false },
+        functionalInterview: { enabled: true }
+      },
+      screeningParams: [
+        { category: 'Experience', params: [
+          { name: 'Total Experience', required: false, flexibility: '', preferredResponse: 'Only 3+ year experience allowed' },
+          { name: 'Relevant Experience', required: false, flexibility: '', preferredResponse: '2+ year relevant experience only' }
+        ]},
+        { category: 'Location', params: [
+          { name: 'Current Location', required: true, flexibility: '', preferredResponse: 'Mumbai or Pune' },
+          { name: 'Ready to relocate', required: false, flexibility: '', preferredResponse: 'yes / no' }
+        ]},
+        { category: 'Compensation', params: [
+          { name: 'Current CTC', required: true, flexibility: '', preferredResponse: 'Should be above 6 LPA' },
+          { name: 'Expected CTC', required: true, flexibility: '', preferredResponse: 'Should be under 10 LPA' }
+        ]},
+        { category: 'Availability', params: [
+          { name: 'Notice Period', required: true, flexibility: '', preferredResponse: '30 days or less' }
+        ]}
+      ],
+      applicationFields: ['Current Location', 'Expected CTC', 'Notice Period'],
       questions: [
         {
           id: 'q-prop-1',
@@ -186,6 +210,30 @@ const AppState = {
         ],
         goodToHaveMinMatch: 1
       },
+      pipelineConfig: {
+        careerPage: { enabled: true, listed: true },
+        resumeAnalysis: { enabled: true },
+        recruiterScreening: { enabled: true },
+        functionalInterview: { enabled: true }
+      },
+      screeningParams: [
+        { category: 'Experience', params: [
+          { name: 'Total Experience', required: true, flexibility: '', preferredResponse: '1-4 years of full stack development' },
+          { name: 'Relevant Experience', required: true, flexibility: '', preferredResponse: '1+ years with React and Node.js' }
+        ]},
+        { category: 'Location', params: [
+          { name: 'Current Location', required: false, flexibility: '', preferredResponse: 'Remote or Bangalore' },
+          { name: 'Ready to relocate', required: false, flexibility: '', preferredResponse: 'Flexible' }
+        ]},
+        { category: 'Compensation', params: [
+          { name: 'Current CTC', required: true, flexibility: '', preferredResponse: 'Should be above 4 LPA' },
+          { name: 'Expected CTC', required: true, flexibility: '', preferredResponse: 'Should be under 12 LPA' }
+        ]},
+        { category: 'Availability', params: [
+          { name: 'Notice Period', required: true, flexibility: '', preferredResponse: '15 days or less' }
+        ]}
+      ],
+      applicationFields: ['Current Location', 'Expected CTC', 'Notice Period', 'GitHub Profile'],
       questions: [
         {
           id: 'q-dev-1',
@@ -1065,10 +1113,46 @@ function renderJobCards() {
           <h3 class="job-title">${cardName}</h3>
           <span class="job-meta-pill">Role: ${roleName}</span>
         </div>
-        <span class="status-badge ${status}">
-          <span class="status-badge-dot"></span>
-          ${status.charAt(0).toUpperCase() + status.slice(1)}
-        </span>
+        <div class="job-card-header-actions">
+          <span class="status-badge ${status}">
+            <span class="status-badge-dot"></span>
+            ${status.charAt(0).toUpperCase() + status.slice(1)}
+          </span>
+          <button class="btn-job-kebab" data-job-id="${jobId}" onclick="event.stopPropagation(); toggleJobKebab(this);" title="Job actions">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          </button>
+          <div class="job-kebab-dropdown" data-job-id="${jobId}">
+            <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'edit-name')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              Edit Job Name
+            </button>
+            <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'view-flow')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              View Job Flow
+            </button>
+            <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'career-page')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              ${job.listedOnCareer ? 'Remove from Career Page' : 'List on Career Page'}
+            </button>
+            <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'duplicate')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Duplicate
+            </button>
+            <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'settings')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Interview Settings
+            </button>
+            <div class="kebab-divider"></div>
+            <button class="kebab-item ${status === 'archived' ? '' : 'kebab-item-danger'}" onclick="event.stopPropagation(); handleJobKebab('${jobId}', '${status === 'archived' ? 'unarchive' : 'archive'}')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+              ${status === 'archived' ? 'Unarchive' : 'Archive'}
+            </button>
+            <button class="kebab-item kebab-item-danger" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'delete')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              Delete
+            </button>
+          </div>
+        </div>
       </div>
       
       <div class="job-card-details">
@@ -2681,6 +2765,400 @@ function navigateToJobDetail(jobId) {
 }
 window.navigateToJobDetail = navigateToJobDetail;
 
+// ==========================================
+// JOB FLOW PIPELINE VIEW
+// ==========================================
+
+function openJobFlowView(jobId) {
+  const job = AppState.jobs.find(j => j.id === jobId);
+  if (!job) return;
+
+  // Initialize pipeline config if not present
+  if (!job.pipelineConfig) {
+    job.pipelineConfig = {
+      careerPage: { enabled: true, listed: true },
+      resumeAnalysis: { enabled: !!job.resumeCriteria },
+      recruiterScreening: { enabled: false },
+      functionalInterview: { enabled: job.questions && job.questions.length > 0 }
+    };
+  }
+
+  AppState.activeTab = 'job-flow';
+  AppState.activeJobId = jobId;
+
+  // Sidebar: keep Jobs highlighted as parent
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+    item.classList.toggle('active', item.getAttribute('data-tab') === 'jobs');
+  });
+  document.querySelectorAll('.sub-nav li').forEach(li => li.classList.remove('active-sub'));
+
+  // Show the job flow view
+  document.querySelectorAll('.dashboard-view').forEach(v => v.classList.remove('active-view'));
+  const flowView = document.getElementById('view-job-flow');
+  if (flowView) flowView.classList.add('active-view');
+
+  // Update breadcrumbs
+  const shortName = (job.cardName || job.roleName).length > 30 ? (job.cardName || job.roleName).slice(0, 30) + '…' : (job.cardName || job.roleName);
+  const breadcrumb = document.getElementById('breadcrumb-title');
+  breadcrumb.innerHTML = `<span class="breadcrumb-link" id="bc-jf-jobs">Jobs</span>
+    <span class="breadcrumb-separator">/</span> <span class="breadcrumb-link" id="bc-jf-jobname">${shortName}</span>
+    <span class="breadcrumb-separator">/</span> Job Flow`;
+  document.getElementById('bc-jf-jobs').addEventListener('click', () => navigateToTab('jobs'));
+  document.getElementById('bc-jf-jobname').addEventListener('click', () => navigateToJobDetail(jobId));
+
+  // Header
+  document.getElementById('header-main-title').textContent = job.cardName || job.roleName;
+  document.getElementById('header-sub-text').textContent = 'Pipeline Configuration';
+  document.getElementById('header-action-btn').style.display = 'none';
+
+  renderJobFlowPipeline(job);
+  renderJobFlowConfig(job, 'careerPage');
+
+  soundEngine.playChime([392.00, 523.25, 659.25], 0.15, 0.08);
+}
+window.openJobFlowView = openJobFlowView;
+
+function renderJobFlowPipeline(job) {
+  const panel = document.getElementById('jf-pipeline-panel');
+  if (!panel) return;
+
+  const cfg = job.pipelineConfig;
+  const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [] };
+  const questionCount = job.questions ? job.questions.length : 0;
+  const totalDuration = questionCount * 3;
+
+  const stages = [
+    {
+      key: 'careerPage',
+      name: 'Career Page',
+      enabled: cfg.careerPage.enabled,
+      detail: cfg.careerPage.listed ? '<span class="jf-stage-badge active">Job Listed</span>' : '',
+      subtext: job.cardName || 'Position Not Specified',
+      icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'
+    },
+    {
+      key: 'resumeAnalysis',
+      name: 'Resume Analysis',
+      enabled: cfg.resumeAnalysis.enabled,
+      detail: '',
+      subtext: criteria.mustHave.length ? `${criteria.mustHave.length} Must have · ${criteria.redFlags.length} Red flags · ${criteria.goodToHave.length} Good to have` : 'No parameters added',
+      icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+    },
+    {
+      key: 'recruiterScreening',
+      name: 'Recruiter Screening',
+      enabled: cfg.recruiterScreening.enabled,
+      detail: '',
+      subtext: job.screeningParams ? `${job.screeningParams.reduce((a, c) => a + c.params.length, 0)} Parameters` : 'No parameters added',
+      icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>'
+    },
+    {
+      key: 'functionalInterview',
+      name: 'Functional Interview',
+      enabled: cfg.functionalInterview.enabled,
+      detail: '',
+      subtext: questionCount > 0 ? `${questionCount} Questions · ${totalDuration} Minutes` : 'No questions added',
+      icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+    }
+  ];
+
+  panel.innerHTML = stages.map((s, i) => `
+    <div class="jf-stage-card ${s.enabled ? 'enabled' : 'disabled'} ${i === 0 ? 'active' : ''}" data-stage="${s.key}">
+      <div class="jf-stage-card-top">
+        <div class="jf-stage-info">
+          <span class="jf-stage-icon">${s.icon}</span>
+          <span class="jf-stage-name">${s.name}</span>
+          ${s.detail}
+        </div>
+        <label class="jf-toggle">
+          <input type="checkbox" ${s.enabled ? 'checked' : ''} data-stage="${s.key}" />
+          <span class="jf-toggle-track"></span>
+        </label>
+      </div>
+      <p class="jf-stage-subtext">${s.subtext}</p>
+    </div>
+    ${i < stages.length - 1 ? '<div class="jf-stage-connector"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg></div>' : ''}
+  `).join('');
+
+  // Wire up click handlers
+  panel.querySelectorAll('.jf-stage-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.jf-toggle')) return;
+      panel.querySelectorAll('.jf-stage-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      renderJobFlowConfig(job, card.dataset.stage);
+    });
+  });
+
+  // Wire up toggle switches
+  panel.querySelectorAll('.jf-toggle input').forEach(toggle => {
+    toggle.addEventListener('change', () => {
+      const stageKey = toggle.dataset.stage;
+      job.pipelineConfig[stageKey].enabled = toggle.checked;
+      const card = toggle.closest('.jf-stage-card');
+      card.classList.toggle('enabled', toggle.checked);
+      card.classList.toggle('disabled', !toggle.checked);
+      saveStateToLocalStorage();
+    });
+  });
+}
+
+function renderJobFlowConfig(job, stageKey) {
+  const panel = document.getElementById('jf-config-panel');
+  if (!panel) return;
+
+  switch (stageKey) {
+    case 'careerPage':
+      renderCareerPageConfig(job, panel);
+      break;
+    case 'resumeAnalysis':
+      renderResumeAnalysisConfig(job, panel);
+      break;
+    case 'recruiterScreening':
+      renderScreeningConfig(job, panel);
+      break;
+    case 'functionalInterview':
+      renderFunctionalConfig(job, panel);
+      break;
+  }
+}
+
+function renderCareerPageConfig(job, panel) {
+  const fields = job.applicationFields || ['Current Location', 'Expected CTC', 'Notice Period'];
+  panel.innerHTML = `
+    <div class="jf-config-header">
+      <div class="jf-config-header-left">
+        <h2 class="jf-config-title">Career Page</h2>
+        <p class="jf-config-subtitle">Publish your job and let AI screen every application instantly</p>
+      </div>
+      <div class="jf-config-header-actions">
+        <button class="btn-jf-link">Preview <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+        <button class="btn-jf-primary">+ Application Form</button>
+      </div>
+    </div>
+
+    <div class="jf-section">
+      <div class="jf-section-header">
+        <h3 class="jf-section-title" style="color: var(--color-gold);">Job Description</h3>
+        <button class="btn-jf-edit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+      </div>
+      <div class="jf-jd-card">
+        <h4 class="jf-jd-title">${job.cardName || job.roleName}</h4>
+        <div class="jf-jd-meta">
+          <span><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> ${job.createdBy || 'Akross'}</span>
+          <span class="jf-jd-badge">${job.experienceBand || 'Fresher'}</span>
+        </div>
+        <h5 style="color: var(--color-gold); margin: 16px 0 8px; font-size: 0.85rem;">Job overview</h5>
+        <p class="jf-jd-desc">${job.description || 'No description provided.'}</p>
+      </div>
+    </div>
+
+    <div class="jf-section">
+      <div class="jf-section-header">
+        <div>
+          <h3 class="jf-section-title" style="display: flex; align-items: center; gap: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Application Form Fields
+          </h3>
+          <p style="font-size: 0.76rem; color: var(--color-text-muted); margin: 2px 0 0 0;">Fields candidates will fill out during application</p>
+        </div>
+      </div>
+      <div class="jf-fields-header">Enabled Fields (${fields.length})</div>
+      <div class="jf-fields-list">
+        ${fields.map(f => `
+          <div class="jf-field-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>${f}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderResumeAnalysisConfig(job, panel) {
+  const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [], goodToHaveMinMatch: 1 };
+
+  panel.innerHTML = `
+    <div class="jf-config-header">
+      <div class="jf-config-header-left">
+        <h2 class="jf-config-title">Resume Analysis</h2>
+        <p class="jf-config-subtitle">Parameters created based on your requirements — feel free to edit them</p>
+      </div>
+      <div class="jf-config-header-actions">
+        <button class="btn-jf-edit" id="jf-btn-edit-resume">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+      </div>
+    </div>
+
+    <div class="ra-criteria-group must-have">
+      <div class="ra-criteria-group-header">
+        <span class="ra-criteria-icon must-have"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+        <div>
+          <h4 class="ra-criteria-group-title must-have">Must Have</h4>
+          <p class="ra-criteria-group-desc">Candidates meeting these criteria will be shortlisted; others waitlisted for review</p>
+        </div>
+      </div>
+      <div class="ra-criteria-items">${criteria.mustHave.map((item, i) => `<div class="ra-criteria-item must-have"><span class="ra-criteria-num must-have">${i+1}</span><span class="ra-criteria-text">${item}</span></div>`).join('')}</div>
+    </div>
+
+    <div class="ra-criteria-divider"><span class="ra-criteria-divider-text">AND</span></div>
+
+    <div class="ra-criteria-group red-flags">
+      <div class="ra-criteria-group-header">
+        <span class="ra-criteria-icon red-flags"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+        <div>
+          <h4 class="ra-criteria-group-title red-flags">Should Not Have (Red Flags)</h4>
+          <p class="ra-criteria-group-desc">Candidates with no red flags will be shortlisted; others waitlisted for review</p>
+        </div>
+      </div>
+      <div class="ra-criteria-items">${criteria.redFlags.map((item, i) => `<div class="ra-criteria-item red-flags"><span class="ra-criteria-num red-flags">${i+1}</span><span class="ra-criteria-text">${item}</span></div>`).join('')}</div>
+    </div>
+
+    <div class="ra-criteria-divider"><span class="ra-criteria-divider-text">AND</span></div>
+
+    <div class="ra-criteria-group good-to-have">
+      <div class="ra-criteria-group-header">
+        <span class="ra-criteria-icon good-to-have"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <div>
+          <h4 class="ra-criteria-group-title good-to-have">Good To Have</h4>
+          <p class="ra-criteria-group-desc">Candidates meeting the threshold will be shortlisted; others waitlisted for review.</p>
+        </div>
+      </div>
+      <div class="ra-criteria-min-match">Minimum match: ${criteria.goodToHaveMinMatch} out of ${criteria.goodToHave.length} criteria</div>
+      <div class="ra-criteria-items">${criteria.goodToHave.map((item, i) => `<div class="ra-criteria-item good-to-have"><span class="ra-criteria-num good-to-have">${i+1}</span><span class="ra-criteria-text">${item}</span></div>`).join('')}</div>
+    </div>
+  `;
+}
+
+function renderScreeningConfig(job, panel) {
+  const params = job.screeningParams || [];
+  const totalParams = params.reduce((a, c) => a + c.params.length, 0);
+
+  panel.innerHTML = `
+    <div class="jf-config-header">
+      <div class="jf-config-header-left">
+        <h2 class="jf-config-title">Recruiter Screening</h2>
+        <p class="jf-config-subtitle">AI-powered screening with configurable parameters</p>
+      </div>
+      <div class="jf-config-header-actions">
+        <span class="jf-stat-pill"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ${totalParams} Parameters</span>
+        <span class="jf-stat-pill"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 5 – 10 mins</span>
+      </div>
+    </div>
+
+    <div class="jf-screening-tabs">
+      <button class="jf-tab active">Screening Parameters</button>
+      <button class="jf-tab">Test Interview</button>
+      <button class="jf-tab">Settings</button>
+    </div>
+
+    ${params.map(cat => `
+      <div class="jf-param-category">
+        <h4 class="jf-param-category-title">
+          ${cat.category === 'Experience' ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>' :
+            cat.category === 'Location' ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' :
+            cat.category === 'Compensation' ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' :
+            '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'}
+          ${cat.category}
+        </h4>
+        <div class="jf-param-table-header">
+          <span class="jf-ph-drag"></span>
+          <span class="jf-ph-req">Req</span>
+          <span class="jf-ph-param">Parameter</span>
+          <span class="jf-ph-flex">Flexibility</span>
+          <span class="jf-ph-resp">Preferred Response</span>
+        </div>
+        ${cat.params.map(p => `
+          <div class="jf-param-row">
+            <span class="jf-pr-drag"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="19" r="1"/></svg></span>
+            <span class="jf-pr-req"><input type="checkbox" ${p.required ? 'checked' : ''} /></span>
+            <span class="jf-pr-param">${p.name}</span>
+            <span class="jf-pr-flex"><select class="jf-select-sm"><option>Select</option><option>Must Match</option><option>Flexible</option><option>Nice to Have</option></select></span>
+            <span class="jf-pr-resp"><input type="text" class="jf-input-sm" value="${p.preferredResponse}" placeholder="Enter preferred response..." /></span>
+          </div>
+        `).join('')}
+      </div>
+    `).join('')}
+
+    <button class="btn-jf-primary" style="margin-top: 20px; width: 100%;">+ Enable Screening</button>
+  `;
+}
+
+function renderFunctionalConfig(job, panel) {
+  const questions = job.questions || [];
+  const totalDuration = questions.length * 3;
+
+  // Group questions by type
+  const groups = {};
+  questions.forEach(q => {
+    const key = q.type || 'technical';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(q);
+  });
+
+  panel.innerHTML = `
+    <div class="jf-config-header">
+      <div class="jf-config-header-left">
+        <h2 class="jf-config-title">Functional Interview</h2>
+        <p class="jf-config-subtitle">AI conducts domain-specific interviews using adaptive questioning and skill frameworks</p>
+      </div>
+      <div class="jf-config-header-actions">
+        <span class="jf-stat-pill"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ${questions.length} Questions</span>
+        <span class="jf-stat-pill"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${totalDuration} Minutes</span>
+      </div>
+    </div>
+
+    <div class="jf-screening-tabs">
+      <button class="jf-tab active">Interview Structure</button>
+      <button class="jf-tab">Test Interview</button>
+      <button class="jf-tab">Settings</button>
+    </div>
+
+    <div class="jf-interview-structure">
+      <div class="jf-structure-item intro">
+        <span class="jf-structure-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+        <span class="jf-structure-name">Introduction</span>
+        <span class="jf-structure-expand"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </div>
+
+      ${Object.entries(groups).map(([type, qs]) => {
+        const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+        const typeColor = type === 'technical' ? '#38bdf8' : type === 'behavioral' ? '#a855f7' : type === 'situational' ? '#34d399' : '#fbbf24';
+        const avgDiff = qs[0]?.difficulty || 'intermediate';
+        const diffLabel = avgDiff.charAt(0).toUpperCase() + avgDiff.slice(1);
+        return `
+          <div class="jf-structure-item">
+            <span class="jf-structure-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${typeColor}" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+            <span class="jf-structure-name">${typeLabel} Questions</span>
+            <div class="jf-structure-badges">
+              <span class="jf-badge" style="color:${typeColor};border-color:${typeColor}30;background:${typeColor}10">${typeLabel}</span>
+              <span class="jf-badge">${qs.length} Question${qs.length !== 1 ? 's' : ''}</span>
+              <span class="jf-badge">${diffLabel}</span>
+            </div>
+            <span class="jf-structure-expand"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+          </div>
+        `;
+      }).join('')}
+
+      <div class="jf-structure-item coding">
+        <span class="jf-structure-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+        <span class="jf-structure-name">Coding Question Pool</span>
+        <div class="jf-structure-badges">
+          <span class="jf-badge coding">DSA</span>
+          <span class="jf-badge">3 Follow ups</span>
+          <span class="jf-badge">Medium</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderFunnelStages(job) {
   const container = document.getElementById('jd-funnel-stages');
   if (!container) return;
@@ -3423,7 +3901,158 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.openJobDescriptionDrawer = (jobId) => openDrawer('view-jd', jobId);
-  
+
+  window.toggleJobKebab = function(btn) {
+    const dropdown = btn.nextElementSibling;
+    const isOpen = dropdown.classList.contains('open');
+    document.querySelectorAll('.job-kebab-dropdown.open').forEach(d => d.classList.remove('open'));
+    if (!isOpen) dropdown.classList.add('open');
+  };
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.job-kebab-dropdown.open').forEach(d => d.classList.remove('open'));
+  });
+
+  window.handleJobKebab = function(jobId, action) {
+    document.querySelectorAll('.job-kebab-dropdown.open').forEach(d => d.classList.remove('open'));
+    const job = AppState.jobs.find(j => j.id === jobId);
+    if (!job) return;
+    switch (action) {
+      case 'edit-name':
+        openEditJobModal(jobId);
+        break;
+      case 'view-flow':
+        openJobFlowView(jobId);
+        break;
+      case 'career-page': {
+        job.listedOnCareer = !job.listedOnCareer;
+        renderJobCards();
+        const label = job.listedOnCareer ? 'listed on' : 'removed from';
+        showPremiumToast(`"${job.cardName || job.roleName}" ${label} career page.`, 'success');
+        break;
+      }
+      case 'duplicate': {
+        const dup = JSON.parse(JSON.stringify(job));
+        dup.id = 'JOB-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+        dup.cardName = (job.cardName || job.roleName) + ' (Copy)';
+        dup.status = 'draft';
+        dup.listedOnCareer = false;
+        dup.created = new Date().toLocaleString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+        dup.pipeline = { total: 0, resume: 0, screening: 0, functional: 0 };
+        AppState.jobs.push(dup);
+        renderJobCards();
+        updateJobsCounters();
+        showPremiumToast(`Job duplicated as "${dup.cardName}".`, 'success');
+        break;
+      }
+      case 'settings':
+        navigateToJobDetail(jobId);
+        setTimeout(() => {
+          const qTab = document.querySelector('.jd-tab[data-jd-tab="questions"]');
+          if (qTab) qTab.click();
+        }, 100);
+        break;
+      case 'archive':
+        job.status = 'archived';
+        renderJobCards();
+        updateJobsCounters();
+        showPremiumToast(`"${job.cardName || job.roleName}" has been archived.`, 'success');
+        break;
+      case 'unarchive':
+        job.status = 'published';
+        renderJobCards();
+        updateJobsCounters();
+        showPremiumToast(`"${job.cardName || job.roleName}" has been restored.`, 'success');
+        break;
+      case 'delete': {
+        const name = job.cardName || job.roleName;
+        const idx = AppState.jobs.findIndex(j => j.id === jobId);
+        if (idx === -1) break;
+        AppState.jobs.splice(idx, 1);
+        AppState.candidates = AppState.candidates.filter(c => c.jobApplied !== job.roleName && c.jobApplied !== job.cardName);
+        renderJobCards();
+        updateJobsCounters();
+        updateSummaryMetrics();
+        showPremiumToast(`"${name}" has been permanently deleted.`, 'success');
+        break;
+      }
+    }
+  };
+
+  // Edit Job Modal logic
+  let editJobModalTags = [];
+  let editJobModalJobId = null;
+
+  function openEditJobModal(jobId) {
+    const job = AppState.jobs.find(j => j.id === jobId);
+    if (!job) return;
+    editJobModalJobId = jobId;
+    editJobModalTags = Array.isArray(job.tags) ? [...job.tags] : [];
+
+    const modal = document.getElementById('modal-edit-job');
+    document.getElementById('modal-edit-job-name').value = job.cardName || job.roleName || '';
+    document.getElementById('modal-edit-job-id').value = job.customJobId && job.customJobId !== '-' ? job.customJobId : '';
+    renderEditJobTags();
+    modal.style.display = '';
+    setTimeout(() => document.getElementById('modal-edit-job-name').focus(), 50);
+    soundEngine.playChime([392.00, 523.25], 0.12, 0.1);
+  }
+
+  function closeEditJobModal() {
+    document.getElementById('modal-edit-job').style.display = 'none';
+    editJobModalJobId = null;
+    editJobModalTags = [];
+    soundEngine.playClick();
+  }
+
+  function renderEditJobTags() {
+    const list = document.getElementById('modal-edit-tags-list');
+    list.innerHTML = editJobModalTags.map((tag, i) =>
+      `<span class="modal-tag">${tag}<button class="modal-tag-remove" data-idx="${i}">×</button></span>`
+    ).join('');
+    list.querySelectorAll('.modal-tag-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editJobModalTags.splice(parseInt(btn.dataset.idx), 1);
+        renderEditJobTags();
+      });
+    });
+  }
+
+  document.getElementById('modal-edit-job-close').addEventListener('click', closeEditJobModal);
+  document.getElementById('modal-edit-job').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-edit-job') closeEditJobModal();
+  });
+
+  document.getElementById('modal-edit-tags-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = e.target.value.replace(/,/g, '').trim();
+      if (val && !editJobModalTags.includes(val)) {
+        editJobModalTags.push(val);
+        renderEditJobTags();
+      }
+      e.target.value = '';
+    }
+  });
+
+  document.getElementById('modal-edit-job-save').addEventListener('click', () => {
+    const job = AppState.jobs.find(j => j.id === editJobModalJobId);
+    if (!job) return;
+    const nameVal = document.getElementById('modal-edit-job-name').value.trim();
+    if (!nameVal) {
+      showPremiumToast('Job name is required.', 'error');
+      return;
+    }
+    job.cardName = nameVal;
+    const idVal = document.getElementById('modal-edit-job-id').value.trim();
+    if (idVal) job.customJobId = idVal;
+    job.tags = [...editJobModalTags];
+    closeEditJobModal();
+    renderJobCards();
+    updateJobsCounters();
+    showPremiumToast(`Job updated to "${nameVal}".`, 'success');
+  });
+
   const closeReportBtn = document.getElementById('btn-close-drawer-report');
   if (closeReportBtn) {
     closeReportBtn.addEventListener('click', closeDrawers);
@@ -5067,7 +5696,7 @@ function simulateResumesParsing(files) {
 
       const progressInner = document.getElementById(`progress-inner-\${idx}`);
       if (progressInner) {
-        progressInner.style.width = `\${currentProgress}%`;
+        progressInner.style.setProperty('--progress', currentProgress / 100);
       }
     }, 150 + Math.random() * 150);
   });
@@ -6695,7 +7324,7 @@ function stopActiveCardPlayer() {
     const bars = document.querySelectorAll(`.player-wave-bars[data-wave-id="${oldId}"] .player-wave-bar`);
     bars.forEach(b => {
       b.classList.remove('played');
-      b.style.height = `${Math.floor(Math.random() * 70 + 20)}%`;
+      b.style.setProperty('--wave-height', (Math.floor(Math.random() * 70 + 20)) / 100);
     });
     activeCardPlayerId = null;
   }
