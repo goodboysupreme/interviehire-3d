@@ -7621,35 +7621,41 @@ function renderQuestionsPane(job) {
         <div class="q-card-body">
           <textarea class="q-question-text" data-field="question" placeholder="Enter question wording..." rows="2"></textarea>
 
-          <div class="q-rubric-section">
-            <div class="q-rubric-header">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-              <span>Evaluation Rubric</span>
-            </div>
-            <textarea class="q-rubric-text" data-field="rubric" placeholder="What does a good answer look like?..." rows="2"></textarea>
-          </div>
+          <div class="q-card-expand-wrap">
+            <div class="q-card-expand-inner">
+              <div class="q-rubric-section">
+                <div class="q-rubric-header">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  <span>Evaluation Rubric</span>
+                </div>
+                <textarea class="q-rubric-text" data-field="rubric" placeholder="What does a good answer look like?..." rows="2"></textarea>
+              </div>
 
-          <div class="q-followups-section">
-            <div class="q-followups-header">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-              <span>Follow-ups</span>
-              <span class="q-followup-count">${q.follow_ups ? q.follow_ups.length : 0}</span>
+              <div class="q-followups-section">
+                <div class="q-followups-header">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                  <span>Follow-ups</span>
+                  <span class="q-followup-count">${q.follow_ups ? q.follow_ups.length : 0}</span>
+                </div>
+                <ul class="q-followups-list">
+                  ${(q.follow_ups || []).map((f, idx) => `
+                    <li class="q-followup-item">
+                      <span class="q-followup-num">${idx + 1}</span>
+                      <input type="text" class="q-followup-input" data-idx="${idx}" value="${f}" />
+                      <button class="btn-q-remove-followup" data-idx="${idx}" data-q-idx="${qIndex}" title="Remove">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </li>
+                  `).join('')}
+                </ul>
+                <button class="btn-q-add-followup" data-q-idx="${qIndex}">+ Add Follow-up</button>
+              </div>
             </div>
-            <ul class="q-followups-list">
-              ${(q.follow_ups || []).map((f, idx) => `
-                <li class="q-followup-item">
-                  <span class="q-followup-num">${idx + 1}</span>
-                  <input type="text" class="q-followup-input" data-idx="${idx}" value="${f}" />
-                  <button class="btn-q-remove-followup" data-idx="${idx}" data-q-idx="${qIndex}" title="Remove">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                </li>
-              `).join('')}
-            </ul>
-            <button class="btn-q-add-followup" data-q-idx="${qIndex}">+ Add Follow-up</button>
           </div>
         </div>
 
+        <div class="q-card-footer-wrap">
+          <div class="q-card-footer-inner">
         <div class="q-card-footer">
           <div class="q-card-footer-right">
             <button class="btn-q-delete btn-jd-ghost btn-sm" data-idx="${qIndex}" title="Delete">
@@ -7660,6 +7666,7 @@ function renderQuestionsPane(job) {
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
               Enhance
             </button>
+            </div>
           </div>
         </div>
       </div>
@@ -7828,12 +7835,33 @@ function renderQuestionsPane(job) {
     });
 
     listQuestions.querySelectorAll('.btn-q-collapse-toggle').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const idx = parseInt(btn.getAttribute('data-idx'));
         if (isNaN(idx) || !job.questions[idx]) return;
+        const card = btn.closest('.jd-question-card');
         job.questions[idx].collapsed = !job.questions[idx].collapsed;
+        card.classList.toggle('collapsed', job.questions[idx].collapsed);
+        const chev = btn.querySelector('.q-collapse-chevron');
+        if (chev) chev.style.transform = job.questions[idx].collapsed ? 'rotate(-90deg)' : '';
+        btn.title = job.questions[idx].collapsed ? 'Expand Details' : 'Collapse Details';
         saveStateToLocalStorage();
-        renderQuestionsPane(job);
+        soundEngine.playClick();
+      });
+    });
+
+    listQuestions.querySelectorAll('.q-card-top-row').forEach(row => {
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.q-badge-select')) return;
+        const card = row.closest('.jd-question-card');
+        const idx = parseInt(card.dataset.idx);
+        if (isNaN(idx) || !job.questions[idx]) return;
+        job.questions[idx].collapsed = !job.questions[idx].collapsed;
+        card.classList.toggle('collapsed', job.questions[idx].collapsed);
+        const chev = card.querySelector('.q-collapse-chevron');
+        if (chev) chev.style.transform = job.questions[idx].collapsed ? 'rotate(-90deg)' : '';
+        saveStateToLocalStorage();
         soundEngine.playClick();
       });
     });
@@ -8134,12 +8162,20 @@ Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdow
     btnToggleAll.parentNode.replaceChild(newBtnToggleAll, btnToggleAll);
 
     newBtnToggleAll.addEventListener('click', () => {
-      const targetState = isAnyExpanded; // if any are expanded, collapse all
-      job.questions.forEach(q => {
+      const targetState = isAnyExpanded;
+      job.questions.forEach((q, i) => {
         q.collapsed = targetState;
       });
+      const listQuestions = document.getElementById('list-questions');
+      if (listQuestions) {
+        listQuestions.querySelectorAll('.jd-question-card').forEach(card => {
+          card.classList.toggle('collapsed', targetState);
+          const chev = card.querySelector('.q-collapse-chevron');
+          if (chev) chev.style.transform = targetState ? 'rotate(-90deg)' : '';
+        });
+      }
+      newBtnToggleAll.textContent = targetState ? 'Expand All' : 'Collapse All';
       saveStateToLocalStorage();
-      renderQuestionsPane(job);
       soundEngine.playClick();
     });
   } else if (btnToggleAll) {
