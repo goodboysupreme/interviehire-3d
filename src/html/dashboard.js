@@ -1,18 +1,5 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="intervieHire Client Portal & Administration Dashboard" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <title>intervieHire | Admin Dashboard</title>
-    <link rel="stylesheet" href="/src/dashboard.css" />
-  </head>
-  <body>
-    <!-- Background grid elements -->
+export const html = `
+<!-- Background grid elements -->
     <div class="bg-grid"></div>
     <div class="bg-radial"></div>
 
@@ -1230,6 +1217,5 @@
     </div>
 
     <!-- Scripts -->
-    <script type="module" src="/src/dashboard.js"></script>
-  </body>
-</html>
+    
+`;

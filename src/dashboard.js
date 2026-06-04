@@ -1,5 +1,90 @@
-import * as THREE from 'three';
+import * as THREE_import from 'three';
 import { gsap } from 'gsap';
+
+// Ensure THREE is globally accessible but shadow it in the init function
+if (typeof window !== 'undefined') {
+  window.THREE = THREE_import;
+}
+
+export function initDashboardPage() {
+  const controller = new AbortController();
+  const { signal } = controller;
+
+  const activeAnimationFrames = new Set();
+  const originalRequestAnimationFrame = globalThis.requestAnimationFrame.bind(globalThis);
+  const originalCancelAnimationFrame = globalThis.cancelAnimationFrame.bind(globalThis);
+  
+  function requestAnimationFrame(callback) {
+    const id = originalRequestAnimationFrame((timestamp) => {
+      activeAnimationFrames.delete(id);
+      callback(timestamp);
+    });
+    activeAnimationFrames.add(id);
+    return id;
+  }
+  
+  function cancelAnimationFrame(id) {
+    activeAnimationFrames.delete(id);
+    originalCancelAnimationFrame(id);
+  }
+
+  const activeRenderers = new Set();
+  const THREE = {
+    ...THREE_import,
+    WebGLRenderer: class extends THREE_import.WebGLRenderer {
+      constructor(...args) {
+        super(...args);
+        activeRenderers.add(this);
+      }
+      dispose() {
+        activeRenderers.delete(this);
+        super.dispose();
+      }
+    }
+  };
+
+  const activeObservers = new Set();
+  class MutationObserver extends globalThis.MutationObserver {
+    constructor(...args) {
+      super(...args);
+      activeObservers.add(this);
+    }
+    disconnect() {
+      activeObservers.delete(this);
+      super.disconnect();
+    }
+  }
+
+  const document = new Proxy(globalThis.document, {
+    get(target, prop) {
+      if (prop === 'addEventListener') {
+        return (type, listener, options) => {
+          if (type === 'DOMContentLoaded') {
+            // Trigger immediately since DOM is already parsed/hydrated
+            setTimeout(listener, 0);
+            return;
+          }
+          const opts = typeof options === 'object' ? { signal, ...options } : { signal };
+          target.addEventListener(type, listener, opts);
+        };
+      }
+      const val = target[prop];
+      return typeof val === 'function' ? val.bind(target) : val;
+    }
+  });
+
+  const window = new Proxy(globalThis.window, {
+    get(target, prop) {
+      if (prop === 'addEventListener') {
+        return (type, listener, options) => {
+          const opts = typeof options === 'object' ? { signal, ...options } : { signal };
+          target.addEventListener(type, listener, opts);
+        };
+      }
+      const val = target[prop];
+      return typeof val === 'function' ? val.bind(target) : val;
+    }
+  });
 
 // ==========================================
 // AUDIO SYNTHESIZER ENGINE (Synced with main.js)
@@ -8680,6 +8765,33 @@ function initCrystalAnimations() {
     });
   });
   views.forEach(view => viewObserver.observe(view, { attributes: true, attributeFilter: ['class'] }));
+}
+
+  return () => {
+    controller.abort();
+    
+    activeAnimationFrames.forEach(id => originalCancelAnimationFrame(id));
+    activeAnimationFrames.clear();
+
+    activeRenderers.forEach(r => {
+      try { r.dispose(); } catch(e) {}
+    });
+    activeRenderers.clear();
+
+    activeObservers.forEach(obs => {
+      try { obs.disconnect(); } catch(e) {}
+    });
+    activeObservers.clear();
+
+    // Clean up window attachments to avoid memory leaks or cross-page pollution
+    delete window.navigateToJobDetail;
+    delete window.openJobFlowView;
+    delete window.openJobDescriptionDrawer;
+    delete window.toggleJobKebab;
+    delete window.handleJobKebab;
+    delete window.navigateToSourcing;
+    delete window.removeCandidateFromQueue;
+  };
 }
 
 

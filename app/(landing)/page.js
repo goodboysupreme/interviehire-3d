@@ -1,17 +1,9 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="intervieHire is an AI-powered talent acquisition platform replacing the fragmented hiring stack with screening and vetted human expert interviews." />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <title>intervieHire | AI-Screening & Expert Human Interviews</title>
-    <link rel="stylesheet" href="/src/style.css" />
-  </head>
-  <body>
+'use client';
+
+import { useEffect } from 'react';
+import { initLandingPage } from '../../src/main';
+
+const landingHtml = `
     <!-- Background grid elements -->
     <div class="bg-grid"></div>
     <div class="bg-radial"></div>
@@ -49,8 +41,8 @@
               <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
             </svg>
           </button>
-          <a href="./dashboard.html" class="btn btn-secondary" style="padding: 10px 20px; font-size: 0.9rem; margin-right: 8px;">Dashboard</a>
-          <a href="./dashboard-crystal.html" class="btn btn-secondary" style="padding: 10px 20px; font-size: 0.9rem; margin-right: 8px; border-color: rgba(201, 168, 76, 0.4); background: rgba(201, 168, 76, 0.05); color: #fff;">Crystal Dashboard ✨</a>
+          <a href="/dashboard" class="btn btn-secondary" style="padding: 10px 20px; font-size: 0.9rem; margin-right: 8px;">Dashboard</a>
+          <a href="/dashboard-crystal" class="btn btn-secondary" style="padding: 10px 20px; font-size: 0.9rem; margin-right: 8px; border-color: rgba(201, 168, 76, 0.4); background: rgba(201, 168, 76, 0.05); color: #fff;">Crystal Dashboard ✨</a>
           <a href="#contact" class="btn btn-primary" style="padding: 10px 20px; font-size: 0.9rem; background: var(--color-gold); color: #0A0A0A; border: none;">Book a Demo</a>
         </div>
       </div>
@@ -69,7 +61,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
             </a>
             <a href="#solution" class="btn btn-secondary" id="hero-cta-secondary">See How it Works</a>
-            <a href="./dashboard-crystal.html" class="btn btn-secondary" id="hero-cta-glass" style="border-color: rgba(201, 168, 76, 0.4); background: rgba(201, 168, 76, 0.05); color: #fff; margin-left: 8px;">Crystal Dashboard ✨</a>
+            <a href="/dashboard-crystal" class="btn btn-secondary" id="hero-cta-glass" style="border-color: rgba(201, 168, 76, 0.4); background: rgba(201, 168, 76, 0.05); color: #fff; margin-left: 8px;">Crystal Dashboard ✨</a>
           </div>
         </div>
         <div class="hero-right">
@@ -488,8 +480,15 @@
     <!-- Custom Cursor elements -->
     <div class="custom-cursor" id="custom-cursor"></div>
     <div class="cursor-follower" id="cursor-follower"></div>
+`;
 
-    <!-- Scripts -->
-    <script type="module" src="/src/main.js"></script>
-  </body>
-</html>
+export default function LandingPage() {
+  useEffect(() => {
+    const cleanup = initLandingPage();
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, []);
+
+  return <div dangerouslySetInnerHTML={{ __html: landingHtml }} />;
+}

@@ -1,18 +1,5 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="IntervieHire Client Portal & Administration Dashboard" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <title>IntervieHire | Crystal Glass Dashboard</title>
-    <link rel="stylesheet" href="/src/dashboard-crystal.css" />
-  </head>
-  <body>
-    <!-- Scene / Background -->
+export const html = `
+<!-- Scene / Background -->
     <div class="scene">
       <canvas id="crystal-shader-canvas"></canvas>
       <div class="orb orb-1"></div>
@@ -1816,7 +1803,5 @@
     </div>
 
     <!-- Scripts -->
-    <script type="module" src="/src/dashboard.js"></script>
-  </body>
-</html>
-
+    
+`;
