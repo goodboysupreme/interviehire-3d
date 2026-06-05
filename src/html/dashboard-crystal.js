@@ -119,20 +119,15 @@ export const html = `
         <!-- Header Bar -->
         <header class="dashboard-header">
           <div class="header-left">
-                        <div class="header-top-row">
-              <button id="btn-toggle-sidebar" class="sidebar-toggle" aria-label="Toggle Sidebar">
-                <svg class="icon-toggle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m15 18-6-6 6-6"/>
-                </svg>
-              </button>
-              <h1 class="header-heading" id="header-main-title">Good morning, Devasri</h1>
-            </div>
+            <button id="btn-toggle-sidebar" class="sidebar-toggle" aria-label="Toggle Sidebar">
+              <svg class="icon-toggle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
             <div class="breadcrumbs">
               <span class="breadcrumb-link" id="bc-portal-link">Client Portal</span>
               <span class="breadcrumb-separator">/</span>
               <span class="breadcrumb-item active" id="breadcrumb-title">Jobs</span>
-              <span class="header-separator-dot">&middot;</span>
-              <span id="header-sub-text">A squad of AI agents working for you</span>
             </div>
           </div>
           
@@ -165,6 +160,11 @@ export const html = `
 
         <!-- View Body Content -->
         <div class="dashboard-view-body">
+          <!-- Dashboard Greeting Banner -->
+          <div class="dashboard-banner-wrapper" id="dashboard-banner-wrapper">
+            <h1 class="header-heading" id="header-main-title">Good morning, Devasri</h1>
+            <p class="header-subheading" id="header-sub-text">A squad of AI agents working for you</p>
+          </div>
           
           <!-- ===================================== -->
           <!-- JOBS LIST VIEW (TAB 1) -->

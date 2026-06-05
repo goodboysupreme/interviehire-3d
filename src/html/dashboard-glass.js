@@ -124,8 +124,6 @@ export const html = `
               <span class="breadcrumb-separator">/</span>
               <span class="breadcrumb-item active" id="breadcrumb-title">Jobs</span>
             </div>
-            <h1 class="header-heading" id="header-main-title">Good morning, Devasri 🌤️</h1>
-            <p class="header-subheading" id="header-sub-text">A squad of AI agents working for you</p>
           </div>
           
           <div class="header-right">
@@ -153,6 +151,11 @@ export const html = `
 
         <!-- View Body Content -->
         <div class="dashboard-view-body">
+          <!-- Dashboard Greeting Banner -->
+          <div class="dashboard-banner-wrapper" id="dashboard-banner-wrapper">
+            <h1 class="header-heading" id="header-main-title">Good morning, Devasri 🌤️</h1>
+            <p class="header-subheading" id="header-sub-text">A squad of AI agents working for you</p>
+          </div>
           
           <!-- ===================================== -->
           <!-- JOBS LIST VIEW (TAB 1) -->
