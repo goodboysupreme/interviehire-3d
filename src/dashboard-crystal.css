@@ -3193,6 +3193,7 @@ body.light-theme .btn-stage-advance:hover {
   background: var(--glass-bg);
   transition: border-color 0.16s ease, box-shadow 0.16s cubic-bezier(0.16,1,0.3,1);
   overflow: hidden;
+  flex-shrink: 0;
 }
 .jd-question-card:hover {
   border-color: rgba(255,255,255,0.14);
