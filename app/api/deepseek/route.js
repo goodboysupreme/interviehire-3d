@@ -16,7 +16,7 @@ export async function POST(req) {
     }
 
     const payload = {
-      model: 'deepseek-v4-pro',
+      model: 'deepseek-chat',
       messages,
       temperature: 0.7,
       max_tokens: 3000,
