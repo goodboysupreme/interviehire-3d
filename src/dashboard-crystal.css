@@ -8326,8 +8326,6 @@ body.light-theme .ra-criteria-min-match { background: rgba(var(--color-gold-rgb)
 }
 
 .qg-jd-block {
-  flex: 1;
-  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -8374,8 +8372,6 @@ body.light-theme .ra-criteria-min-match { background: rgba(var(--color-gold-rgb)
   flex-direction: column;
   gap: 8px;
   margin-top: 10px;
-  flex: 1;
-  min-height: 0;
 }
 
 .qg-jd-details.open {
