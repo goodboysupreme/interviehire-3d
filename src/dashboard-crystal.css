@@ -9425,6 +9425,133 @@ body.light-theme .btn-jf-skip:hover {
 .jf-field-item:first-child { border-radius: 10px 10px 0 0; }
 .jf-field-item:last-child { border-radius: 0 0 10px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 
+/* Job Flow Edit Fields */
+.jf-edit-field {
+  margin-bottom: 14px;
+}
+.jf-edit-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 5px;
+}
+.jf-edit-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background: rgba(var(--color-surface-rgb, 15, 23, 42), 0.5);
+  border: 1px solid var(--glass-border);
+  transition: border-color 0.2s;
+}
+.jf-edit-input:focus {
+  outline: none;
+  border-color: rgba(var(--color-gold-rgb), 0.4);
+}
+.jf-edit-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background: rgba(var(--color-surface-rgb, 15, 23, 42), 0.5);
+  border: 1px solid var(--glass-border);
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+  transition: border-color 0.2s;
+}
+.jf-edit-textarea:focus {
+  outline: none;
+  border-color: rgba(var(--color-gold-rgb), 0.4);
+}
+.btn-jf-remove-field {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.06);
+  color: #f87171;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--spring-fast);
+  flex-shrink: 0;
+}
+.btn-jf-remove-field:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+.btn-jf-add-field {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  background: rgba(var(--color-indigo-rgb), 0.06);
+  border: 1px dashed rgba(var(--color-indigo-rgb), 0.2);
+  color: var(--color-indigo-light);
+  cursor: pointer;
+  transition: var(--spring-fast);
+}
+.btn-jf-add-field:hover {
+  background: rgba(var(--color-indigo-rgb), 0.12);
+}
+
+/* Question Edit Rows */
+.jf-question-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,0.04);
+  border-bottom: none;
+  transition: background 0.15s;
+}
+.jf-question-edit-row:first-child { border-radius: 10px 10px 0 0; }
+.jf-question-edit-row:last-child { border-radius: 0 0 10px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.jf-question-edit-row:hover { background: rgba(255,255,255,0.02); }
+.jf-qe-num {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-text-faint);
+  background: rgba(255,255,255,0.04);
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.jf-qe-text {
+  flex: 1 !important;
+  min-width: 0;
+}
+.jf-qe-diff {
+  width: 110px !important;
+  flex-shrink: 0;
+}
+.jf-row-dirty {
+  background: rgba(var(--color-gold-rgb), 0.03) !important;
+}
+
+/* Light theme overrides */
+body.light-theme .jf-edit-input,
+body.light-theme .jf-edit-textarea {
+  background: rgba(241, 245, 249, 0.6);
+  color: #1e293b;
+}
+body.light-theme .jf-question-edit-row:hover {
+  background: rgba(0,0,0,0.02);
+}
+
 /* Screening Tabs */
 .jf-screening-tabs {
   display: flex;

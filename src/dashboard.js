@@ -3098,6 +3098,8 @@ function renderJobFlowConfig(job, stageKey) {
 
 function renderCareerPageConfig(job, panel) {
   const fields = job.applicationFields || ['Current Location', 'Expected CTC', 'Notice Period'];
+  const isEditing = panel.dataset.cpEditing === 'true';
+
   panel.innerHTML = `
     <div class="jf-config-header">
       <div class="jf-config-header-left">
@@ -3105,27 +3107,48 @@ function renderCareerPageConfig(job, panel) {
         <p class="jf-config-subtitle">Publish your job and let AI screen every application instantly</p>
       </div>
       <div class="jf-config-header-actions">
-        <button class="btn-jf-link">Preview <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
-        <button class="btn-jf-primary">+ Application Form</button>
+        <button class="btn-jf-edit" id="btn-cp-edit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          ${isEditing ? 'Save' : 'Edit'}
+        </button>
       </div>
     </div>
 
     <div class="jf-section">
       <div class="jf-section-header">
         <h3 class="jf-section-title" style="color: var(--color-gold);">Job Description</h3>
-        <button class="btn-jf-edit">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          Edit
-        </button>
       </div>
       <div class="jf-jd-card">
-        <h4 class="jf-jd-title">${job.cardName || job.roleName}</h4>
-        <div class="jf-jd-meta">
-          <span><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> ${job.createdBy || 'Akross'}</span>
-          <span class="jf-jd-badge">${job.experienceBand || 'Fresher'}</span>
-        </div>
-        <h5 style="color: var(--color-gold); margin: 16px 0 8px; font-size: 0.85rem;">Job overview</h5>
-        <p class="jf-jd-desc">${job.description || 'No description provided.'}</p>
+        ${isEditing ? `
+          <div class="jf-edit-field">
+            <label class="jf-edit-label">Job Title</label>
+            <input type="text" class="jf-edit-input" id="cp-edit-title" value="${(job.cardName || job.roleName || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="jf-edit-field">
+            <label class="jf-edit-label">Role Name</label>
+            <input type="text" class="jf-edit-input" id="cp-edit-role" value="${(job.roleName || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="jf-edit-field">
+            <label class="jf-edit-label">Experience Band</label>
+            <select class="jf-edit-input" id="cp-edit-exp">
+              ${['Fresher', 'Upto 2 Years', '1-4 Years', '3-6 Years', '5-10 Years', '8-15 Years', '10+ Years'].map(o =>
+                `<option ${(job.experienceBand || '') === o ? 'selected' : ''}>${o}</option>`
+              ).join('')}
+            </select>
+          </div>
+          <div class="jf-edit-field">
+            <label class="jf-edit-label">Job Description</label>
+            <textarea class="jf-edit-textarea" id="cp-edit-desc" rows="6">${job.description || ''}</textarea>
+          </div>
+        ` : `
+          <h4 class="jf-jd-title">${job.cardName || job.roleName}</h4>
+          <div class="jf-jd-meta">
+            <span><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> ${job.createdBy || 'Akross'}</span>
+            <span class="jf-jd-badge">${job.experienceBand || 'Fresher'}</span>
+          </div>
+          <h5 style="color: var(--color-gold); margin: 16px 0 8px; font-size: 0.85rem;">Job overview</h5>
+          <p class="jf-jd-desc">${job.description || 'No description provided.'}</p>
+        `}
       </div>
     </div>
 
@@ -3141,15 +3164,72 @@ function renderCareerPageConfig(job, panel) {
       </div>
       <div class="jf-fields-header">Enabled Fields (${fields.length})</div>
       <div class="jf-fields-list">
-        ${fields.map(f => `
+        ${fields.map((f, i) => `
           <div class="jf-field-item">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>${f}</span>
+            ${isEditing
+              ? `<input type="text" class="jf-edit-input jf-field-edit" value="${f.replace(/"/g, '&quot;')}" data-idx="${i}" style="flex:1;" />
+                 <button class="btn-jf-remove-field" data-idx="${i}" title="Remove">×</button>`
+              : `<span>${f}</span>`}
           </div>
         `).join('')}
+        ${isEditing ? `<button class="btn-jf-add-field" id="btn-cp-add-field" style="margin-top:6px;">+ Add Field</button>` : ''}
       </div>
     </div>
   `;
+
+  const editBtn = document.getElementById('btn-cp-edit');
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      if (isEditing) {
+        const newTitle = document.getElementById('cp-edit-title')?.value.trim();
+        const newRole = document.getElementById('cp-edit-role')?.value.trim();
+        const newExp = document.getElementById('cp-edit-exp')?.value;
+        const newDesc = document.getElementById('cp-edit-desc')?.value.trim();
+        if (newTitle) job.cardName = newTitle;
+        if (newRole) job.roleName = newRole;
+        if (newExp) job.experienceBand = newExp;
+        job.description = newDesc || '';
+        const editedFields = [];
+        panel.querySelectorAll('.jf-field-edit').forEach(input => {
+          if (input.value.trim()) editedFields.push(input.value.trim());
+        });
+        if (editedFields.length) job.applicationFields = editedFields;
+        saveStateToLocalStorage();
+        showPremiumToast('Job details saved.', 'success');
+        panel.dataset.cpEditing = 'false';
+        renderCareerPageConfig(job, panel);
+        renderJobFlowPipeline(job);
+      } else {
+        panel.dataset.cpEditing = 'true';
+        renderCareerPageConfig(job, panel);
+      }
+    });
+  }
+
+  if (isEditing) {
+    panel.querySelectorAll('.btn-jf-remove-field').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx);
+        const inputs = panel.querySelectorAll('.jf-field-edit');
+        inputs[idx]?.closest('.jf-field-item')?.remove();
+      });
+    });
+    document.getElementById('btn-cp-add-field')?.addEventListener('click', () => {
+      const list = panel.querySelector('.jf-fields-list');
+      const idx = list.querySelectorAll('.jf-field-item').length;
+      const item = document.createElement('div');
+      item.className = 'jf-field-item';
+      item.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <input type="text" class="jf-edit-input jf-field-edit" value="" data-idx="${idx}" style="flex:1;" placeholder="New field name..." />
+        <button class="btn-jf-remove-field" data-idx="${idx}" title="Remove">×</button>
+      `;
+      list.insertBefore(item, document.getElementById('btn-cp-add-field'));
+      item.querySelector('.btn-jf-remove-field').addEventListener('click', () => item.remove());
+      item.querySelector('input').focus();
+    });
+  }
 }
 
 function renderResumeAnalysisConfig(job, panel) {
@@ -3259,8 +3339,47 @@ function renderScreeningConfig(job, panel) {
       </div>
     `).join('')}
 
-    <button class="btn-jf-primary" style="margin-top: 20px; width: 100%;">+ Enable Screening</button>
+    <button class="btn-jf-primary" id="btn-screening-save" style="margin-top: 20px; width: 100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      Save Parameters
+    </button>
   `;
+
+  panel.querySelectorAll('.jf-param-row').forEach(row => {
+    const reqCheckbox = row.querySelector('.jf-pr-req input');
+    const flexSelect = row.querySelector('.jf-pr-flex select');
+    const respInput = row.querySelector('.jf-pr-resp input');
+    const paramName = row.querySelector('.jf-pr-param')?.textContent.trim();
+
+    if (flexSelect) {
+      const param = params.flatMap(c => c.params).find(p => p.name === paramName);
+      if (param?.flexibility) flexSelect.value = param.flexibility;
+    }
+
+    [reqCheckbox, flexSelect, respInput].forEach(el => {
+      if (el) el.addEventListener('change', () => { el.closest('.jf-param-row').classList.add('jf-row-dirty'); });
+    });
+  });
+
+  document.getElementById('btn-screening-save')?.addEventListener('click', () => {
+    panel.querySelectorAll('.jf-param-category').forEach(catEl => {
+      const catTitle = catEl.querySelector('.jf-param-category-title')?.textContent.trim();
+      const cat = params.find(c => c.category === catTitle);
+      if (!cat) return;
+      catEl.querySelectorAll('.jf-param-row').forEach(row => {
+        const name = row.querySelector('.jf-pr-param')?.textContent.trim();
+        const param = cat.params.find(p => p.name === name);
+        if (!param) return;
+        param.required = row.querySelector('.jf-pr-req input')?.checked ?? param.required;
+        param.flexibility = row.querySelector('.jf-pr-flex select')?.value || 'Select';
+        param.preferredResponse = row.querySelector('.jf-pr-resp input')?.value || '';
+      });
+    });
+    job.screeningParams = params;
+    saveStateToLocalStorage();
+    showPremiumToast('Screening parameters saved.', 'success');
+    panel.querySelectorAll('.jf-row-dirty').forEach(r => r.classList.remove('jf-row-dirty'));
+  });
 }
 
 function renderFunctionalConfig(job, panel) {
@@ -3329,7 +3448,93 @@ function renderFunctionalConfig(job, panel) {
         </div>
       </div>
     </div>
+
+    <div class="jf-section" style="margin-top:16px;">
+      <div class="jf-section-header">
+        <h3 class="jf-section-title" style="display:flex;align-items:center;gap:8px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit Questions
+        </h3>
+      </div>
+      <div class="jf-questions-edit-list" id="jf-questions-list">
+        ${questions.map((q, i) => {
+          const typeColor = q.type === 'technical' ? '#38bdf8' : q.type === 'behavioral' ? '#a855f7' : q.type === 'situational' ? '#34d399' : '#fbbf24';
+          return `
+            <div class="jf-question-edit-row" data-qi="${i}">
+              <span class="jf-qe-num">${i + 1}</span>
+              <span class="jf-badge" style="color:${typeColor};border-color:${typeColor}30;background:${typeColor}10;font-size:0.65rem;">${(q.type || 'technical').charAt(0).toUpperCase() + (q.type || 'technical').slice(1)}</span>
+              <input type="text" class="jf-edit-input jf-qe-text" value="${(q.text || q.question || '').replace(/"/g, '&quot;')}" data-qi="${i}" />
+              <select class="jf-edit-input jf-qe-diff" data-qi="${i}" style="width:110px;">
+                <option ${q.difficulty === 'easy' ? 'selected' : ''}>easy</option>
+                <option ${q.difficulty === 'intermediate' || !q.difficulty ? 'selected' : ''}>intermediate</option>
+                <option ${q.difficulty === 'hard' ? 'selected' : ''}>hard</option>
+              </select>
+              <button class="btn-jf-remove-field jf-qe-delete" data-qi="${i}" title="Delete question">×</button>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn-jf-primary" id="btn-fi-add-question" style="flex:1;">+ Add Question</button>
+        <button class="btn-jf-primary" id="btn-fi-save-questions" style="flex:1;background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#34d399;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Questions
+        </button>
+      </div>
+    </div>
   `;
+
+  panel.querySelectorAll('.jf-qe-delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('.jf-question-edit-row').remove();
+      panel.querySelectorAll('.jf-qe-num').forEach((num, i) => { num.textContent = i + 1; });
+    });
+  });
+
+  document.getElementById('btn-fi-add-question')?.addEventListener('click', () => {
+    const list = document.getElementById('jf-questions-list');
+    const idx = list.querySelectorAll('.jf-question-edit-row').length;
+    const row = document.createElement('div');
+    row.className = 'jf-question-edit-row';
+    row.dataset.qi = idx;
+    row.innerHTML = `
+      <span class="jf-qe-num">${idx + 1}</span>
+      <span class="jf-badge" style="color:#38bdf8;border-color:#38bdf830;background:#38bdf810;font-size:0.65rem;">Technical</span>
+      <input type="text" class="jf-edit-input jf-qe-text" value="" data-qi="${idx}" placeholder="Enter question..." />
+      <select class="jf-edit-input jf-qe-diff" data-qi="${idx}" style="width:110px;">
+        <option>easy</option><option selected>intermediate</option><option>hard</option>
+      </select>
+      <button class="btn-jf-remove-field jf-qe-delete" data-qi="${idx}" title="Delete question">×</button>
+    `;
+    list.appendChild(row);
+    row.querySelector('.jf-qe-delete').addEventListener('click', () => {
+      row.remove();
+      list.querySelectorAll('.jf-qe-num').forEach((num, i) => { num.textContent = i + 1; });
+    });
+    row.querySelector('input').focus();
+  });
+
+  document.getElementById('btn-fi-save-questions')?.addEventListener('click', () => {
+    const newQuestions = [];
+    panel.querySelectorAll('.jf-question-edit-row').forEach(row => {
+      const text = row.querySelector('.jf-qe-text')?.value.trim();
+      if (!text) return;
+      const qi = parseInt(row.dataset.qi);
+      const existing = questions[qi] || {};
+      newQuestions.push({
+        ...existing,
+        text: text,
+        question: text,
+        difficulty: row.querySelector('.jf-qe-diff')?.value || 'intermediate',
+        type: existing.type || 'technical'
+      });
+    });
+    job.questions = newQuestions;
+    saveStateToLocalStorage();
+    showPremiumToast(`${newQuestions.length} questions saved.`, 'success');
+    renderFunctionalConfig(job, panel);
+    renderJobFlowPipeline(job);
+  });
 }
 
 function renderFunnelStages(job) {
