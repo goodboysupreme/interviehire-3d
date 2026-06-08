@@ -16,7 +16,7 @@ export async function POST(request) {
     if (fileName.endsWith('.txt')) {
       text = buffer.toString('utf-8');
     } else if (fileName.endsWith('.pdf')) {
-      const pdf = await import('pdf-parse/lib/pdf-parse.js');
+      const pdf = await import('pdf-parse');
       const pdfParse = pdf.default || pdf;
       const data = await pdfParse(buffer);
       text = data.text;
