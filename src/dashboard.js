@@ -2692,45 +2692,86 @@ function openReportDrawerForCandidate(candidateId) {
   const initials = candidate.name.split(' ').map(n => n[0]).join('');
   document.getElementById('report-avatar').textContent = initials;
 
-  const numericScore = parseFloat(candidate.score) || 80;
-  const rubrics = [
-    { label: 'Coding Proficiency', score: (numericScore / 10).toFixed(1) },
-    { label: 'System Design', score: ((numericScore - 4 - Math.random() * 4) / 10).toFixed(1) },
-    { label: 'Communication', score: ((numericScore + 2 - Math.random() * 4) / 10).toFixed(1) },
-    { label: 'Problem Solving', score: ((numericScore - 2 - Math.random() * 3) / 10).toFixed(1) },
-  ];
+  const aiResult = resumeAnalysisCache[candidateId];
+  const numericScore = aiResult ? aiResult.matchScore : (parseFloat(candidate.score) || 0);
+
+  const rubrics = aiResult && aiResult.scorecard
+    ? [
+        { label: 'Technical Skills', score: aiResult.scorecard.technical?.toFixed(1) || '0.0' },
+        { label: 'Experience', score: aiResult.scorecard.experience?.toFixed(1) || '0.0' },
+        { label: 'Communication', score: aiResult.scorecard.communication?.toFixed(1) || '0.0' },
+        { label: 'Culture Fit', score: aiResult.scorecard.cultureFit?.toFixed(1) || '0.0' },
+      ]
+    : [
+        { label: 'Technical Skills', score: '—' },
+        { label: 'Experience', score: '—' },
+        { label: 'Communication', score: '—' },
+        { label: 'Culture Fit', score: '—' },
+      ];
 
   const rubricListEl = document.getElementById('report-rubric-list');
   if (rubricListEl) {
-    rubricListEl.innerHTML = rubrics.map(r => `
-      <div class="rubric-item">
-        <div class="rubric-meta"><span>${r.label}</span><strong class="val">${r.score} / 10</strong></div>
-        <div class="bar-outer"><div class="bar-inner" style="width: ${r.score * 10}%;"></div></div>
-      </div>
-    `).join('');
+    rubricListEl.innerHTML = rubrics.map(r => {
+      const val = parseFloat(r.score) || 0;
+      return `
+        <div class="rubric-item">
+          <div class="rubric-meta"><span>${r.label}</span><strong class="val">${r.score}${r.score !== '—' ? ' / 10' : ''}</strong></div>
+          <div class="bar-outer"><div class="bar-inner" style="width: ${val * 10}%;"></div></div>
+        </div>
+      `;
+    }).join('');
   }
 
   const vetting = getCandidateVettingDetails(candidateId, candidate.name);
 
   const transcriptFlow = document.getElementById('report-transcript-flow');
   if (transcriptFlow) {
-    transcriptFlow.innerHTML = vetting.transcript.map(line => `
-      <div class="transcript-chat-line chat-speaker-${line.speaker.toLowerCase()}">
-        <span class="chat-speaker-badge">${line.speaker}:</span>
-        <span class="chat-text-bubble">${line.text}</span>
-      </div>
-    `).join('');
+    if (aiResult && aiResult.summary) {
+      transcriptFlow.innerHTML = `
+        <div class="ra-ai-summary-block">
+          <div class="ra-ai-summary-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            AI Resume Analysis
+          </div>
+          <p class="ra-ai-summary-text">${aiResult.summary}</p>
+          ${aiResult.recommendation ? `<div class="ra-ai-rec-line"><strong>Recommendation:</strong> <span class="ra-rec-badge ${aiResult.recommendation === 'Advance' ? 'high' : aiResult.recommendation === 'Hold' ? 'medium' : 'low'}">${aiResult.recommendation}</span> ${aiResult.recommendationReason || ''}</div>` : ''}
+          ${aiResult.experienceYears ? `<div class="ra-ai-detail-line"><strong>Experience:</strong> ${aiResult.experienceYears}</div>` : ''}
+          ${aiResult.skills ? `
+            <div class="ra-skills-grid">
+              ${aiResult.skills.matched?.length ? `<div class="ra-skill-group matched"><span class="ra-skill-label">Matched Skills</span><div class="ra-skill-tags">${aiResult.skills.matched.map(s => `<span class="ra-skill-tag matched">${s}</span>`).join('')}</div></div>` : ''}
+              ${aiResult.skills.missing?.length ? `<div class="ra-skill-group missing"><span class="ra-skill-label">Missing Skills</span><div class="ra-skill-tags">${aiResult.skills.missing.map(s => `<span class="ra-skill-tag missing">${s}</span>`).join('')}</div></div>` : ''}
+              ${aiResult.skills.detected?.length ? `<div class="ra-skill-group detected"><span class="ra-skill-label">Other Skills</span><div class="ra-skill-tags">${aiResult.skills.detected.filter(s => !aiResult.skills.matched?.includes(s)).slice(0, 8).map(s => `<span class="ra-skill-tag">${s}</span>`).join('')}</div></div>` : ''}
+            </div>
+          ` : ''}
+        </div>
+      ` + vetting.transcript.map(line => `
+        <div class="transcript-chat-line chat-speaker-${line.speaker.toLowerCase()}">
+          <span class="chat-speaker-badge">${line.speaker}:</span>
+          <span class="chat-text-bubble">${line.text}</span>
+        </div>
+      `).join('');
+    } else {
+      transcriptFlow.innerHTML = vetting.transcript.map(line => `
+        <div class="transcript-chat-line chat-speaker-${line.speaker.toLowerCase()}">
+          <span class="chat-speaker-badge">${line.speaker}:</span>
+          <span class="chat-text-bubble">${line.text}</span>
+        </div>
+      `).join('');
+    }
   }
 
   const caveatsBody = document.getElementById('report-caveats-body');
   if (caveatsBody) {
-    const rubricRows = vetting.rubrics.map(r => `
-      <div class="rubric-row">
-        <span class="rubric-lbl">${r.label}</span>
-        <div class="rubric-bar-track"><div class="rubric-bar-fill indigo" style="width: ${r.score * 10}%"></div></div>
-        <span class="rubric-val">${r.score}/10</span>
-      </div>
-    `).join('');
+    const rubricRows = (aiResult && aiResult.scorecard ? rubrics : vetting.rubrics).map(r => {
+      const val = parseFloat(r.score) || 0;
+      return `
+        <div class="rubric-row">
+          <span class="rubric-lbl">${r.label}</span>
+          <div class="rubric-bar-track"><div class="rubric-bar-fill indigo" style="width: ${val * 10}%"></div></div>
+          <span class="rubric-val">${r.score !== '—' ? r.score + '/10' : '—'}</span>
+        </div>
+      `;
+    }).join('');
     const caveatTags = vetting.caveats.map(cav => `
       <div class="caveat-tag ${cav.type}">
         <span class="caveat-icon">${cav.type === 'warning' ? '⚠️' : '💡'}</span>
@@ -5822,9 +5863,20 @@ function simulateResumesParsing(files) {
       name: file.name,
       size: (file.size / 1024).toFixed(1) + ' KB',
       progress: 0,
-      status: 'parsing'
+      status: 'parsing',
+      textContent: null
     };
     uploadedFiles.push(item);
+
+    const isTxt = /\.(txt|text)$/i.test(file.name);
+    if (isTxt) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const text = e.target.result;
+        if (!isGarbageText(text)) item.textContent = text;
+      };
+      reader.readAsText(file);
+    }
 
     const fileRow = document.createElement('div');
     fileRow.className = 'upload-file-item';
@@ -5846,7 +5898,6 @@ function simulateResumesParsing(files) {
     `;
     filesList.appendChild(fileRow);
 
-    // Simulate progress bars
     let currentProgress = 0;
     const interval = setInterval(() => {
       currentProgress += Math.floor(Math.random() * 20 + 15);
@@ -5887,27 +5938,27 @@ function importResumesCandidates() {
   const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
   if (!activeJob) return;
 
+  const importedCandIds = [];
   uploadedFiles.forEach(file => {
     const rawName = extractCandidateNameFromFilename(file.name);
     const email = rawName.toLowerCase().replace(/\\s+/g, ".") + "@example.com";
     const phone = "+1 (555) 01" + Math.floor(Math.random() * 900 + 100);
-    addCandidateToAppState(rawName, email, phone, activeJob);
+    const candId = addCandidateToAppState(rawName, email, phone, activeJob, file.textContent);
+    importedCandIds.push(candId);
   });
 
   soundEngine.playChime([392.00, 523.25, 659.25], 0.2, 0.08);
-  showPremiumToast(`Successfully processed and imported \${uploadedFiles.length} candidate(s) into "\${activeJob.roleName}".`, "success");
+  showPremiumToast(`Imported \${uploadedFiles.length} candidate(s) — running AI analysis...`, "success");
 
-  // Reset
   uploadedFiles = [];
   document.getElementById('resumes-preview-box').style.display = 'none';
   const fileRes = document.getElementById('input-file-resumes');
   if (fileRes) fileRes.value = '';
 
-  // Synchronize and navigate back
   recalculateJobPipelines();
   updateSummaryMetrics();
   renderAnalyticsTable();
-  
+
   if (document.getElementById('jobs-board-container') && document.getElementById('jobs-board-container').style.display !== 'none') {
     renderKanbanBoard();
   } else {
@@ -5915,6 +5966,12 @@ function importResumesCandidates() {
   }
 
   navigateToJobDetail(AppState.activeJobId);
+
+  if (currentSourcingMode === 'analyse') {
+    setTimeout(() => {
+      runBulkResumeAnalysis(importedCandIds, activeJob);
+    }, 600);
+  }
 }
 
 function extractCandidateNameFromFilename(filename) {
@@ -6031,7 +6088,7 @@ function importManualQueue() {
 }
 
 // === Shared Candidate Insertion helper ===
-function addCandidateToAppState(name, email, phone, job) {
+function addCandidateToAppState(name, email, phone, job, resumeText) {
   const idChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let candId = 'CAN-';
   for (let i = 0; i < 4; i++) {
@@ -6047,7 +6104,7 @@ function addCandidateToAppState(name, email, phone, job) {
   const dateStr = `\${now.getDate().toString().padStart(2, '0')} \${months[now.getMonth()]} \${now.getFullYear()}, \${formatHour.toString().padStart(2, '0')}:\${now.getMinutes().toString().padStart(2, '0')} \${ampm}`;
 
   const status = currentSourcingMode === 'analyse' ? 'Resume' : 'Screening';
-  const score = `\${Math.floor(Math.random() * 20 + 80)}%`;
+  const score = '—';
 
   AppState.candidates.push({
     id: candId,
@@ -6058,6 +6115,12 @@ function addCandidateToAppState(name, email, phone, job) {
     score: score,
     registeredOn: dateStr
   });
+
+  if (resumeText && !isGarbageText(resumeText)) {
+    resumeTextCache[candId] = resumeText;
+  }
+
+  return candId;
 }
 
 function showPremiumToast(message, type = 'success') {
@@ -6286,49 +6349,91 @@ function renderResumeStagePaneForJob(candidates, job, container) {
     return 'pending';
   };
 
+  const getRecBadge = (rec) => {
+    if (!rec) return '';
+    const cls = rec === 'Advance' ? 'high' : rec === 'Hold' ? 'medium' : 'low';
+    return `<span class="ra-rec-badge ${cls}">${rec}</span>`;
+  };
+
+  const pendingCount = candidates.filter(c => !resumeAnalysisCache[c.id]).length;
+  const analysedCount = candidates.length - pendingCount;
+
   container.innerHTML = `
     <div class="stage-table-container">
+      <div class="ra-toolbar">
+        <div class="ra-toolbar-left">
+          <span class="ra-toolbar-stat">${analysedCount} analysed</span>
+          <span class="ra-toolbar-stat pending">${pendingCount} pending</span>
+        </div>
+        <div class="ra-toolbar-right">
+          ${pendingCount > 0 ? `<button class="btn-ra-analyse-all" id="btn-ra-analyse-all">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Analyse All (${pendingCount})
+          </button>` : ''}
+        </div>
+      </div>
       <div class="ra-table-wrapper">
         <table class="ra-data-table">
           <thead>
             <tr>
-              <th><input type="checkbox" class="table-checkbox-all" /></th>
+              <th style="width:36px;"><input type="checkbox" class="table-checkbox-all" /></th>
               <th>Candidate</th>
-              <th>Match Score</th>
-              <th>Status</th>
-              <th>Resume</th>
+              <th>Match</th>
+              <th>Recommendation</th>
+              <th>Resume Input</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             ${candidates.map(c => {
-              const initials = c.name.split(' ').map(n => n[0]).join('');
               const cached = resumeAnalysisCache[c.id];
-              const score = cached ? cached.overallScore : 0;
+              const score = cached ? cached.matchScore : 0;
               const matchClass = getMatchClass(score);
               const isAnalysed = !!cached;
+              const hasText = !!resumeTextCache[c.id];
               return `
-                <tr data-candidate-id="${c.id}" data-cid="${c.id}">
+                <tr data-candidate-id="${c.id}" data-cid="${c.id}" class="${isAnalysed ? 'ra-row-done' : ''}">
                   <td><input type="checkbox" class="table-checkbox-row" /></td>
                   <td>
                     <div class="table-candidate-cell">
-                      <span class="cand-name-link">${c.name} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
+                      <span class="cand-name-link">${c.name}</span>
                       <span class="cand-email-sub">${c.email}</span>
+                      ${isAnalysed && cached.summary ? `<span class="ra-summary-preview">${cached.summary.slice(0, 90)}${cached.summary.length > 90 ? '…' : ''}</span>` : ''}
                     </div>
                   </td>
-                  <td><span class="ra-match-pill ${matchClass}">${isAnalysed ? score + '%' : 'Pending'}</span></td>
-                  <td><span class="ra-status-badge ${isAnalysed ? 'analysed' : 'pending'}">${isAnalysed ? 'Analysed' : 'Awaiting'}</span></td>
                   <td>
-                    <input type="file" id="ra-file-${c.id}" accept=".pdf,.doc,.docx,.txt" hidden>
-                    ${isAnalysed
-                      ? `<button class="btn-ra-view-resume" data-cid="${c.id}">View Results</button>`
-                      : `<button class="btn-ra-analyse" data-cid="${c.id}" id="ra-btn-${c.id}"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Analyse</button>`
-                    }
+                    <span class="ra-match-pill ${matchClass}">${isAnalysed ? score + '%' : '—'}</span>
                   </td>
                   <td>
-                    <div style="display:flex;gap:6px;justify-content:center;">
-                      <button class="btn-stage-reject" data-candidate-id="${c.id}" style="padding:4px 8px;font-size:0.72rem;">Reject</button>
-                      <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening" style="padding:4px 8px;font-size:0.72rem;">Advance</button>
+                    ${isAnalysed ? getRecBadge(cached.recommendation) : '<span class="ra-status-badge pending">Pending</span>'}
+                  </td>
+                  <td>
+                    <div class="ra-input-cell">
+                      <input type="file" id="ra-file-${c.id}" accept=".pdf,.doc,.docx,.txt" hidden>
+                      ${isAnalysed
+                        ? `<button class="btn-ra-view-resume" data-cid="${c.id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            View Report
+                          </button>`
+                        : `<div class="ra-input-group">
+                            <button class="btn-ra-upload" data-cid="${c.id}" title="Upload resume file">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                              ${hasText ? 'Replace' : 'Upload'}
+                            </button>
+                            <span class="ra-file-status ${hasText ? 'has-file' : ''}">${hasText ? 'Text loaded' : 'No file'}</span>
+                            <button class="btn-ra-analyse" data-cid="${c.id}" id="ra-btn-${c.id}">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                              Analyse
+                            </button>
+                          </div>`
+                      }
+                      ${!isAnalysed ? `<textarea id="ra-paste-${c.id}" class="ra-paste-area" placeholder="Or paste resume text here..." rows="2"></textarea>` : ''}
+                    </div>
+                  </td>
+                  <td>
+                    <div class="ra-action-btns">
+                      <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
+                      <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening">Advance</button>
                     </div>
                   </td>
                 </tr>
@@ -6338,14 +6443,9 @@ function renderResumeStagePaneForJob(candidates, job, container) {
         </table>
       </div>
       <div class="stage-table-footer">
-        <span class="table-selection-info">0 of ${candidates.length} row(s) selected.</span>
+        <span class="table-selection-info">${candidates.length} candidate${candidates.length !== 1 ? 's' : ''} in resume analysis</span>
         <div class="table-pagination">
-          <span>Rows per page</span>
-          <select class="rows-per-page"><option value="10">10</option><option value="25" selected>25</option><option value="50">50</option><option value="100">100</option></select>
           <span>Page 1 of 1</span>
-          <div class="pagination-btns">
-            <button disabled>&laquo;</button><button disabled>&lsaquo;</button><button disabled>&rsaquo;</button><button disabled>&raquo;</button>
-          </div>
         </div>
       </div>
     </div>
@@ -6360,23 +6460,39 @@ function bindResumeAnalysisEvents(job) {
     const fileInput = document.getElementById(`ra-file-${cid}`);
     const analyseBtn = row.querySelector('.btn-ra-analyse');
     const viewBtn = row.querySelector('.btn-ra-view-resume');
+    const uploadBtn = row.querySelector('.btn-ra-upload');
+    const pasteArea = document.getElementById(`ra-paste-${cid}`);
 
-    fileInput?.addEventListener('change', () => {
-      if (fileInput.files[0]) handleResumeFile(cid, fileInput.files[0]);
+    uploadBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInput?.click();
     });
 
-    analyseBtn?.addEventListener('click', () => {
-      fileInput?.click();
-      const handler = () => {
-        if (fileInput.files[0]) {
-          handleResumeFile(cid, fileInput.files[0]);
-          setTimeout(() => runResumeAnalysis(cid, job), 200);
-        } else {
-          runResumeAnalysis(cid, job);
+    fileInput?.addEventListener('change', async () => {
+      if (fileInput.files[0]) {
+        await handleResumeFile(cid, fileInput.files[0]);
+        const badge = row.querySelector('.ra-file-status');
+        if (badge) {
+          badge.textContent = fileInput.files[0].name;
+          badge.classList.add('has-file');
         }
-        fileInput.removeEventListener('change', handler);
-      };
-      fileInput?.addEventListener('change', handler);
+      }
+    });
+
+    analyseBtn?.addEventListener('click', async () => {
+      const hasPaste = pasteArea && pasteArea.value.trim().length > 20;
+      const hasFile = resumeTextCache[cid];
+
+      if (!hasPaste && !hasFile) {
+        runResumeAnalysis(cid, job);
+        return;
+      }
+
+      if (pasteArea && pasteArea.value.trim()) {
+        const existing = resumeTextCache[cid] || '';
+        resumeTextCache[cid] = (existing + '\n' + pasteArea.value.trim()).trim();
+      }
+      runResumeAnalysis(cid, job);
     });
 
     viewBtn?.addEventListener('click', () => {
@@ -6385,29 +6501,44 @@ function bindResumeAnalysisEvents(job) {
       }
     });
   });
+
+  const analyseAllBtn = document.getElementById('btn-ra-analyse-all');
+  analyseAllBtn?.addEventListener('click', () => {
+    const pendingCids = [];
+    document.querySelectorAll('.ra-data-table tr[data-cid]').forEach(row => {
+      if (!resumeAnalysisCache[row.dataset.cid]) {
+        pendingCids.push(row.dataset.cid);
+      }
+    });
+    if (pendingCids.length === 0) {
+      showPremiumToast('All candidates already analysed.', 'info');
+      return;
+    }
+    runBulkResumeAnalysis(pendingCids, job);
+  });
 }
 
 function handleResumeFile(cid, file) {
-  const isPDF = file.name.toLowerCase().endsWith('.pdf');
-
-  if (isPDF) {
-    resumeTextCache[cid] = null;
-    showPremiumToast(`${file.name} loaded — PDF will use auto-generated profile.`, 'info');
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = e => {
-    const text = e.target.result;
-    if (isGarbageText(text)) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const text = e.target.result;
+      if (isGarbageText(text)) {
+        resumeTextCache[cid] = null;
+        showPremiumToast(`${file.name} loaded — binary content, will generate candidate profile.`, 'info');
+      } else {
+        resumeTextCache[cid] = text;
+        showPremiumToast(`${file.name} loaded — ${text.split('\\n').length} lines extracted.`, 'success');
+      }
+      resolve();
+    };
+    reader.onerror = () => {
       resumeTextCache[cid] = null;
-      showPremiumToast(`${file.name} loaded — binary file will use auto-generated profile.`, 'info');
-    } else {
-      resumeTextCache[cid] = text;
-      showPremiumToast(`${file.name} loaded successfully.`, 'success');
-    }
-  };
-  reader.readAsText(file);
+      showPremiumToast(`Could not read ${file.name} — will generate candidate profile.`, 'info');
+      resolve();
+    };
+    reader.readAsText(file);
+  });
 }
 
 function generateSyntheticResume(candidate, job) {
@@ -6489,11 +6620,32 @@ async function runResumeAnalysis(cid, job) {
     btn.innerHTML = `<span class="ra-spinner"></span> Analysing…`;
   }
 
-  const systemPrompt = `You are Lina, an expert ATS resume analyst for IntervieHire. Analyse the provided resume against the job requirements. Respond ONLY with a valid JSON object matching exactly this schema — no extra text, no markdown fences:
-{"matchScore":number,"summary":"2-3 sentence professional assessment","experienceYears":"e.g. 4 years","skills":{"detected":["skill1"],"matched":["skill1"],"missing":["skill1"]},"scorecard":{"technical":number,"experience":number,"communication":number,"cultureFit":number},"recommendation":"Advance|Hold|Reject","recommendationReason":"1 sentence reason"}
-All scorecard values 0–10. matchScore 0–100.`;
+  const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [] };
+  const criteriaBlock = criteria.mustHave.length > 0 ? `
+SCREENING CRITERIA:
+Must Have: ${criteria.mustHave.join('; ')}
+Red Flags (reject if present): ${criteria.redFlags.join('; ')}
+Good to Have (bonus): ${criteria.goodToHave.join('; ')}` : '';
 
-  const userMsg = `Job Title: ${job.cardName}\nRole: ${job.roleName}\nExperience Required: ${job.experienceBand}\nJob Description: ${job.description || '(Not provided)'}\n\n--- RESUME ---\n${resumeText.slice(0, 3500)}`;
+  const systemPrompt = `You are Lina, an expert ATS resume analyst for IntervieHire. You perform rigorous, criteria-driven resume screening.
+
+TASK: Analyse the resume against the job requirements and screening criteria. Score honestly — do NOT inflate scores. A candidate missing must-have skills should score below 50.
+
+SCORING RULES:
+- matchScore: 0–100 overall fit. Weight must-have criteria at 60%, experience at 20%, good-to-have at 20%.
+- scorecard values: 0.0–10.0 each.
+- If the resume is clearly auto-generated or lacks real detail, cap matchScore at 40 and note it.
+- recommendation: "Advance" if matchScore >= 70, "Hold" if 45-69, "Reject" if < 45.
+
+Respond ONLY with a valid JSON object — no markdown fences, no extra text:
+{"matchScore":number,"summary":"2-3 sentence assessment with specific evidence from resume","experienceYears":"e.g. 4 years","skills":{"detected":["skills found in resume"],"matched":["skills that match job requirements"],"missing":["required skills not found"]},"scorecard":{"technical":number,"experience":number,"communication":number,"cultureFit":number},"recommendation":"Advance|Hold|Reject","recommendationReason":"1 sentence with specific reason"}`;
+
+  const userMsg = `JOB: ${job.cardName} (${job.roleName})
+Experience Required: ${job.experienceBand}
+Description: ${job.description || '(Not provided)'}${criteriaBlock}
+
+--- CANDIDATE RESUME ---
+${resumeText.slice(0, 4000)}`;
 
   try {
     const raw = await callDeepSeekAPI(
@@ -6517,35 +6669,77 @@ All scorecard values 0–10. matchScore 0–100.`;
 
 function renderAnalysisResult(cid, result) {
   const row = document.querySelector(`tr[data-cid="${cid}"]`);
-  if (row) {
-    const scoreTd = row.querySelectorAll('td')[2];
-    const statusTd = row.querySelectorAll('td')[3];
-    const resumeTd = row.querySelectorAll('td')[4];
-    if (scoreTd) {
-      const matchClass = result.matchScore >= 75 ? 'high' : result.matchScore >= 50 ? 'medium' : 'low';
-      scoreTd.innerHTML = `<span class="ra-match-pill ${matchClass}">${result.matchScore}%</span>`;
+  if (!row) return;
+
+  row.classList.add('ra-row-done');
+  const tds = row.querySelectorAll('td');
+
+  const matchClass = result.matchScore >= 75 ? 'high' : result.matchScore >= 50 ? 'medium' : 'low';
+  if (tds[1]) {
+    const cell = tds[1].querySelector('.table-candidate-cell');
+    if (cell && result.summary) {
+      const existing = cell.querySelector('.ra-summary-preview');
+      if (existing) existing.remove();
+      const span = document.createElement('span');
+      span.className = 'ra-summary-preview';
+      span.textContent = result.summary.slice(0, 90) + (result.summary.length > 90 ? '…' : '');
+      cell.appendChild(span);
     }
-    if (statusTd) {
-      statusTd.innerHTML = `<span class="ra-status-badge analysed">Analysed</span>`;
+  }
+  if (tds[2]) {
+    tds[2].innerHTML = `<span class="ra-match-pill ${matchClass}">${result.matchScore}%</span>`;
+  }
+  if (tds[3]) {
+    const recCls = result.recommendation === 'Advance' ? 'high' : result.recommendation === 'Hold' ? 'medium' : 'low';
+    tds[3].innerHTML = `<span class="ra-rec-badge ${recCls}">${result.recommendation}</span>`;
+  }
+  if (tds[4]) {
+    tds[4].innerHTML = `<div class="ra-input-cell">
+      <button class="btn-ra-view-resume" data-cid="${cid}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        View Report
+      </button>
+    </div>`;
+    tds[4].querySelector('.btn-ra-view-resume')?.addEventListener('click', () => {
+      openReportDrawerForCandidate(cid);
+    });
+  }
+
+  const pendingBtns = document.querySelectorAll('.btn-ra-analyse-all, .ra-toolbar-stat.pending');
+  const remaining = document.querySelectorAll('tr[data-cid]:not(.ra-row-done)').length;
+  pendingBtns.forEach(el => {
+    if (el.classList.contains('ra-toolbar-stat')) {
+      el.textContent = `${remaining} pending`;
+    } else if (remaining === 0) {
+      el.style.display = 'none';
+    } else {
+      el.innerHTML = el.innerHTML.replace(/\(\d+\)/, `(${remaining})`);
     }
-    if (resumeTd) {
-      resumeTd.innerHTML = `<button class="btn-ra-view-resume" data-cid="${cid}">View Results</button>`;
-      resumeTd.querySelector('.btn-ra-view-resume')?.addEventListener('click', () => {
-        openReportDrawerForCandidate(cid);
-      });
-    }
+  });
+  const analysedStat = document.querySelector('.ra-toolbar-stat:not(.pending)');
+  if (analysedStat) {
+    const done = document.querySelectorAll('tr.ra-row-done').length;
+    analysedStat.textContent = `${done} analysed`;
+  }
+}
+
+async function runBulkResumeAnalysis(candidateIds, job) {
+  const pending = candidateIds.filter(id => !resumeAnalysisCache[id]);
+  if (pending.length === 0) {
+    showPremiumToast('All candidates already analysed.', 'info');
     return;
   }
-
-  const resultEl = document.getElementById(`ra-result-${cid}`);
-  const badgeEl  = document.getElementById(`badge-${cid}`);
-  if (!resultEl) return;
-
-  if (badgeEl) {
-    badgeEl.textContent = `${result.matchScore}%`;
-    const c = result.matchScore >= 75 ? '34,197,94' : result.matchScore >= 50 ? '251,191,36' : '239,68,68';
-    badgeEl.style.cssText = `background:rgba(${c},0.12);color:rgb(${c});border-color:rgba(${c},0.3);`;
+  showPremiumToast(`Analysing ${pending.length} candidate${pending.length > 1 ? 's' : ''}…`, 'info');
+  let done = 0;
+  for (const cid of pending) {
+    try {
+      await runResumeAnalysis(cid, job);
+      done++;
+    } catch {
+      showPremiumToast(`Failed to analyse candidate ${cid}, continuing…`, 'error');
+    }
   }
+  showPremiumToast(`Bulk analysis complete: ${done}/${pending.length} succeeded.`, done === pending.length ? 'success' : 'info');
 }
 
 function toggleResumeCriteriaEdit(job) {
