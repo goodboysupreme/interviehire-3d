@@ -6074,6 +6074,7 @@ function simulateResumesParsing(files) {
     uploadedFiles.push(item);
 
     const isTxt = /\.(txt|text)$/i.test(file.name);
+    const isPdfOrDocx = /\.(pdf|docx?)$/i.test(file.name);
     if (isTxt) {
       const reader = new FileReader();
       reader.onload = e => {
@@ -6081,6 +6082,13 @@ function simulateResumesParsing(files) {
         if (!isGarbageText(text)) item.textContent = text;
       };
       reader.readAsText(file);
+    } else if (isPdfOrDocx) {
+      const fd = new FormData();
+      fd.append('file', file);
+      fetch('/api/parse-file', { method: 'POST', body: fd })
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(data => { if (data.text && !isGarbageText(data.text)) item.textContent = data.text; })
+        .catch(() => {});
     }
 
     const fileRow = document.createElement('div');
@@ -6723,7 +6731,30 @@ function bindResumeAnalysisEvents(job) {
   });
 }
 
-function handleResumeFile(cid, file) {
+async function handleResumeFile(cid, file) {
+  const isPdfOrDocx = /\.(pdf|docx?)$/i.test(file.name);
+
+  if (isPdfOrDocx) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const resp = await fetch('/api/parse-file', { method: 'POST', body: formData });
+      if (!resp.ok) throw new Error('Parse failed');
+      const data = await resp.json();
+      if (data.text && !isGarbageText(data.text)) {
+        resumeTextCache[cid] = data.text;
+        showPremiumToast(`${file.name} parsed — ${data.text.split('\\n').length} lines extracted.`, 'success');
+      } else {
+        resumeTextCache[cid] = null;
+        showPremiumToast(`${file.name} — could not extract text, will generate profile.`, 'info');
+      }
+    } catch {
+      resumeTextCache[cid] = null;
+      showPremiumToast(`Could not parse ${file.name} — will generate candidate profile.`, 'info');
+    }
+    return;
+  }
+
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = e => {
