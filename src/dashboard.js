@@ -6637,8 +6637,14 @@ SCORING RULES:
 - If the resume is clearly auto-generated or lacks real detail, cap matchScore at 40 and note it.
 - recommendation: "Advance" if matchScore >= 70, "Hold" if 45-69, "Reject" if < 45.
 
+STRICT SKILL RULES:
+- "missing" must ONLY contain skills from the Must Have or Good to Have criteria that the candidate lacks. NEVER invent skills not listed in the job criteria.
+- "matched" must ONLY contain skills from the criteria that the candidate demonstrably has.
+- "detected" lists other relevant skills found in the resume (keep to top 6).
+- Do NOT hallucinate technical skills irrelevant to the role (e.g. no "Rust" for a PM role, no "database schema" unless the job asks for it).
+
 Respond ONLY with a valid JSON object — no markdown fences, no extra text:
-{"matchScore":number,"summary":"2-3 sentence assessment with specific evidence from resume","experienceYears":"e.g. 4 years","skills":{"detected":["skills found in resume"],"matched":["skills that match job requirements"],"missing":["required skills not found"]},"scorecard":{"technical":number,"experience":number,"communication":number,"cultureFit":number},"recommendation":"Advance|Hold|Reject","recommendationReason":"1 sentence with specific reason"}`;
+{"matchScore":number,"summary":"2-3 sentence assessment with specific evidence from resume","experienceYears":"e.g. 4 years","skills":{"detected":["other relevant skills from resume, max 6"],"matched":["criteria skills the candidate has"],"missing":["criteria skills the candidate lacks — ONLY from Must Have and Good to Have lists"]},"scorecard":{"technical":number,"experience":number,"communication":number,"cultureFit":number},"recommendation":"Advance|Hold|Reject","recommendationReason":"1 sentence with specific reason"}`;
 
   const userMsg = `JOB: ${job.cardName} (${job.roleName})
 Experience Required: ${job.experienceBand}
