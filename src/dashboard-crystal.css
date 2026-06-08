@@ -8773,6 +8773,87 @@ body.light-theme .q-card-footer {
   max-height: calc(100vh - 80px);
 }
 
+/* Add Candidates Banner */
+.jf-candidates-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px;
+  margin: 0 0 20px 0;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.06), rgba(99, 102, 241, 0.04));
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 14px;
+  animation: jf-banner-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes jf-banner-in {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.jf-candidates-banner.jf-banner-dismissing {
+  animation: jf-banner-out 0.3s ease forwards;
+}
+@keyframes jf-banner-out {
+  to { opacity: 0; transform: translateY(-10px); height: 0; padding: 0; margin: 0; overflow: hidden; }
+}
+.jf-banner-icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(212, 175, 55, 0.1);
+  border-radius: 10px;
+}
+.jf-banner-content { flex: 1; min-width: 0; }
+.jf-banner-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+.jf-banner-desc {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+.jf-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.btn-jf-skip {
+  padding: 7px 14px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn-jf-skip:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-text-faint);
+  background: rgba(255, 255, 255, 0.03);
+}
+body.light-theme .jf-candidates-banner {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.06), rgba(99, 102, 241, 0.04));
+  border-color: rgba(212, 175, 55, 0.25);
+}
+body.light-theme .btn-jf-skip {
+  border-color: rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.5);
+}
+body.light-theme .btn-jf-skip:hover {
+  color: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.03);
+}
+
 /* Stage Cards */
 .jf-stage-card {
   width: 100%;

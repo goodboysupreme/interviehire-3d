@@ -2093,9 +2093,19 @@ If you need more info, respond ONLY with this JSON (no extra text):
       };
       AppState.jobs.unshift(newJob);
       saveStateToLocalStorage();
-      appendAriaMessage(`Perfect! I've created the "${parsed.roleName}" job posting. Taking you to the job detail now...`, 'aria');
-      soundEngine.playChime([329.63, 392, 523.25, 659.25], 0.2, 0.08);
-      setTimeout(() => navigateToJobDetail(newJob.id), 1400);
+      appendAriaMessage(`Great! I've created "${parsed.roleName}". Now generating your screening criteria, interview questions, and pipeline — hang tight...`, 'aria');
+      soundEngine.playChime([329.63, 392, 523.25], 0.15, 0.08);
+
+      try {
+        await enrichJobWithAI(newJob, parsed.description);
+        appendAriaMessage(`Done! Your full interview pipeline is ready. Taking you there now...`, 'aria');
+        soundEngine.playChime([523.25, 659.25, 783.99], 0.2, 0.08);
+        setTimeout(() => openJobFlowView(newJob.id, true), 1200);
+      } catch (enrichErr) {
+        console.error('Enrichment failed:', enrichErr);
+        appendAriaMessage(`Job created, but I couldn't generate the full pipeline. You can configure it manually.`, 'aria');
+        setTimeout(() => openJobFlowView(newJob.id, true), 1200);
+      }
     } else {
       appendAriaMessage(parsed.message, 'aria');
       ariaChatHistory.push({ role: 'assistant', content: parsed.message });
@@ -2854,7 +2864,7 @@ window.navigateToJobDetail = navigateToJobDetail;
 // JOB FLOW PIPELINE VIEW
 // ==========================================
 
-function openJobFlowView(jobId) {
+function openJobFlowView(jobId, showAddCandidates = false) {
   const job = AppState.jobs.find(j => j.id === jobId);
   if (!job) return;
 
@@ -2898,6 +2908,42 @@ function openJobFlowView(jobId) {
 
   renderJobFlowPipeline(job);
   renderJobFlowConfig(job, 'careerPage');
+
+  // Add Candidates banner after fresh AI-generated job creation
+  const existingBanner = document.getElementById('jf-add-candidates-banner');
+  if (existingBanner) existingBanner.remove();
+
+  if (showAddCandidates) {
+    const banner = document.createElement('div');
+    banner.id = 'jf-add-candidates-banner';
+    banner.className = 'jf-candidates-banner card-glass';
+    banner.innerHTML = `
+      <div class="jf-banner-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
+      </div>
+      <div class="jf-banner-content">
+        <div class="jf-banner-title">Pipeline ready — add your first candidates</div>
+        <p class="jf-banner-desc">Your AI-generated screening criteria, interview questions, and pipeline stages are configured. Import candidates to start the hiring flow.</p>
+      </div>
+      <div class="jf-banner-actions">
+        <button class="btn-jf-primary" id="jf-btn-add-candidates">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
+          Add Candidates
+        </button>
+        <button class="btn-jf-skip" id="jf-btn-skip-candidates">Skip this step</button>
+      </div>
+    `;
+    flowView.insertBefore(banner, flowView.firstChild);
+
+    document.getElementById('jf-btn-add-candidates').addEventListener('click', () => {
+      banner.remove();
+      navigateToSourcing(jobId);
+    });
+    document.getElementById('jf-btn-skip-candidates').addEventListener('click', () => {
+      banner.classList.add('jf-banner-dismissing');
+      setTimeout(() => banner.remove(), 300);
+    });
+  }
 
   soundEngine.playChime([392.00, 523.25, 659.25], 0.15, 0.08);
 }
@@ -4856,9 +4902,14 @@ Return ONLY valid JSON:
         };
         AppState.jobs.unshift(newJob);
         saveStateToLocalStorage();
-        showPremiumToast(`Job "${parsed.roleName}" created successfully.`, "success");
-        soundEngine.playChime([329.63, 392, 523.25], 0.2, 0.08);
-        navigateToJobDetail(newJob.id);
+
+        btnContinue.innerHTML = `<div class="spinner-mini" style="display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin-mini 0.6s linear infinite;margin-right:6px;vertical-align:middle;"></div> Generating interview pipeline...`;
+
+        await enrichJobWithAI(newJob, textToProcess);
+
+        showPremiumToast(`Job "${parsed.roleName}" created with AI-generated pipeline.`, "success");
+        soundEngine.playChime([329.63, 392, 523.25, 659.25], 0.2, 0.08);
+        openJobFlowView(newJob.id, true);
       } catch (err) {
         console.error("Job creation from JD failed:", err);
         showPremiumToast("Failed to process job description. Check API status.", "error");
@@ -7628,6 +7679,125 @@ function sanitizeJSONResponse(text) {
     cleaned = cleaned.substring(0, cleaned.length - 3);
   }
   return cleaned.trim();
+}
+
+async function enrichJobWithAI(job, jdText) {
+  const descriptionText = jdText || job.description || '';
+  if (!descriptionText.trim()) return;
+
+  const criteriaPrompt = `You are an expert HR analyst. Given a job description, extract structured resume screening criteria and recruiter screening parameters.
+
+Return ONLY valid JSON with this exact structure:
+{
+  "resumeCriteria": {
+    "mustHave": ["3-5 strings: essential skills/experience the candidate MUST demonstrate"],
+    "redFlags": ["3-5 strings: disqualifying traits or gaps that should reject a candidate"],
+    "goodToHave": ["3-5 strings: bonus qualifications that strengthen a candidate"],
+    "goodToHaveMinMatch": 1
+  },
+  "screeningParams": [
+    { "category": "Experience", "params": [
+      { "name": "Total Experience", "required": true, "flexibility": "", "preferredResponse": "specific requirement" },
+      { "name": "Relevant Experience", "required": true, "flexibility": "", "preferredResponse": "specific requirement" }
+    ]},
+    { "category": "Location", "params": [
+      { "name": "Current Location", "required": false, "flexibility": "", "preferredResponse": "Remote or flexible" },
+      { "name": "Ready to relocate", "required": false, "flexibility": "", "preferredResponse": "Flexible" }
+    ]},
+    { "category": "Compensation", "params": [
+      { "name": "Current CTC", "required": false, "flexibility": "", "preferredResponse": "Market rate" },
+      { "name": "Expected CTC", "required": false, "flexibility": "", "preferredResponse": "Competitive" }
+    ]},
+    { "category": "Availability", "params": [
+      { "name": "Notice Period", "required": true, "flexibility": "", "preferredResponse": "30 days or less" }
+    ]}
+  ]
+}
+
+Tailor every field specifically to the role. Do not use generic placeholders.`;
+
+  const questionsPrompt = `You are a senior technical interviewer. Given a job description, generate 5 high-quality interview questions.
+
+Return ONLY valid JSON with this exact structure:
+{
+  "questions": [
+    {
+      "id": "q-gen-1",
+      "type": "technical OR behavioral OR situational",
+      "question": "the interview question text",
+      "difficulty": "beginner OR intermediate OR advanced",
+      "rubric": "what a strong answer should demonstrate",
+      "follow_ups": ["follow-up question 1", "follow-up question 2"]
+    }
+  ]
+}
+
+Rules:
+- Generate exactly 5 questions: 2 technical, 2 behavioral, 1 situational
+- Vary difficulty: 1 beginner, 3 intermediate, 1 advanced
+- Each question must have exactly 2 follow-ups
+- Tailor every question specifically to the role described
+- Use ids: q-gen-1 through q-gen-5`;
+
+  const truncatedJD = descriptionText.slice(0, 2500);
+
+  const [criteriaResult, questionsResult] = await Promise.allSettled([
+    callDeepSeekAPI([
+      { role: 'system', content: criteriaPrompt },
+      { role: 'user', content: `Job Description:\n\n${truncatedJD}` }
+    ], true),
+    callDeepSeekAPI([
+      { role: 'system', content: questionsPrompt },
+      { role: 'user', content: `Job Description:\n\n${truncatedJD}` }
+    ], true)
+  ]);
+
+  if (criteriaResult.status === 'fulfilled') {
+    try {
+      const parsed = JSON.parse(sanitizeJSONResponse(criteriaResult.value));
+      if (parsed.resumeCriteria) {
+        job.resumeCriteria = {
+          mustHave: parsed.resumeCriteria.mustHave || [],
+          redFlags: parsed.resumeCriteria.redFlags || [],
+          goodToHave: parsed.resumeCriteria.goodToHave || [],
+          goodToHaveMinMatch: parsed.resumeCriteria.goodToHaveMinMatch || 1
+        };
+      }
+      if (parsed.screeningParams && Array.isArray(parsed.screeningParams)) {
+        job.screeningParams = parsed.screeningParams;
+      }
+    } catch (e) {
+      console.error('Failed to parse criteria response:', e);
+    }
+  }
+
+  if (questionsResult.status === 'fulfilled') {
+    try {
+      const parsed = JSON.parse(sanitizeJSONResponse(questionsResult.value));
+      if (parsed.questions && Array.isArray(parsed.questions)) {
+        job.questions = parsed.questions;
+      }
+    } catch (e) {
+      console.error('Failed to parse questions response:', e);
+    }
+  }
+
+  if (!job.pipelineConfig) {
+    job.pipelineConfig = {
+      careerPage: { enabled: true, listed: true },
+      resumeAnalysis: { enabled: true },
+      recruiterScreening: { enabled: true },
+      functionalInterview: { enabled: true }
+    };
+  } else {
+    if (job.resumeCriteria) job.pipelineConfig.resumeAnalysis = { enabled: true };
+    if (job.screeningParams) job.pipelineConfig.recruiterScreening = { enabled: true };
+    if (job.questions?.length) job.pipelineConfig.functionalInterview = { enabled: true };
+  }
+
+  job.applicationFields = job.applicationFields || ['Current Location', 'Expected CTC', 'Notice Period'];
+
+  saveStateToLocalStorage();
 }
 
 // Render the Questions Pane for a specific job
