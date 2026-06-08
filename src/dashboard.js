@@ -2124,6 +2124,7 @@ If you need more info, respond ONLY with this JSON (no extra text):
 
 let createJobUploadedFileName = null;
 let createJobUploadedText = null;
+let createJobUploadedFile = null;
 
 function navigateToSubtab(subtabId) {
   AppState.activeTab = 'settings';
@@ -4824,6 +4825,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         createJobUploadedFileName = null;
         createJobUploadedText = null;
+        createJobUploadedFile = null;
         preview.style.display = 'none';
         preview.innerHTML = '';
         if (jdDropzone) jdDropzone.classList.remove('has-file');
@@ -4832,10 +4834,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
     if (jdDropzone) jdDropzone.classList.add('has-file');
-    const reader = new FileReader();
-    reader.onload = (ev) => { createJobUploadedText = ev.target.result; };
-    reader.onerror = () => { createJobUploadedText = null; };
-    reader.readAsText(file);
+    createJobUploadedFile = file;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === 'txt') {
+      const reader = new FileReader();
+      reader.onload = (ev) => { createJobUploadedText = ev.target.result; };
+      reader.onerror = () => { createJobUploadedText = null; };
+      reader.readAsText(file);
+    } else {
+      createJobUploadedText = null;
+    }
     soundEngine.playChime([523.25], 0.1, 0.08);
   }
 
@@ -4862,16 +4870,42 @@ document.addEventListener('DOMContentLoaded', () => {
     btnContinue.addEventListener('click', async () => {
       const pasteArea = document.getElementById('create-jd-paste');
       const pastedText = (pasteArea && pasteArea.style.display !== 'none') ? pasteArea.value.trim() : '';
-      const textToProcess = pastedText || createJobUploadedText;
+      let textToProcess = pastedText || createJobUploadedText;
       const sourceName = createJobUploadedFileName || 'pasted text';
 
-      if (!textToProcess) {
+      if (!textToProcess && !createJobUploadedFile) {
         showPremiumToast("Upload a file or paste a job description first.", "error");
         return;
       }
 
       const originalHTML = btnContinue.innerHTML;
       btnContinue.disabled = true;
+
+      if (!textToProcess && createJobUploadedFile) {
+        btnContinue.innerHTML = `<div class="spinner-mini" style="display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin-mini 0.6s linear infinite;margin-right:6px;vertical-align:middle;"></div> Reading file...`;
+        try {
+          const formData = new FormData();
+          formData.append('file', createJobUploadedFile);
+          const parseResp = await fetch('/api/parse-file', { method: 'POST', body: formData });
+          if (!parseResp.ok) throw new Error('Parse failed');
+          const parseData = await parseResp.json();
+          textToProcess = parseData.text;
+          createJobUploadedText = parseData.text;
+        } catch (e) {
+          showPremiumToast("Failed to read file. Try pasting the text instead.", "error");
+          btnContinue.disabled = false;
+          btnContinue.innerHTML = originalHTML;
+          return;
+        }
+      }
+
+      if (!textToProcess) {
+        showPremiumToast("Could not extract text from file. Try pasting it instead.", "error");
+        btnContinue.disabled = false;
+        btnContinue.innerHTML = originalHTML;
+        return;
+      }
+
       btnContinue.innerHTML = `<div class="spinner-mini" style="display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin-mini 0.6s linear infinite;margin-right:6px;vertical-align:middle;"></div> Processing...`;
 
       soundEngine.playChime([392, 440], 0.1, 0.1);
