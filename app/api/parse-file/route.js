@@ -20,6 +20,11 @@ export async function POST(request) {
       const PDFParseClass = pdfModule.PDFParse || (pdfModule.default && pdfModule.default.PDFParse);
       
       if (PDFParseClass) {
+        const path = await import('path');
+        const { pathToFileURL } = await import('url');
+        const workerPath = pathToFileURL(path.resolve(process.cwd(), 'node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs')).href;
+        PDFParseClass.setWorker(workerPath);
+
         const parser = new PDFParseClass({ data: buffer });
         const result = await parser.getText();
         text = result.text || '';
