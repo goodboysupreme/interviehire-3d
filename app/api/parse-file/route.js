@@ -16,10 +16,23 @@ export async function POST(request) {
     if (fileName.endsWith('.txt')) {
       text = buffer.toString('utf-8');
     } else if (fileName.endsWith('.pdf')) {
-      const pdf = await import('pdf-parse');
-      const pdfParse = pdf.default || pdf;
-      const data = await pdfParse(buffer);
-      text = data.text;
+      const pdfModule = await import('pdf-parse');
+      const PDFParseClass = pdfModule.PDFParse || (pdfModule.default && pdfModule.default.PDFParse);
+      
+      if (PDFParseClass) {
+        const parser = new PDFParseClass({ data: buffer });
+        const result = await parser.getText();
+        text = result.text || '';
+        await parser.destroy();
+      } else {
+        const pdfParseFn = pdfModule.default || pdfModule;
+        if (typeof pdfParseFn === 'function') {
+          const data = await pdfParseFn(buffer);
+          text = data.text || '';
+        } else {
+          throw new Error('Could not find a valid PDF parser in pdf-parse dependency');
+        }
+      }
     } else if (fileName.endsWith('.docx')) {
       const mammothModule = await import('mammoth');
       const mammoth = mammothModule.default || mammothModule;
