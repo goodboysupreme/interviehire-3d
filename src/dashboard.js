@@ -1256,23 +1256,29 @@ function renderJobCards() {
       <div class="pipeline-flow">
         <div class="pipeline-step step-total">
           <span class="step-label">Total</span>
-          <span class="step-val">${pipeline.total}</span>
+          <span class="step-val">${pipeline.total || 0}</span>
         </div>
-        <span class="pipeline-arrow">→</span>
-        <div class="pipeline-step step-resume">
-          <span class="step-label">Resume</span>
-          <span class="step-val">${resumeVal}</span>
-        </div>
-        <span class="pipeline-arrow">→</span>
-        <div class="pipeline-step step-screening">
-          <span class="step-label">Screening</span>
-          <span class="step-val">${screeningVal}</span>
-        </div>
-        <span class="pipeline-arrow">→</span>
-        <div class="pipeline-step step-functional">
-          <span class="step-label">Functional</span>
-          <span class="step-val">${functionalVal}</span>
-        </div>
+        ${(job.pipelineConfig?.resumeAnalysis?.enabled !== false) ? `
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step step-resume">
+            <span class="step-label">Resume</span>
+            <span class="step-val">${resumeVal}</span>
+          </div>
+        ` : ''}
+        ${(job.pipelineConfig?.recruiterScreening?.enabled !== false) ? `
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step step-screening">
+            <span class="step-label">Screening</span>
+            <span class="step-val">${screeningVal}</span>
+          </div>
+        ` : ''}
+        ${(job.pipelineConfig?.functionalInterview?.enabled !== false) ? `
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step step-functional">
+            <span class="step-label">Functional</span>
+            <span class="step-val">${functionalVal}</span>
+          </div>
+        ` : ''}
       </div>
 
       <div class="job-card-footer">
@@ -1337,9 +1343,9 @@ function renderJobListView() {
       <span class="jl-col jl-status"><span class="status-badge ${job.status || 'published'}"><span class="status-badge-dot"></span>${statusLabel}</span></span>
       <span class="jl-col jl-created">${job.created || '-'}</span>
       <span class="jl-col jl-total">${p.total}</span>
-      <span class="jl-col jl-resume">${p.resume || '-'}</span>
-      <span class="jl-col jl-screening">${p.screening || '-'}</span>
-      <span class="jl-col jl-functional">${p.functional || '-'}</span>
+      <span class="jl-col jl-resume">${(job.pipelineConfig?.resumeAnalysis?.enabled !== false) ? (p.resume || '-') : '—'}</span>
+      <span class="jl-col jl-screening">${(job.pipelineConfig?.recruiterScreening?.enabled !== false) ? (p.screening || '-') : '—'}</span>
+      <span class="jl-col jl-functional">${(job.pipelineConfig?.functionalInterview?.enabled !== false) ? (p.functional || '-') : '—'}</span>
       <span class="jl-col jl-action"><button class="btn-jd-ghost btn-sm" style="font-size:0.72rem;">View</button></span>`;
     row.style.cursor = 'pointer';
     row.addEventListener('click', () => navigateToJobDetail(job.id));
@@ -1893,6 +1899,7 @@ function navigateToTab(tabId) {
   const actionBtnText = document.getElementById('header-action-btn-text');
 
   actionBtn.style.display = 'flex'; // Reset to visible
+  toggleHeaderElementsForJobFlow(false);
 
   if (tabId === 'jobs') {
     breadcrumb.textContent = 'Jobs';
@@ -2972,6 +2979,7 @@ function navigateToJobDetail(jobId) {
   });
 
   // Header
+  toggleHeaderElementsForJobFlow(false);
   document.getElementById('header-main-title').textContent = job.cardName;
   document.getElementById('header-sub-text').textContent =
     `${job.pipeline.total} total candidate${job.pipeline.total !== 1 ? 's' : ''} · ${job.roleName}`;
@@ -2984,6 +2992,21 @@ function navigateToJobDetail(jobId) {
   // Sub-tab counts
   document.getElementById('jd-count-screening').textContent = job.pipeline.screening;
   document.getElementById('jd-count-functional').textContent = job.pipeline.functional;
+
+  // Dynamic tabs hiding based on pipeline config
+  const cfg = job.pipelineConfig || {
+    resumeAnalysis: { enabled: true },
+    recruiterScreening: { enabled: true },
+    functionalInterview: { enabled: true }
+  };
+
+  const tabResume = document.querySelector('.jd-tab[data-jd-tab="resume"]');
+  const tabScreening = document.querySelector('.jd-tab[data-jd-tab="screening"]');
+  const tabFunctional = document.querySelector('.jd-tab[data-jd-tab="functional"]');
+
+  if (tabResume) tabResume.style.display = cfg.resumeAnalysis?.enabled !== false ? '' : 'none';
+  if (tabScreening) tabScreening.style.display = cfg.recruiterScreening?.enabled !== false ? '' : 'none';
+  if (tabFunctional) tabFunctional.style.display = cfg.functionalInterview?.enabled !== false ? '' : 'none';
 
   // Reset to Overview tab
   document.querySelectorAll('.jd-tab').forEach(t => t.classList.remove('active'));
@@ -3013,6 +3036,202 @@ window.openReportDrawerForCandidate = openReportDrawerForCandidate;
 // ==========================================
 // JOB FLOW PIPELINE VIEW
 // ==========================================
+
+// Dynamic header manager for Job Flow and Sourcing
+function toggleHeaderElementsForJobFlow(showJobFlowHeader, job = null) {
+  const searchBox = document.querySelector('.header-right .search-box');
+  const themeToggle = document.getElementById('btn-theme-toggle');
+  const interviewSettings = document.getElementById('btn-interview-settings');
+  const actionBtn = document.getElementById('header-action-btn');
+  let headerRight = document.querySelector('.header-right');
+
+  if (showJobFlowHeader && job) {
+    if (searchBox) searchBox.style.display = 'none';
+    if (themeToggle) themeToggle.style.display = 'none';
+    if (interviewSettings) interviewSettings.style.display = 'none';
+    if (actionBtn) actionBtn.style.display = 'none';
+
+    // Ensure buttons exist in header-right
+    let collabBtn = document.getElementById('jf-header-collab-btn');
+    if (!collabBtn && headerRight) {
+      collabBtn = document.createElement('button');
+      collabBtn.id = 'jf-header-collab-btn';
+      collabBtn.className = 'btn-jd-ghost btn-header-collab';
+      collabBtn.style.marginRight = '8px';
+      collabBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        Add Collaborator
+      `;
+      headerRight.insertBefore(collabBtn, headerRight.firstChild);
+    }
+    let publishBtn = document.getElementById('jf-header-publish-btn');
+    if (!publishBtn && headerRight) {
+      publishBtn = document.createElement('button');
+      publishBtn.id = 'jf-header-publish-btn';
+      publishBtn.className = 'btn-jd-primary btn-header-publish';
+      publishBtn.innerHTML = `
+        Publish Job
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      `;
+      headerRight.insertBefore(publishBtn, headerRight.children[1] || headerRight.firstChild);
+    }
+
+    if (collabBtn) {
+      collabBtn.style.display = '';
+      collabBtn.onclick = () => openDrawer('member');
+    }
+    if (publishBtn) {
+      publishBtn.style.display = job.status === 'published' ? 'none' : '';
+      publishBtn.onclick = () => openPublishJobModal(job.id);
+    }
+  } else {
+    if (searchBox) searchBox.style.display = '';
+    if (themeToggle) themeToggle.style.display = '';
+    if (interviewSettings) interviewSettings.style.display = '';
+    
+    const collabBtn = document.getElementById('jf-header-collab-btn');
+    const publishBtn = document.getElementById('jf-header-publish-btn');
+    if (collabBtn) collabBtn.style.display = 'none';
+    if (publishBtn) publishBtn.style.display = 'none';
+  }
+}
+
+function openPublishJobModal(jobId) {
+  const job = AppState.jobs.find(j => j.id === jobId);
+  if (!job) return;
+
+  const existing = document.getElementById('publish-modal-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'publish-modal-overlay';
+  overlay.className = 'publish-modal-overlay';
+
+  if (!job.referenceId || job.referenceId === '-') {
+    job.referenceId = 'AKR' + job.id.slice(0, 8).toUpperCase() + Math.floor(Math.random() * 900 + 100);
+  }
+
+  overlay.innerHTML = `
+    <div class="publish-modal">
+      <div class="publish-modal-header">
+        <div class="publish-header-left">
+          <div class="publish-modal-icon-container">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <div class="publish-modal-titles">
+            <h3>Publish Job</h3>
+            <p>Review details before publishing the job</p>
+          </div>
+        </div>
+        <button class="publish-modal-close" id="btn-close-publish-modal">&times;</button>
+      </div>
+
+      <div class="publish-warning-banner">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <span>After publishing, editing will be disabled. Please review carefully.</span>
+      </div>
+
+      <div class="publish-modal-body">
+        <div class="publish-form-group">
+          <label>Job Name (Visible on Job Card)</label>
+          <input type="text" id="pub-card-name" class="jf-edit-input" value="${(job.cardName || job.roleName).replace(/"/g, '&quot;')}" />
+        </div>
+        <div class="publish-form-group">
+          <label>Role Name</label>
+          <input type="text" id="pub-role-name" class="jf-edit-input" value="${(job.roleName || '').replace(/"/g, '&quot;')}" />
+          <span class="pub-form-help">Visible to candidates on the job listing and the interview</span>
+        </div>
+        <div class="publish-form-group">
+          <label>Job Reference ID</label>
+          <div class="pub-ref-input-container">
+            <input type="text" id="pub-ref-id" class="jf-edit-input" value="${job.referenceId}" readonly style="flex:1; margin-right:8px;" />
+            <button class="btn-jd-ghost" id="btn-copy-pub-ref" style="padding: 6px 12px; font-size:0.75rem;">Copy</button>
+          </div>
+          <span class="pub-form-help">Unique System-generated ID for internal reference</span>
+        </div>
+        <div class="publish-form-group">
+          <label>Tags (optional)</label>
+          <input type="text" id="pub-tags" class="jf-edit-input" placeholder="e.g. Remote, Urgent" value="${(job.tags || []).join(', ')}" />
+        </div>
+      </div>
+
+      <div class="publish-modal-actions">
+        <button class="btn-jd-ghost" id="btn-cancel-publish" style="padding: 8px 16px;">Cancel</button>
+        <button class="btn-jd-primary" id="btn-confirm-publish" style="padding: 8px 16px; margin-left: 8px;">Confirm & Publish</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const closeModal = () => overlay.remove();
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  document.getElementById('btn-close-publish-modal').addEventListener('click', closeModal);
+  document.getElementById('btn-cancel-publish').addEventListener('click', closeModal);
+
+  document.getElementById('btn-copy-pub-ref').addEventListener('click', () => {
+    const refInput = document.getElementById('pub-ref-id');
+    refInput.select();
+    navigator.clipboard.writeText(refInput.value);
+    showPremiumToast('Job Reference ID copied to clipboard!', 'success');
+  });
+
+  document.getElementById('btn-confirm-publish').addEventListener('click', () => {
+    const cardName = document.getElementById('pub-card-name').value.trim();
+    const roleName = document.getElementById('pub-role-name').value.trim();
+    const tagsVal = document.getElementById('pub-tags').value.trim();
+
+    if (cardName) job.cardName = cardName;
+    if (roleName) job.roleName = roleName;
+    job.tags = tagsVal ? tagsVal.split(',').map(t => t.trim()).filter(Boolean) : [];
+    job.status = 'published';
+
+    if (job.pipelineConfig) {
+      job.pipelineConfig.careerPage.enabled = true;
+      job.pipelineConfig.resumeAnalysis.enabled = true;
+      job.pipelineConfig.recruiterScreening.enabled = true;
+      job.pipelineConfig.functionalInterview.enabled = true;
+    }
+
+    saveStateToLocalStorage();
+    closeModal();
+    soundEngine.playChime([392, 523.25, 659.25, 783.99], 0.2, 0.08);
+    showPremiumToast(`Job "${job.roleName}" published successfully!`, 'success');
+
+    navigateToSourcing(jobId);
+  });
+}
+
+function migrateCandidatesOfJob(job) {
+  const cfg = job.pipelineConfig;
+  if (!cfg) return;
+
+  const jobCandidates = AppState.candidates.filter(c => c.jobApplied === job.roleName || c.jobApplied === job.cardName);
+
+  jobCandidates.forEach(candidate => {
+    let currentStatus = candidate.status;
+    if (currentStatus === 'Resume' && !cfg.resumeAnalysis.enabled) {
+      if (cfg.recruiterScreening.enabled) {
+        candidate.status = 'Screening';
+      } else if (cfg.functionalInterview.enabled) {
+        candidate.status = 'Functional';
+      }
+    }
+    if (candidate.status === 'Screening' && !cfg.recruiterScreening.enabled) {
+      if (cfg.functionalInterview.enabled) {
+        candidate.status = 'Functional';
+      } else if (cfg.resumeAnalysis.enabled) {
+        candidate.status = 'Resume';
+      }
+    }
+    if (candidate.status === 'Functional' && !cfg.functionalInterview.enabled) {
+      if (cfg.recruiterScreening.enabled) {
+        candidate.status = 'Screening';
+      } else if (cfg.resumeAnalysis.enabled) {
+        candidate.status = 'Resume';
+      }
+    }
+  });
+}
 
 function openJobFlowView(jobId, showAddCandidates = false) {
   const job = AppState.jobs.find(j => j.id === jobId);
@@ -3045,16 +3264,20 @@ function openJobFlowView(jobId, showAddCandidates = false) {
   // Update breadcrumbs
   const shortName = (job.cardName || job.roleName).length > 30 ? (job.cardName || job.roleName).slice(0, 30) + '…' : (job.cardName || job.roleName);
   const breadcrumb = document.getElementById('breadcrumb-title');
+  const statusLabel = job.status === 'published' ? 'Published' : 'Draft';
+  const badgeClass = job.status === 'published' ? 'published' : 'draft';
   breadcrumb.innerHTML = `<span class="breadcrumb-link" id="bc-jf-jobs">Jobs</span>
     <span class="breadcrumb-separator">/</span> <span class="breadcrumb-link" id="bc-jf-jobname">${shortName}</span>
-    <span class="breadcrumb-separator">/</span> Job Flow`;
+    <span class="jf-status-badge-top ${badgeClass}">${statusLabel}</span>`;
   document.getElementById('bc-jf-jobs').addEventListener('click', () => navigateToTab('jobs'));
   document.getElementById('bc-jf-jobname').addEventListener('click', () => navigateToJobDetail(jobId));
 
-  // Header
+  // Dynamic header buttons
+  toggleHeaderElementsForJobFlow(true, job);
+
+  // Header texts
   document.getElementById('header-main-title').textContent = job.cardName || job.roleName;
   document.getElementById('header-sub-text').textContent = 'Pipeline Configuration';
-  document.getElementById('header-action-btn').style.display = 'none';
 
   renderJobFlowPipeline(job);
   renderJobFlowConfig(job, 'careerPage');
@@ -3179,7 +3402,15 @@ function renderJobFlowPipeline(job) {
       const card = toggle.closest('.jf-stage-card');
       card.classList.toggle('enabled', toggle.checked);
       card.classList.toggle('disabled', !toggle.checked);
+      
+      // Candidate stage migration on toggle change
+      if (!toggle.checked) {
+        migrateCandidatesOfJob(job);
+      }
+      
+      recalculateJobPipelines();
       saveStateToLocalStorage();
+      renderJobCards();
     });
   });
 }
@@ -4789,7 +5020,7 @@ document.addEventListener('DOMContentLoaded', () => {
         roleName: roleName,
         cardName: cardName,
         created: new Date().toLocaleString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
-        status: 'published',
+        status: 'draft',
         customJobId: customId,
         experienceBand: expBand,
         createdBy: 'Devasri',
@@ -4804,21 +5035,16 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       AppState.jobs.push(newJob);
-
-      // Refresh display
-      const isBoard = document.getElementById('btn-view-board').classList.contains('active');
-      if (isBoard) {
-        renderKanbanBoard();
-      } else {
-        renderJobCards();
-      }
-      updateSummaryMetrics();
-      renderAnalyticsTable();
+      saveStateToLocalStorage();
       
-      // Close Drawer panel
+      // Close Drawer panel and reset form
       closeDrawers();
       createJobForm.reset();
-      soundEngine.playChime([261.63, 392.00, 523.25], 0.2, 0.08); // Melodic confirmation chime
+      showPremiumToast(`Created job card "${roleName}" as Draft.`, "success");
+      soundEngine.playChime([261.63, 329.63, 392.00, 523.25], 0.2, 0.08); // Melodic confirmation chime
+      
+      // Open Job Flow config view for the new draft job
+      openJobFlowView(newJob.id, true);
     });
   }
 
@@ -5303,7 +5529,7 @@ Return ONLY valid JSON:
           roleName: parsed.roleName,
           cardName: parsed.cardName || parsed.roleName,
           created: new Date().toLocaleString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
-          status: 'published',
+          status: 'draft',
           customJobId: '-',
           experienceBand: parsed.experienceBand || 'Upto 2 Years',
           createdBy: 'Devasri',
