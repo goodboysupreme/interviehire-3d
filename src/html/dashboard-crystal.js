@@ -827,6 +827,10 @@ export const html = `
                   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line><circle cx="12" cy="12" r="10"></circle></svg>
                   Questions Generator
                 </button>
+                <button class="jd-tab" data-jd-tab="analysis">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                  Deep Analysis
+                </button>
               </div>
               <div class="jd-actions">
                 <div class="jd-search-wrap">
@@ -1088,6 +1092,9 @@ export const html = `
                 </div>
               </div>
 
+              <div class="jd-pane" id="jd-pane-analysis">
+                <div id="list-stage-analysis"></div>
+              </div>
 
             </div><!-- /jd-panes -->
 

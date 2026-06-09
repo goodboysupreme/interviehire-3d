@@ -5096,3 +5096,187 @@ body.light-theme .dashboard-banner-wrapper .header-heading {
   display: none !important;
 }
 
+/* ==========================================================================
+   AI DEEP ANALYSIS HUB STYLINGS
+   ========================================================================== */
+
+.jd-analysis-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1.85fr;
+  gap: 20px;
+  align-items: start;
+  width: 100%;
+}
+
+.jd-analysis-card {
+  padding: 24px;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.jd-analysis-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.jd-badge-readability {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  font-weight: 500;
+}
+
+.jd-grade-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid;
+  transition: all 0.3s ease;
+}
+
+.jd-grade-circle {
+  font-size: 2.25rem;
+  font-weight: 800;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid currentColor;
+  flex-shrink: 0;
+  text-shadow: 0 0 10px currentColor;
+}
+
+.jd-grade-details h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: var(--color-text-primary);
+}
+
+.jd-grade-details p {
+  font-size: 0.75rem;
+  color: var(--color-text-faint);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.jd-section-subtitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.jd-audit-group h5 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0 0 8px 0;
+}
+
+.jd-audit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.jd-audit-item.warning {
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+}
+
+.jd-audit-item.ok {
+  background: rgba(16, 185, 129, 0.03);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  color: #34d399;
+}
+
+.jd-audit-item svg {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.jd-market-text {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.jd-opt-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.jd-opt-list li {
+  margin-bottom: 4px;
+}
+
+.matrix-table th.matrix-header-cell {
+  text-align: center;
+  font-size: 0.75rem;
+  padding: 8px 4px;
+}
+
+.matrix-table th.matrix-header-cell.must {
+  color: #10b981;
+  border-bottom: 2px solid rgba(16, 185, 129, 0.2);
+}
+
+.matrix-table th.matrix-header-cell.good {
+  color: #6366f1;
+  border-bottom: 2px solid rgba(99, 102, 241, 0.2);
+}
+
+.matrix-table td.matrix-cell {
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 10px 4px;
+  transition: background-color 0.2s ease;
+}
+
+.matrix-table tr:hover td.matrix-cell {
+  background-color: rgba(255, 255, 255, 0.01);
+}
+
+.matrix-badge-pending {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-faint);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-left: 6px;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+@media (max-width: 1024px) {
+  .jd-analysis-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

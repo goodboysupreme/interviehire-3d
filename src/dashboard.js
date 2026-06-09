@@ -5689,7 +5689,8 @@ function initSourcing() {
   const btnBrowseCsv = document.getElementById('btn-browse-csv');
   const inputFileCsv = document.getElementById('input-file-csv');
   if (btnBrowseCsv && inputFileCsv) {
-    btnBrowseCsv.addEventListener('click', () => {
+    btnBrowseCsv.addEventListener('click', (e) => {
+      e.stopPropagation();
       inputFileCsv.click();
     });
     inputFileCsv.addEventListener('change', handleCsvFileSelect);
@@ -5715,8 +5716,10 @@ function initSourcing() {
         showPremiumToast("Please drop a valid .csv file.", "error");
       }
     });
-    dropzoneCsv.addEventListener('click', () => {
-      inputFileCsv.click();
+    dropzoneCsv.addEventListener('click', (e) => {
+      if (e.target !== btnBrowseCsv) {
+        inputFileCsv.click();
+      }
     });
   }
 
@@ -5727,6 +5730,10 @@ function initSourcing() {
       document.getElementById('csv-preview-box').style.display = 'none';
       if (inputFileCsv) inputFileCsv.value = '';
       soundEngine.playClick();
+      const dropzone = document.getElementById('dropzone-csv');
+      if (dropzone) dropzone.style.display = '';
+      const footer = dropzone ? dropzone.parentElement.querySelector('.sourcing-panel-footer') : null;
+      if (footer) footer.style.display = '';
     });
   }
 
@@ -5741,7 +5748,8 @@ function initSourcing() {
   const btnBrowseResumes = document.getElementById('btn-browse-resumes');
   const inputFileResumes = document.getElementById('input-file-resumes');
   if (btnBrowseResumes && inputFileResumes) {
-    btnBrowseResumes.addEventListener('click', () => {
+    btnBrowseResumes.addEventListener('click', (e) => {
+      e.stopPropagation();
       inputFileResumes.click();
     });
     inputFileResumes.addEventListener('change', handleResumesFileSelect);
@@ -5765,8 +5773,10 @@ function initSourcing() {
         simulateResumesParsing(files);
       }
     });
-    dropzoneResumes.addEventListener('click', () => {
-      inputFileResumes.click();
+    dropzoneResumes.addEventListener('click', (e) => {
+      if (e.target !== btnBrowseResumes) {
+        inputFileResumes.click();
+      }
     });
   }
 
@@ -5777,6 +5787,10 @@ function initSourcing() {
       document.getElementById('resumes-preview-box').style.display = 'none';
       if (inputFileResumes) inputFileResumes.value = '';
       soundEngine.playClick();
+      const dropzone = document.getElementById('dropzone-resumes');
+      if (dropzone) dropzone.style.display = '';
+      const footer = dropzone ? dropzone.parentElement.querySelector('.sourcing-panel-footer') : null;
+      if (footer) footer.style.display = '';
     });
   }
 
@@ -6128,14 +6142,18 @@ function renderCsvPreview() {
   countSpan.textContent = csvParsedCandidates.length;
   tbody.innerHTML = csvParsedCandidates.map(cand => `
     <tr>
-      <td><strong>\${cand.name}</strong></td>
-      <td>\${cand.email}</td>
-      <td>\${cand.phone || '-'}</td>
+      <td><strong>${cand.name}</strong></td>
+      <td>${cand.email}</td>
+      <td>${cand.phone || '-'}</td>
       <td><span class="upload-file-status-badge done">Ready to Sync</span></td>
     </tr>
   `).join('');
 
   box.style.display = 'block';
+  const dropzone = document.getElementById('dropzone-csv');
+  if (dropzone) dropzone.style.display = 'none';
+  const footer = dropzone ? dropzone.parentElement.querySelector('.sourcing-panel-footer') : null;
+  if (footer) footer.style.display = 'none';
   soundEngine.playChime([392.00, 523.25], 0.15, 0.08);
 }
 
@@ -6157,6 +6175,10 @@ function importCsvCandidates() {
   document.getElementById('csv-preview-box').style.display = 'none';
   const fileCsv = document.getElementById('input-file-csv');
   if (fileCsv) fileCsv.value = '';
+  const dropzone = document.getElementById('dropzone-csv');
+  if (dropzone) dropzone.style.display = '';
+  const footer = dropzone ? dropzone.parentElement.querySelector('.sourcing-panel-footer') : null;
+  if (footer) footer.style.display = '';
 
   // Synchronize and navigate back
   recalculateJobPipelines();
@@ -6188,6 +6210,10 @@ function simulateResumesParsing(files) {
   if (!box || !filesList || !countSpan || !importBtn) return;
 
   box.style.display = 'block';
+  const dropzone = document.getElementById('dropzone-resumes');
+  if (dropzone) dropzone.style.display = 'none';
+  const footer = dropzone ? dropzone.parentElement.querySelector('.sourcing-panel-footer') : null;
+  if (footer) footer.style.display = 'none';
   countSpan.textContent = files.length;
   importBtn.disabled = true;
 
@@ -6302,6 +6328,10 @@ function importResumesCandidates() {
   document.getElementById('resumes-preview-box').style.display = 'none';
   const fileRes = document.getElementById('input-file-resumes');
   if (fileRes) fileRes.value = '';
+  const dropzone = document.getElementById('dropzone-resumes');
+  if (dropzone) dropzone.style.display = '';
+  const footer = dropzone ? dropzone.parentElement.querySelector('.sourcing-panel-footer') : null;
+  if (footer) footer.style.display = '';
 
   recalculateJobPipelines();
   updateSummaryMetrics();
@@ -7886,6 +7916,12 @@ function renderJobDetailPanes(job) {
     }
   }
 
+  // 4. Deep Analysis pane
+  const analysisList = document.getElementById('list-stage-analysis');
+  if (analysisList) {
+    renderDeepAnalysisPane(job, analysisList);
+  }
+
   // Bind actions
   const pane = document.getElementById('view-job-detail');
   if (pane) {
@@ -8458,7 +8494,7 @@ async function enrichJobWithAI(job, jdText) {
   const descriptionText = jdText || job.description || '';
   if (!descriptionText.trim()) return;
 
-  const criteriaPrompt = `You are an expert HR analyst. Given a job description, extract structured resume screening criteria and recruiter screening parameters.
+  const criteriaPrompt = `You are an expert HR analyst. Given a job description, extract structured resume screening criteria, recruiter screening parameters, and audit the job description for clarity, expectations, bias, and optimization.
 
 Return ONLY valid JSON with this exact structure:
 {
@@ -8484,7 +8520,17 @@ Return ONLY valid JSON with this exact structure:
     { "category": "Availability", "params": [
       { "name": "Notice Period", "required": true, "flexibility": "", "preferredResponse": "30 days or less" }
     ]}
-  ]
+  ],
+  "jdAnalysis": {
+    "grade": "Letter grade (A, B+, B, C, D) representing job description quality",
+    "readability": "Readability evaluation (e.g. Clear, Complex, Dense)",
+    "warnings": {
+      "unrealisticExpectations": ["List specific unrealistic expectations, conflicting requirements, or none"],
+      "biasFluff": ["List flagged corporate jargon, clichés, or biased phrasing, or none"]
+    },
+    "marketContext": "Summary of talent supply for the required skills (1-2 sentences)",
+    "recommendedOptimizations": ["Actionable improvements to the JD, list 2-3 items"]
+  }
 }
 
 Tailor every field specifically to the role. Do not use generic placeholders.`;
@@ -8539,8 +8585,34 @@ Rules:
       if (parsed.screeningParams && Array.isArray(parsed.screeningParams)) {
         job.screeningParams = parsed.screeningParams;
       }
+      if (parsed.jdAnalysis) {
+        job.jdAnalysis = parsed.jdAnalysis;
+      } else {
+        job.jdAnalysis = auditJobDescriptionLocally(descriptionText);
+      }
     } catch (e) {
       console.error('Failed to parse criteria response:', e);
+      job.jdAnalysis = auditJobDescriptionLocally(descriptionText);
+    }
+  } else {
+    job.jdAnalysis = auditJobDescriptionLocally(descriptionText);
+    if (!job.resumeCriteria) {
+      job.resumeCriteria = {
+        mustHave: ["Relevant experience in this domain", "Excellent verbal and written communication", "Core technical competency"],
+        redFlags: ["Frequent unexplained job hopping", "Lack of relevant functional background"],
+        goodToHave: ["Professional certifications", "Advanced degree or specialization"],
+        goodToHaveMinMatch: 1
+      };
+    }
+    if (!job.screeningParams) {
+      job.screeningParams = [
+        { "category": "Experience", "params": [
+          { "name": "Total Experience", "required": true, "flexibility": "None", "preferredResponse": "Meets minimum years" }
+        ]},
+        { "category": "Availability", "params": [
+          { "name": "Notice Period", "required": true, "flexibility": "Flexible", "preferredResponse": "30 days or less" }
+        ]}
+      ];
     }
   }
 
@@ -8549,10 +8621,15 @@ Rules:
       const parsed = JSON.parse(sanitizeJSONResponse(questionsResult.value));
       if (parsed.questions && Array.isArray(parsed.questions)) {
         job.questions = parsed.questions;
+      } else {
+        job.questions = generateQuestionsLocally(job);
       }
     } catch (e) {
       console.error('Failed to parse questions response:', e);
+      job.questions = generateQuestionsLocally(job);
     }
+  } else {
+    job.questions = generateQuestionsLocally(job);
   }
 
   if (!job.pipelineConfig) {
@@ -8571,6 +8648,582 @@ Rules:
   job.applicationFields = job.applicationFields || ['Current Location', 'Expected CTC', 'Notice Period'];
 
   saveStateToLocalStorage();
+}
+
+function auditJobDescriptionLocally(jdText) {
+  const text = jdText || '';
+  const warnings = {
+    unrealisticExpectations: [],
+    biasFluff: []
+  };
+  const recommendedOptimizations = [];
+  
+  const charCount = text.length;
+  let lengthRating = 'Good';
+  if (charCount < 300) {
+    lengthRating = 'Too Short';
+    warnings.unrealisticExpectations.push("The description is extremely brief, which might not attract quality candidates.");
+    recommendedOptimizations.push("Expand the job description to detail daily responsibilities and company culture.");
+  } else if (charCount > 3000) {
+    lengthRating = 'Too Long';
+    warnings.unrealisticExpectations.push("The description is very dense, which might reduce candidate completion rates.");
+    recommendedOptimizations.push("Simplify the layout and bullet points to focus on the core requirements.");
+  }
+
+  const lines = text.split('\n');
+  const bulletCount = lines.filter(l => /^[*-•]|\d+\./.test(l.trim())).length;
+  if (bulletCount < 3) {
+    warnings.unrealisticExpectations.push("Lack of structured lists or bullet points for key requirements.");
+    recommendedOptimizations.push("Use structured bullet points for 'Must-Have' and 'Nice-to-Have' skills to improve readability.");
+  }
+
+  const fluffKeywords = [
+    { word: 'fast-paced', label: '"fast-paced" (can imply high burnout / chaotic environment)' },
+    { word: 'rockstar', label: '"rockstar" (cliché, can discourage diverse candidates)' },
+    { word: 'ninja', label: '"ninja" (unprofessional cliché)' },
+    { word: 'guru', label: '"guru" (unprofessional cliché)' },
+    { word: 'wear many hats', label: '"wear many hats" (often signals poor role definition)' },
+    { word: 'dynamic', label: '"dynamic" (overused filler word)' },
+    { word: 'self-starter', label: '"self-starter" (cliché, implies lack of onboarding)' },
+    { word: 'synergy', label: '"synergy" (corporate jargon)' },
+    { word: 'paradigm', label: '"paradigm" (corporate jargon)' }
+  ];
+  fluffKeywords.forEach(k => {
+    if (new RegExp(`\\b${k.word}\\b`, 'i').test(text)) {
+      warnings.biasFluff.push(`Flagged cliché: ${k.label}`);
+    }
+  });
+
+  const expMatches = text.match(/(\d+)\s*\+?\s*(?:-\s*\d+)?\s*(?:years?|yrs?)/gi);
+  if (expMatches) {
+    expMatches.forEach(match => {
+      const years = parseInt(match);
+      if (years > 8) {
+        warnings.unrealisticExpectations.push(`High experience requirement: "${match}". This might severely restrict the talent pool.`);
+      }
+    });
+  }
+
+  if (/next\.js|nextjs/i.test(text) && /1[0-9]\s*\+?\s*years?/i.test(text)) {
+    warnings.unrealisticExpectations.push("Contradictory requirement: Requesting 10+ years of Next.js experience is unrealistic as the framework's mainstream adoption is more recent.");
+  }
+  if (/tailwind/i.test(text) && /1[0-9]\s*\+?\s*years?/i.test(text)) {
+    warnings.unrealisticExpectations.push("Contradictory requirement: Requesting 10+ years of Tailwind CSS experience is unrealistic.");
+  }
+
+  let score = 90;
+  score -= warnings.unrealisticExpectations.length * 10;
+  score -= warnings.biasFluff.length * 5;
+  if (charCount < 400 || charCount > 4000) score -= 10;
+  if (bulletCount < 3) score -= 10;
+
+  let grade = 'A';
+  if (score >= 90) grade = 'A';
+  else if (score >= 80) grade = 'B+';
+  else if (score >= 70) grade = 'B';
+  else if (score >= 60) grade = 'C+';
+  else if (score >= 50) grade = 'C';
+  else grade = 'D';
+
+  let readability = 'Clear';
+  if (charCount > 2500 || warnings.unrealisticExpectations.length > 2) {
+    readability = 'Complex';
+  } else if (charCount < 400) {
+    readability = 'Sparse';
+  }
+
+  if (recommendedOptimizations.length === 0) {
+    recommendedOptimizations.push("Maintain current clear structure and precise criteria.");
+    recommendedOptimizations.push("Ensure compensation brackets are discussed early in screening.");
+  }
+
+  return {
+    grade,
+    readability,
+    warnings,
+    marketContext: "Moderate talent supply. Most candidates with these technical keywords are actively sourced in the market.",
+    recommendedOptimizations
+  };
+}
+
+async function optimizeJobDescriptionWithAI(job, container) {
+  const btn = container.querySelector('.btn-jd-optimize-ai');
+  if (!btn) return;
+  const originalLabel = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="ra-spinner"></span> Optimizing...`;
+  
+  soundEngine.playChime([392, 440], 0.08, 0.1);
+
+  const systemPrompt = `You are a senior talent acquisition specialist. Optimize this job description to make it professional, clear, and realistic. 
+Specifically:
+- Remove corporate fluff/clichés like "rockstar", "ninja", "ninja developer", "dynamic self-starter", "wear many hats".
+- Ensure the requirements (must-have skills) are realistic and consolidated to 3-5 clear points.
+- Structure it clearly with sections for Role Overview, Key Responsibilities, and Qualifications.
+- Return ONLY the optimized job description text — no commentary, no JSON, no markdown headers, no introductory or concluding chat remarks.`;
+
+  try {
+    const improved = await callDeepSeekAPI([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: `Optimize this job description:\n\n${job.description}` }
+    ]);
+    
+    job.description = improved.trim();
+    showPremiumToast("Job description optimized with AI.", "success");
+    
+    await enrichJobWithAI(job, job.description);
+    
+    renderDeepAnalysisPane(job, container);
+    
+    const rawDesc = document.getElementById('jd-raw-description');
+    if (rawDesc) rawDesc.value = job.description;
+
+    soundEngine.playChime([523.25, 659.25], 0.12, 0.08);
+  } catch (err) {
+    console.error("JD optimization failed:", err);
+    let cleanText = job.description;
+    cleanText = cleanText.replace(/\b(?:rockstar|ninja|guru|ninja developer|wear many hats)\b/gi, 'professional');
+    job.description = cleanText;
+    await enrichJobWithAI(job, job.description);
+    renderDeepAnalysisPane(job, container);
+    showPremiumToast("Local optimization applied (API unavailable).", "info");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalLabel;
+  }
+}
+
+function checkSkillStatus(cand, skillText, isMustHave) {
+  const analysis = resumeAnalysisCache[cand.id];
+  if (!analysis) return 'pending';
+
+  const cleanSkill = skillText.toLowerCase().trim();
+  
+  const inMatched = analysis.skills?.matched?.some(s => {
+    const sLower = s.toLowerCase();
+    return sLower.includes(cleanSkill) || cleanSkill.includes(sLower);
+  });
+  if (inMatched) return 'yes';
+
+  const inMissing = analysis.skills?.missing?.some(s => {
+    const sLower = s.toLowerCase();
+    return sLower.includes(cleanSkill) || cleanSkill.includes(sLower);
+  });
+  if (inMissing) return 'no';
+
+  const candText = (cand.textContent || resumeTextCache[cand.id] || '').toLowerCase();
+  if (candText) {
+    const words = cleanSkill.split(/\s+/).filter(w => w.length > 3 && !['years', 'experience', 'with', 'knowledge', 'understanding', 'skills', 'ability', 'proficient'].includes(w));
+    if (words.length > 0 && words.some(w => candText.includes(w))) {
+      return 'yes';
+    }
+  }
+
+  return isMustHave ? 'no' : 'pending';
+}
+
+function generateExecutiveSummary(job, candidates) {
+  const analyzed = candidates.filter(c => resumeAnalysisCache[c.id]);
+  if (analyzed.length === 0) {
+    return "No candidates have been analyzed yet. Scan candidate resumes to generate the talent pool executive summary.";
+  }
+
+  let totalScore = 0;
+  let topCand = null;
+  let topScore = -1;
+  const missingCounts = {};
+
+  analyzed.forEach(c => {
+    const analysis = resumeAnalysisCache[c.id];
+    const score = analysis.matchScore || 0;
+    totalScore += score;
+    if (score > topScore) {
+      topScore = score;
+      topCand = c;
+    }
+
+    analysis.skills?.missing?.forEach(s => {
+      const clean = s.trim();
+      missingCounts[clean] = (missingCounts[clean] || 0) + 1;
+    });
+  });
+
+  const avgScore = Math.round(totalScore / analyzed.length);
+  const sortedMissing = Object.entries(missingCounts).sort((a,b) => b[1] - a[1]);
+  const mostMissing = sortedMissing.length > 0 ? sortedMissing[0][0] : null;
+
+  let summary = `We have analyzed ${analyzed.length} candidate(s) for the <strong>${job.roleName}</strong> position. The average match score is <strong>${avgScore}%</strong>. `;
+  
+  if (topCand) {
+    summary += `<strong>${topCand.name}</strong> is the top-performing candidate with a match score of <strong>${topScore}%</strong>. `;
+  }
+
+  if (mostMissing) {
+    const pct = Math.round((missingCounts[mostMissing] / analyzed.length) * 100);
+    summary += `A significant portion of the candidate pool (${pct}%) lacks experience in <strong>${mostMissing}</strong>, which may be a focus area during recruiter screens. `;
+  } else {
+    summary += `The candidate pool shows strong coverage of all mandatory requirements. `;
+  }
+
+  summary += `We recommend proceeding with recruiter screening calls for the top-matched candidates.`;
+  return summary;
+}
+
+function renderDeepAnalysisPane(job, container) {
+  if (!job) return;
+  
+  if (!job.jdAnalysis) {
+    job.jdAnalysis = auditJobDescriptionLocally(job.description || '');
+  }
+  
+  const analysis = job.jdAnalysis;
+  const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [], goodToHaveMinMatch: 1 };
+  
+  const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(c => {
+    return c.jobApplied === job.roleName || c.jobApplied === job.cardName;
+  });
+  
+  const gradeThemes = {
+    'A': { border: '#10b981', color: '#10b981', bg: 'rgba(16,185,129,0.1)', shadow: 'rgba(16,185,129,0.2)' },
+    'A-': { border: '#10b981', color: '#10b981', bg: 'rgba(16,185,129,0.1)', shadow: 'rgba(16,185,129,0.2)' },
+    'B+': { border: '#f59e0b', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', shadow: 'rgba(245,158,11,0.2)' },
+    'B': { border: '#f59e0b', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', shadow: 'rgba(245,158,11,0.2)' },
+    'C+': { border: '#f97316', color: '#f97316', bg: 'rgba(249,115,22,0.1)', shadow: 'rgba(249,115,22,0.2)' },
+    'C': { border: '#f97316', color: '#f97316', bg: 'rgba(249,115,22,0.1)', shadow: 'rgba(249,115,22,0.2)' },
+    'D': { border: '#ef4444', color: '#ef4444', bg: 'rgba(239,68,68,0.1)', shadow: 'rgba(239,68,68,0.2)' },
+    'F': { border: '#ef4444', color: '#ef4444', bg: 'rgba(239,68,68,0.1)', shadow: 'rgba(239,68,68,0.2)' }
+  };
+  const theme = gradeThemes[analysis.grade] || gradeThemes['A'];
+
+  const leftColHTML = `
+    <div class="card-glass jd-analysis-card">
+      <div class="jd-analysis-card-header">
+        <h3 class="jd-card-title">Job Description Quality Audit</h3>
+        <span class="jd-badge-readability">${analysis.readability || 'Clear'} Readability</span>
+      </div>
+      
+      <div class="jd-grade-section" style="border-color: ${theme.border}; background: ${theme.bg}; box-shadow: 0 0 15px ${theme.shadow};">
+        <div class="jd-grade-circle" style="color: ${theme.color};">
+          ${analysis.grade}
+        </div>
+        <div class="jd-grade-details">
+          <h4>Job Description Score</h4>
+          <p>This grade reflects the clarity, expectations, and potential bias of your job description.</p>
+        </div>
+      </div>
+      
+      <div class="jd-audit-alerts">
+        <h4 class="jd-section-subtitle">Audit Warnings</h4>
+        
+        <div class="jd-audit-group">
+          <h5>Unrealistic Expectations</h5>
+          ${(analysis.warnings?.unrealisticExpectations || []).length === 0 ? `
+            <div class="jd-audit-item ok">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>No major unrealistic expectations detected.</span>
+            </div>
+          ` : (analysis.warnings?.unrealisticExpectations || []).map(w => `
+            <div class="jd-audit-item warning">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>${w}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="jd-audit-group" style="margin-top: 12px;">
+          <h5>Clichés & Corporate Fluff</h5>
+          ${(analysis.warnings?.biasFluff || []).length === 0 ? `
+            <div class="jd-audit-item ok">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>No corporate fluff clichés detected.</span>
+            </div>
+          ` : (analysis.warnings?.biasFluff || []).map(w => `
+            <div class="jd-audit-item warning">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>${w}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="jd-market-context" style="margin-top: 16px;">
+        <h4 class="jd-section-subtitle">Market Context</h4>
+        <p class="jd-market-text">${analysis.marketContext || 'Standard talent availability for this role.'}</p>
+      </div>
+
+      <div class="jd-optimizations" style="margin-top: 16px;">
+        <h4 class="jd-section-subtitle">Recommended Optimizations</h4>
+        <ul class="jd-opt-list">
+          ${(analysis.recommendedOptimizations || []).map(opt => `
+            <li>${opt}</li>
+          `).join('')}
+        </ul>
+      </div>
+
+      <div class="jd-audit-actions" style="margin-top: 20px; display: flex; gap: 10px;">
+        <button class="btn-enhance-custom btn-jd-optimize-ai" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          Optimize JD with AI
+        </button>
+      </div>
+    </div>
+  `;
+
+  const analyzedCands = jobCandidates.filter(c => resumeAnalysisCache[c.id]);
+  const avgMatchScore = analyzedCands.length > 0 
+    ? Math.round(analyzedCands.reduce((acc, c) => acc + (resumeAnalysisCache[c.id].matchScore || 0), 0) / analyzedCands.length) 
+    : 0;
+
+  const mustHaves = criteria.mustHave || [];
+  const goodToHaves = criteria.goodToHave || [];
+  
+  let matrixHTML = '';
+  if (jobCandidates.length === 0) {
+    matrixHTML = `
+      <div class="jd-empty-pane" style="min-height: 250px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+        <p>No candidates available. Please add candidates to the sourcing panel.</p>
+      </div>
+    `;
+  } else {
+    matrixHTML = `
+      <div class="table-container-scroller" style="overflow-x: auto; max-width: 100%; border-radius: 8px; border: 1px solid var(--glass-border);">
+        <table class="stage-data-table matrix-table" style="min-width: 100%;">
+          <thead>
+            <tr>
+              <th style="position: sticky; left: 0; background: var(--bg-card); z-index: 2;">Candidate</th>
+              ${mustHaves.map((s, i) => `<th class="matrix-header-cell must" title="Must-Have: ${s}">M${i+1}</th>`).join('')}
+              ${goodToHaves.map((s, i) => `<th class="matrix-header-cell good" title="Good-to-Have: ${s}">G${i+1}</th>`).join('')}
+              <th class="matrix-header-cell" title="Red Flags">Red Flags</th>
+              <th class="matrix-header-cell" title="Match Score">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${jobCandidates.map(c => {
+              const analysis = resumeAnalysisCache[c.id];
+              const scoreText = analysis ? `${analysis.matchScore}%` : '—';
+              const isAnalyzed = !!analysis;
+              const hasRedFlags = analysis && analysis.redFlagsDetected && analysis.redFlagsDetected.length > 0;
+              
+              const scoreClass = analysis 
+                ? (analysis.matchScore >= 70 ? 'score-green' : analysis.matchScore >= 45 ? 'score-yellow' : 'score-red')
+                : '';
+
+              return `
+                <tr>
+                  <td style="position: sticky; left: 0; background: var(--bg-card); z-index: 1; font-weight: 600;">
+                    ${c.name}
+                    ${isAnalyzed ? '' : '<span class="matrix-badge-pending">Pending</span>'}
+                  </td>
+                  ${mustHaves.map(s => {
+                    const status = checkSkillStatus(c, s, true);
+                    if (status === 'yes') return '<td class="matrix-cell check" style="color: #10b981; text-align: center;">✓</td>';
+                    if (status === 'no') return '<td class="matrix-cell cross" style="color: #ef4444; text-align: center;">✗</td>';
+                    return '<td class="matrix-cell dash" style="color: var(--color-text-faint); text-align: center;">—</td>';
+                  }).join('')}
+                  ${goodToHaves.map(s => {
+                    const status = checkSkillStatus(c, s, false);
+                    if (status === 'yes') return '<td class="matrix-cell check" style="color: #10b981; text-align: center;">✓</td>';
+                    if (status === 'no') return '<td class="matrix-cell cross" style="color: #ef4444; text-align: center;">✗</td>';
+                    return '<td class="matrix-cell dash" style="color: var(--color-text-faint); text-align: center;">—</td>';
+                  }).join('')}
+                  <td style="text-align: center;">
+                    ${!isAnalyzed ? '<span style="color: var(--color-text-faint);">—</span>' : (hasRedFlags ? `<span style="color: #ef4444; font-size: 1.1rem;" title="${analysis.redFlagsDetected.join(', ')}">⚠</span>` : '<span style="color: #10b981;">✓</span>')}
+                  </td>
+                  <td style="text-align: center; font-weight: 700;">
+                    <span class="interview-score-dot ${scoreClass}"></span> ${scoreText}
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="matrix-legend" style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-faint); margin-top: 10px; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <span><strong>M1–M${mustHaves.length}:</strong> Must-Haves (Hover to see full skill)</span>
+          <span><strong>G1–G${goodToHaves.length}:</strong> Good-to-Haves</span>
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <span><span style="color: #10b981;">✓</span> Found</span>
+          <span><span style="color: #ef4444;">✗</span> Missing</span>
+          <span><span style="color: var(--color-text-faint);">—</span> Not analyzed/unknown</span>
+        </div>
+      </div>
+    `;
+  }
+
+  const execSummary = generateExecutiveSummary(job, jobCandidates);
+
+  const rightColHTML = `
+    <div class="card-glass jd-analysis-card" style="display: flex; flex-direction: column; gap: 20px;">
+      <div>
+        <div class="jd-analysis-card-header" style="margin-bottom: 8px;">
+          <h3 class="jd-card-title">Candidate Sourcing Pool Matrix</h3>
+          <span class="jd-badge-readability" style="background: rgba(99,102,241,0.1); color: #818cf8; border-color: rgba(99,102,241,0.2);">Avg Score: ${avgMatchScore}%</span>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--color-text-faint); margin-bottom: 15px;">Aggregated view of how candidates match specific JD requirements.</p>
+        ${matrixHTML}
+      </div>
+
+      <div class="jd-analysis-summary-section" style="border-top: 1px solid var(--glass-border); padding-top: 20px;">
+        <h4 class="jd-section-subtitle">AI Talent Pool Executive Summary</h4>
+        <p class="jd-summary-text" style="font-size: 0.85rem; line-height: 1.5; color: var(--color-text-secondary);">${execSummary}</p>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = `
+    <div class="jd-analysis-grid">
+      ${leftColHTML}
+      ${rightColHTML}
+    </div>
+  `;
+
+  const optBtn = container.querySelector('.btn-jd-optimize-ai');
+  if (optBtn) {
+    optBtn.addEventListener('click', () => {
+      optimizeJobDescriptionWithAI(job, container);
+    });
+  }
+}
+
+function generateQuestionsLocally(job) {
+  const role = (job.roleName || job.cardName || 'Professional').toLowerCase();
+  
+  let questions = [];
+  if (role.includes('developer') || role.includes('engineer') || role.includes('programmer') || role.includes('software')) {
+    questions = [
+      {
+        id: "q-gen-1",
+        type: "technical",
+        question: "Explain the architectural considerations when building scalable web applications. How do you handle performance bottlenecks, caching, and database optimizations?",
+        difficulty: "intermediate",
+        rubric: "Candidate should explain caching strategies (Redis, CDN), database indexes/queries tuning, and horizontal vs. vertical scaling.",
+        follow_ups: ["Can you share a real-world project where you resolved a bottleneck?", "How do you decide between SQL and NoSQL databases?"]
+      },
+      {
+        id: "q-gen-2",
+        type: "technical",
+        question: "How do you ensure code quality, test coverage, and smooth CI/CD deployments in your team? What tools and practices do you advocate for?",
+        difficulty: "intermediate",
+        rubric: "Look for familiarity with Jest/Playwright, GitHub Actions/Jenkins, branch staging, linting, and peer reviews.",
+        follow_ups: ["What is your strategy for testing async code or APIs?", "How do you handle rollbacks if a production deploy fails?"]
+      },
+      {
+        id: "q-gen-3",
+        type: "behavioral",
+        question: "Describe a situation where you had a strong technical disagreement with a team lead or colleague. How did you present your arguments, and what was the outcome?",
+        difficulty: "intermediate",
+        rubric: "Candidate should demonstrate professional communication, active listening, reliance on data/evidence, and dedication to team alignment.",
+        follow_ups: ["How did you handle the personal relationship afterward?", "What did you learn from that conflict?"]
+      },
+      {
+        id: "q-gen-4",
+        type: "behavioral",
+        question: "Tell me about a time when you were assigned a task using a technology or domain you had zero prior experience with. How did you navigate the learning curve?",
+        difficulty: "beginner",
+        rubric: "Candidate should detail proactive research, asking questions, building small spikes/POCs, and managing deadlines under uncertainty.",
+        follow_ups: ["How long did it take you to feel productive?", "Who did you look to for help or documentation?"]
+      },
+      {
+        id: "q-gen-5",
+        type: "situational",
+        question: "Imagine our production application goes offline during a major product launch, and the team is under high pressure. Walk me through your immediate steps to diagnose and mitigate the issue.",
+        difficulty: "advanced",
+        rubric: "Candidate must emphasize safety first: checking logs (Sentry/Datadog), rolling back recent commits, transparent communication with stakeholders, and structured root-cause analysis.",
+        follow_ups: ["How do you keep the rest of the team informed during the outage?", "What measures do you put in place to prevent a recurrence?"]
+      }
+    ];
+  } else if (role.includes('manager') || role.includes('lead') || role.includes('product') || role.includes('director')) {
+    questions = [
+      {
+        id: "q-gen-1",
+        type: "technical",
+        question: "How do you translate business objectives and customer feedback into a structured product roadmap? How do you prioritize feature requests?",
+        difficulty: "intermediate",
+        rubric: "Look for prioritization frameworks like RICE, Kano, or MoSCoW, data-driven decisions, and balancing stakeholder demands.",
+        follow_ups: ["How do you handle a request that is high-priority for a client but low-value for the roadmap?", "How do you measure product-market fit?"]
+      },
+      {
+        id: "q-gen-2",
+        type: "technical",
+        question: "Describe your approach to metric tracking and product analytics. What KPIs do you look at daily, and how do you use them to drive growth?",
+        difficulty: "intermediate",
+        rubric: "Candidate should mention DAU/MAU, conversion funnels, churn rate, NPS, and using tools like Amplitude, Mixpanel, or SQL.",
+        follow_ups: ["How do you run and evaluate A/B test experiments?", "What is a leading indicator of churn in your experience?"]
+      },
+      {
+        id: "q-gen-3",
+        type: "behavioral",
+        question: "Tell me about a time when you had to make a high-stakes decision without complete data. What was the situation, what did you decide, and what was the outcome?",
+        difficulty: "intermediate",
+        rubric: "Demonstrates ability to manage ambiguity, weigh risks, rely on qualitative signals, and take accountability for outcomes.",
+        follow_ups: ["Would you make the same decision today?", "How did you communicate the risk to your leadership?"]
+      },
+      {
+        id: "q-gen-4",
+        type: "behavioral",
+        question: "Describe a project that failed or missed its deadlines under your leadership. How did you manage expectations, and what retrospective actions did you take?",
+        difficulty: "beginner",
+        rubric: "Shows humility, transparency in reporting blockers, focus on learning, and implementing process guardrails in subsequent sprints.",
+        follow_ups: ["How did the team react to the failure?", "What was the feedback from your client/stakeholder?"]
+      },
+      {
+        id: "q-gen-5",
+        type: "situational",
+        question: "A key engineering lead states that a feature promised to marketing cannot be completed in time unless code quality is severely compromised. How do you handle this conflict?",
+        difficulty: "advanced",
+        rubric: "Balances technical debt and business deadlines. Prefers scoping down features, negotiation, clear alignment on technical trade-offs, and protecting team health.",
+        follow_ups: ["How do you explain the delay to the marketing team?", "What is your strategy for paying back the tech debt later?"]
+      }
+    ];
+  } else {
+    questions = [
+      {
+        id: "q-gen-1",
+        type: "technical",
+        question: "What is your methodology for managing projects and deadlines? How do you ensure high-quality delivery when handling multiple competing priorities?",
+        difficulty: "intermediate",
+        rubric: "Candidate should mention prioritization (Eisenhower matrix), calendar blocks, task managers, status updates, and setting clear boundaries.",
+        follow_ups: ["How do you handle sudden shifts in project goals?", "What tools do you find most effective for collaboration?"]
+      },
+      {
+        id: "q-gen-2",
+        type: "technical",
+        question: "Describe your communication strategy when coordinating across different teams (e.g. Sales, Operations, Product). How do you align conflicting goals?",
+        difficulty: "intermediate",
+        rubric: "Look for stakeholder analysis, documentation (RFCs, minutes), regular syncs, empathy, and active listening.",
+        follow_ups: ["What is your preferred format for weekly status updates?", "How do you handle a team that is slow to respond?"]
+      },
+      {
+        id: "q-gen-3",
+        type: "behavioral",
+        question: "Tell me about a time when you received tough feedback from a supervisor or client. How did you process it, and what actions did you take to improve?",
+        difficulty: "intermediate",
+        rubric: "Shows growth mindset, emotional maturity, taking notes, creating an action plan, and seeking follow-up reviews.",
+        follow_ups: ["How did your relationship with the feedback provider change?", "Can you give an example of a mistake you have corrected since then?"]
+      },
+      {
+        id: "q-gen-4",
+        type: "behavioral",
+        question: "Describe a successful project you led or contributed to significantly. What was your role, and what specific impact did you deliver?",
+        difficulty: "beginner",
+        rubric: "Clear focus on contribution, collaboration, quantifying results (e.g. time saved, revenue increased, error rates reduced).",
+        follow_ups: ["What part of the success are you most proud of?", "How did you celebrate the achievement with your team?"]
+      },
+      {
+        id: "q-gen-5",
+        type: "situational",
+        question: "You realize that a teammate has made a critical error in a report already submitted to a client, but they are defensive about it. How do you handle this?",
+        difficulty: "advanced",
+        rubric: "Prioritizes correcting the error for the client first. Communicates privately, presents factual evidence objectively without blame, and collaborates on the fix.",
+        follow_ups: ["How do you ensure the client's trust is maintained?", "How do you build a safer, blame-free culture in the team?"]
+      }
+    ];
+  }
+  return questions;
 }
 
 // Render the Questions Pane for a specific job
