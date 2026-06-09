@@ -1094,110 +1094,114 @@ export const html = `
       </div>
 
       <!-- Drawer: Candidate Report -->
-      <div class="slide-drawer" id="drawer-report" style="width: 520px; right: -540px;">
+      <div class="slide-drawer" id="drawer-report" style="width: 860px; right: -880px;">
         <div class="drawer-header">
           <h2 class="drawer-title">Vetting Report</h2>
           <button class="btn-close-drawer" id="btn-close-drawer-report" aria-label="Close panel">×</button>
         </div>
-        <div class="drawer-body" style="padding: 0;">
-          <div class="candidate-profile-summary">
-            <div class="cand-avatar-large" id="report-avatar">AR</div>
-            <div class="cand-info-large">
-              <h3 class="cand-name-large" id="report-name">Aditya Rana</h3>
-              <p class="cand-email-large" id="report-email">aditya@interviehire.com</p>
-              <p class="cand-job-applied" id="report-job">Full Stack Developer</p>
-            </div>
-            <div class="cand-score-large" id="report-score">94%</div>
-          </div>
-
-          <!-- Tabs for Rubrics / Code review -->
-          <div class="report-tabs">
-            <button class="report-tab-btn active" data-report-tab="rubric">Evaluation Rubrics</button>
-            <button class="report-tab-btn" data-report-tab="code">Expert Code Review</button>
-          </div>
-
-          <div class="report-content-body">
-            <!-- Rubric content -->
-            <div class="report-tab-content active" id="rep-tab-rubric">
-              <div class="rubric-list">
-                <div class="rubric-item">
-                  <div class="rubric-meta">
-                    <span>Coding Proficiency</span>
-                    <strong class="val">9.2 / 10</strong>
-                  </div>
-                  <div class="bar-outer"><div class="bar-inner" style="width: 92%;"></div></div>
-                </div>
-                <div class="rubric-item">
-                  <div class="rubric-meta">
-                    <span>System Design</span>
-                    <strong class="val">8.8 / 10</strong>
-                  </div>
-                  <div class="bar-outer"><div class="bar-inner" style="width: 88%;"></div></div>
-                </div>
-                <div class="rubric-item">
-                  <div class="rubric-meta">
-                    <span>Communication</span>
-                    <strong class="val">9.5 / 10</strong>
-                  </div>
-                  <div class="bar-outer"><div class="bar-inner" style="width: 95%;"></div></div>
-                </div>
-                <div class="rubric-item">
-                  <div class="rubric-meta">
-                    <span>Problem Solving</span>
-                    <strong class="val">9.0 / 10</strong>
-                  </div>
-                  <div class="bar-outer"><div class="bar-inner" style="width: 90%;"></div></div>
-                </div>
+        <div class="drawer-body" style="padding: 0; display: flex; height: calc(100% - 60px); overflow: hidden;">
+          
+          <!-- Left side: Vetting Details -->
+          <div class="drawer-left-col" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; height: 100%;">
+            <div class="candidate-profile-summary">
+              <div class="cand-avatar-large" id="report-avatar">AR</div>
+              <div class="cand-info-large">
+                <h3 class="cand-name-large" id="report-name">Aditya Rana</h3>
+                <p class="cand-email-large" id="report-email">aditya@interviehire.com</p>
+                <p class="cand-job-applied" id="report-job">Full Stack Developer</p>
               </div>
-
-              <!-- Waveform snippet -->
-              <div class="waveform-box">
-                <h4 class="waveform-title">Expert Human Interview Snippet</h4>
-                <div class="waveform-controls">
-                  <button class="btn-play-waveform" id="btn-play-wave" aria-label="Play Interview Snippet">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="play-svg"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pause-svg" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-                  </button>
-                  <div class="waveform-viz" id="waveform-viz-bars">
-                    <!-- Dynamic wave bars -->
-                  </div>
-                  <span class="waveform-time" id="waveform-timer">0:00 / 0:12</span>
-                </div>
-              </div>
+              <div class="cand-score-large" id="report-score">94%</div>
             </div>
 
-            <!-- Code review content -->
-            <div class="report-tab-content" id="rep-tab-code">
-              <div class="code-editor-header">
-                <span class="file-name">App.jsx (React)</span>
-              </div>
-              <div class="code-editor-body">
-                <pre class="code-view-container"><code><span class="keyword">import</span> { useState, useEffect } <span class="keyword">from</span> <span class="string">'react'</span>;
+            <div class="report-tabs">
+              <button class="report-tab-btn active" data-report-tab="score">Score</button>
+              <button class="report-tab-btn" data-report-tab="transcript">Transcription & Audio</button>
+              <button class="report-tab-btn" data-report-tab="caveats">Scores & Caveats</button>
+              <button class="report-tab-btn" data-report-tab="actions">Notes & Actions</button>
+            </div>
 
-<span class="keyword">export default function</span> <span class="func">UserList</span>() {
-  <span class="keyword">const</span> [users, setUsers] = useState([]);
-  <span class="keyword">const</span> [loading, setLoading] = useState(<span class="keyword">true</span>);
-
-  useEffect(() =&gt; {
-    <span class="keyword">const</span> controller = <span class="keyword">new</span> <span class="class-name">AbortController</span>();
-    <span class="func">fetchUsers</span>(controller.signal);
-    <span class="keyword">return</span> () =&gt; controller.abort();
-  }, []);</code></pre>
-                
-                <!-- Comment by human reviewer -->
-                <div class="code-review-comment">
-                  <div class="comment-author">
-                    <span class="author-tag">SJ</span>
-                    <div class="author-meta">
-                      <span class="author-name">Sarah J.</span>
-                      <span class="author-desc">Sr. Frontend Engineer // Reviewer</span>
-                    </div>
+            <div class="report-content-body" style="flex: 1;">
+              <!-- Score tab -->
+              <div class="report-tab-content active" id="rep-tab-score">
+                <div class="rubric-list" id="report-rubric-list">
+                  <div class="rubric-item">
+                    <div class="rubric-meta"><span>Coding Proficiency</span><strong class="val">9.2 / 10</strong></div>
+                    <div class="bar-outer"><div class="bar-inner" style="width: 92%;"></div></div>
                   </div>
-                  <p class="comment-body">Excellent cleanup hook. Aditya handles asynchronous API mounts using the correct React AbortController pattern. Prevents race conditions and memory leaks.</p>
+                  <div class="rubric-item">
+                    <div class="rubric-meta"><span>System Design</span><strong class="val">8.8 / 10</strong></div>
+                    <div class="bar-outer"><div class="bar-inner" style="width: 88%;"></div></div>
+                  </div>
+                  <div class="rubric-item">
+                    <div class="rubric-meta"><span>Communication</span><strong class="val">9.5 / 10</strong></div>
+                    <div class="bar-outer"><div class="bar-inner" style="width: 95%;"></div></div>
+                  </div>
+                  <div class="rubric-item">
+                    <div class="rubric-meta"><span>Problem Solving</span><strong class="val">9.0 / 10</strong></div>
+                    <div class="bar-outer"><div class="bar-inner" style="width: 90%;"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transcription & Audio tab -->
+              <div class="report-tab-content" id="rep-tab-transcript">
+                <div class="waveform-box">
+                  <h4 class="waveform-title">Interview Audio Recording</h4>
+                  <div class="waveform-controls">
+                    <button class="btn-play-waveform" id="btn-play-wave" aria-label="Play Interview Snippet">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="play-svg"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pause-svg" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                    </button>
+                    <div class="waveform-viz" id="waveform-viz-bars"></div>
+                    <span class="waveform-time" id="waveform-timer">0:00 / 0:12</span>
+                  </div>
+                </div>
+                <div class="report-transcript-body" id="report-transcript-body">
+                  <span class="transcript-label">AI Interview Transcript:</span>
+                  <div class="transcript-chat-flow" id="report-transcript-flow"></div>
+                </div>
+              </div>
+
+              <!-- Scores & Caveats tab -->
+              <div class="report-tab-content" id="rep-tab-caveats">
+                <div class="report-caveats-body" id="report-caveats-body"></div>
+              </div>
+
+              <!-- Notes & Actions tab -->
+              <div class="report-tab-content" id="rep-tab-actions">
+                <div class="report-actions-body" id="report-actions-body">
+                  <div class="recruiter-notes-wrap">
+                    <span class="notes-label">Recruiter Notes:</span>
+                    <textarea class="recruiter-notes-textarea" id="report-notes-textarea" placeholder="Add custom notes on notice buyout or communication flags..."></textarea>
+                  </div>
+                  <div class="report-action-buttons" id="report-action-buttons"></div>
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Right side: Semantic Chat -->
+          <div class="drawer-right-col" style="width: 340px; border-left: 1px solid var(--glass-border); display: flex; flex-direction: column; background: rgba(0,0,0,0.15); height: 100%;">
+            <div class="chat-sidebar-header" style="padding: 16px; border-bottom: 1px solid var(--glass-border);">
+              <h4 style="margin: 0; font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary); display: flex; align-items: center; gap: 6px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                Ask Aria (AI Swarm)
+              </h4>
+              <p style="margin: 4px 0 0 0; font-size: 0.72rem; color: var(--color-text-muted);">Query this candidate's resume semantically.</p>
+            </div>
+            <div class="chat-sidebar-feed" id="report-chat-feed" style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+              <div class="chat-msg system" style="font-size: 0.78rem; color: var(--color-text-primary); background: rgba(99, 102, 241, 0.08); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.2); line-height: 1.4;">
+                Hi! I am Aria, your AI resume analyst. Ask me any questions about this candidate's resume, qualifications, or experience fit.
+              </div>
+            </div>
+            <form class="chat-sidebar-input-form" id="report-chat-form" style="padding: 12px; border-top: 1px solid var(--glass-border); display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.1);">
+              <input type="text" id="report-chat-input" placeholder="Type a message..." style="flex: 1; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; padding: 8px 12px; color: var(--color-text-primary); font-size: 0.8rem; outline: none;" />
+              <button type="submit" style="background: #6366f1; border: none; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: all 0.15s ease;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </button>
+            </form>
+          </div>
+
         </div>
       </div>
 
