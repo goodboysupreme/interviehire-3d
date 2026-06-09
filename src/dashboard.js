@@ -2211,7 +2211,7 @@ function closeDrawers() {
   const reportDrawer = document.getElementById('drawer-report');
   if (reportDrawer) {
     reportDrawer.classList.remove('active');
-    reportDrawer.style.right = '-620px';
+    reportDrawer.style.right = '-880px';
   }
 
   const agentDrawer = document.getElementById('drawer-agent-config');
