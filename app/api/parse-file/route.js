@@ -56,7 +56,7 @@ export async function POST(request) {
     return NextResponse.json(
       {
         error: 'Failed to parse file',
-        detail: process.env.NODE_ENV === 'production' ? undefined : error.message
+        detail: error.message
       },
       { status: 500 }
     );
