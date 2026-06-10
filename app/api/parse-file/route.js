@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function POST(request) {
   try {
     const formData = await request.formData();
@@ -20,15 +23,15 @@ export async function POST(request) {
       const PDFParseClass = pdfModule.PDFParse || (pdfModule.default && pdfModule.default.PDFParse);
       
       if (PDFParseClass) {
-        const path = await import('path');
-        const { pathToFileURL } = await import('url');
-        const workerPath = pathToFileURL(path.resolve(process.cwd(), 'node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs')).href;
-        PDFParseClass.setWorker(workerPath);
+        await import('pdfjs-dist/legacy/build/pdf.worker.mjs');
 
         const parser = new PDFParseClass({ data: buffer });
-        const result = await parser.getText();
-        text = result.text || '';
-        await parser.destroy();
+        try {
+          const result = await parser.getText();
+          text = result.text || '';
+        } finally {
+          await parser.destroy();
+        }
       } else {
         const pdfParseFn = pdfModule.default || pdfModule;
         if (typeof pdfParseFn === 'function') {
@@ -50,6 +53,12 @@ export async function POST(request) {
     return NextResponse.json({ text: text.trim() });
   } catch (error) {
     console.error('File parse error:', error);
-    return NextResponse.json({ error: 'Failed to parse file' }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Failed to parse file',
+        detail: process.env.NODE_ENV === 'production' ? undefined : error.message
+      },
+      { status: 500 }
+    );
   }
 }
