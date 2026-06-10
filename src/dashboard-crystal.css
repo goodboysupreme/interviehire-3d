@@ -9453,35 +9453,100 @@ body.light-theme .btn-jf-skip:hover {
   background: rgba(255,255,255,0.02);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 12px;
-  padding: 20px;
+  padding: 0;
+  overflow: hidden;
 }
 .jf-jd-title {
-  font-size: 1rem;
+  font-size: 1.08rem;
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0 0 8px;
 }
+.jf-jd-hero {
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.018);
+}
 .jf-jd-meta {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
   font-size: 0.78rem;
   color: var(--color-text-muted);
-  margin-bottom: 4px;
+  margin-bottom: 10px;
 }
 .jf-jd-meta span { display: inline-flex; align-items: center; gap: 4px; }
+.jf-jd-chip-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .jf-jd-badge {
-  padding: 2px 8px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.055);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--color-text-secondary);
   font-size: 0.74rem;
+  font-weight: 600;
 }
 .jf-jd-desc {
   font-size: 0.84rem;
   color: var(--color-text-muted);
   line-height: 1.6;
   margin: 0;
+}
+.jf-jd-rich-body {
+  padding: 16px 20px 20px;
+}
+.jf-jd-rich-section {
+  margin-bottom: 22px;
+}
+.jf-jd-rich-section:last-child {
+  margin-bottom: 0;
+}
+.jf-jd-rich-section.compact {
+  margin-top: -2px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.045);
+}
+.jf-jd-rich-section h5 {
+  margin: 0 0 10px;
+  color: var(--color-gold);
+  font-size: 0.86rem;
+  font-weight: 800;
+  font-family: var(--font-display);
+}
+.jf-jd-rich-section p {
+  margin: 0;
+  max-width: 112ch;
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  line-height: 1.75;
+}
+.jf-jd-rich-section ul {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+.jf-jd-rich-section li::marker {
+  color: var(--color-gold);
+}
+.jf-jd-card > .jf-edit-field {
+  margin: 16px 20px;
+}
+.jf-jd-card > .jf-edit-field:first-child {
+  margin-top: 20px;
+}
+.jf-jd-card > .jf-edit-field:last-child {
+  margin-bottom: 20px;
 }
 
 /* Application Fields */

@@ -3447,6 +3447,136 @@ function renderJobFlowConfig(job, stageKey) {
   }
 }
 
+function escapeHTML(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function getVerboseJobDescription(job) {
+  const role = job.roleName || 'This role';
+  const company = job.companyName || 'Akross';
+  const normalizedRole = role.toLowerCase();
+  const consultingName = company.toLowerCase().includes('consulting') ? company : `${company} Consulting`;
+
+  if (normalizedRole.includes('government tender')) {
+    return {
+      overview: `${consultingName} is seeking a detail-oriented and proactive ${role} to support businesses in navigating and winning government tenders. The role involves identifying relevant tender opportunities, analyzing tender documents, preparing bid submissions, and ensuring compliance with government procurement processes. This position requires strong document handling skills and the ability to coordinate with internal teams to meet deadlines. The company specializes in assisting clients across various sectors with government procurement and tendering.`,
+      responsibilities: [
+        'Identify and track relevant government tenders from portals such as GeM, CPPP, and state procurement platforms.',
+        'Analyze tender documents to understand eligibility criteria, scope of work, submission requirements, and compliance checkpoints.',
+        'Assist in preparing technical, commercial, and financial bid documents with clear supporting evidence.',
+        'Coordinate with internal teams, partners, and subject matter experts to collect necessary documentation and information.',
+        'Ensure all tender submissions are compliant with guidelines and submitted before deadlines.',
+        'Maintain records of submitted tenders, documentation, clarifications, corrigenda, and follow-ups.',
+        'Conduct basic research on government departments, upcoming projects, procurement trends, and competitor activity.'
+      ],
+      requirements: [
+        'Strong attention to detail and ability to work with structured documents.',
+        'Good written and verbal communication skills.',
+        'Ability to understand and interpret tender documents, eligibility criteria, and submission formats.',
+        'Proficiency in MS Excel, Word, Google Workspace, and document collaboration tools.',
+        'Ability to manage multiple deadlines and work independently with minimal supervision.'
+      ],
+      about: `${consultingName} works closely with businesses to help them navigate and win government tenders across various sectors. The company focuses on identifying relevant opportunities, preparing strong proposals, and ensuring complete compliance with government procurement processes.`
+    };
+  }
+
+  if (normalizedRole.includes('full stack')) {
+    return {
+      overview: `${company} is hiring a ${role} to design, build, and maintain high-performance web applications across the frontend, backend, and database layers. The role involves translating product requirements into responsive interfaces, building reliable APIs, optimizing latency, and ensuring that data flows consistently across the system. This position is suited for someone who can move between React interfaces, Node.js services, and PostgreSQL-backed workflows while keeping maintainability and user experience in focus.`,
+      responsibilities: [
+        'Build responsive dashboards and application screens using React, modern JavaScript, and reusable UI patterns.',
+        'Develop backend services, API routes, and integration logic using Node.js and Express.',
+        'Design and maintain PostgreSQL schemas, queries, and data access patterns for reliable product workflows.',
+        'Optimize page performance, API latency, and data loading behavior across key user journeys.',
+        'Collaborate with product and design stakeholders to clarify requirements and ship polished features.',
+        'Debug production issues across the stack and add safeguards that prevent recurring defects.'
+      ],
+      requirements: [
+        'Hands-on experience with React, JavaScript, HTML, CSS, and component-based frontend development.',
+        'Working knowledge of Node.js, Express, REST APIs, and backend validation patterns.',
+        'Practical experience with PostgreSQL or another relational database.',
+        'Ability to reason about performance, state management, and data consistency.',
+        'Clear communication skills and comfort working across product, design, and engineering contexts.'
+      ],
+      about: `${company} builds modern hiring and workflow software for teams that need fast, reliable, and well-designed internal tools. The engineering culture values clear ownership, thoughtful implementation, and interfaces that help users complete complex tasks with less friction.`
+    };
+  }
+
+  const description = job.description && job.description !== 'No job description provided.'
+    ? job.description
+    : `${job.companyName || company} is hiring for ${role}. This role is responsible for owning day-to-day execution, coordinating with stakeholders, and delivering high-quality work against clear business goals.`;
+
+  return {
+    overview: description,
+    responsibilities: [
+      `Own core execution for the ${role} role from planning through delivery.`,
+      'Coordinate with internal stakeholders to gather context, clarify requirements, and resolve blockers.',
+      'Maintain clear documentation, status updates, and handoff notes for ongoing work.',
+      'Track deadlines, quality checkpoints, and follow-up actions across the workflow.',
+      'Identify process gaps and suggest practical improvements that reduce manual effort.'
+    ],
+    requirements: [
+      'Strong written and verbal communication skills.',
+      'Ability to manage multiple priorities with attention to detail.',
+      'Comfort working with documents, tools, and structured operational processes.',
+      'Ownership mindset with the ability to work independently and ask clear questions when needed.'
+    ],
+    about: `${job.companyName || company} works with teams that need reliable execution, clear communication, and practical problem solving across business-critical workflows.`
+  };
+}
+
+function renderVerboseJobDescription(job) {
+  const content = getVerboseJobDescription(job);
+  const company = escapeHTML(job.companyName || 'Akross');
+  const location = escapeHTML(job.location || 'Delhi, India');
+  const role = escapeHTML(job.cardName || job.roleName || 'Untitled Role');
+  const roleName = escapeHTML(job.roleName || 'Untitled Role');
+  const experience = escapeHTML(job.experienceBand || 'Fresher');
+  const jobType = escapeHTML(job.jobType || 'Full-Time');
+
+  return `
+    <div class="jf-jd-hero">
+      <h4 class="jf-jd-title">${role}</h4>
+      <div class="jf-jd-meta">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> ${company}</span>
+        <span>${location}</span>
+      </div>
+      <div class="jf-jd-chip-row">
+        <span class="jf-jd-badge">${jobType}</span>
+        <span class="jf-jd-badge">${experience}</span>
+      </div>
+    </div>
+
+    <div class="jf-jd-rich-body">
+      <section class="jf-jd-rich-section">
+        <h5>Job overview</h5>
+        <p>${escapeHTML(content.overview)}</p>
+      </section>
+      <section class="jf-jd-rich-section">
+        <h5>Key responsibilities</h5>
+        <ul>${content.responsibilities.map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
+      </section>
+      <section class="jf-jd-rich-section">
+        <h5>Requirements</h5>
+        <ul>${content.requirements.map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul>
+      </section>
+      <section class="jf-jd-rich-section">
+        <h5>About ${company}</h5>
+        <p>${escapeHTML(content.about)}</p>
+      </section>
+      <section class="jf-jd-rich-section compact">
+        <h5>Role configured as</h5>
+        <p>${roleName}</p>
+      </section>
+    </div>
+  `;
+}
+
 function renderCareerPageConfig(job, panel) {
   const fields = job.applicationFields || ['Current Location', 'Expected CTC', 'Notice Period'];
   const isEditing = panel.dataset.cpEditing === 'true';
@@ -3491,15 +3621,7 @@ function renderCareerPageConfig(job, panel) {
             <label class="jf-edit-label">Job Description</label>
             <textarea class="jf-edit-textarea" id="cp-edit-desc" rows="6">${job.description || ''}</textarea>
           </div>
-        ` : `
-          <h4 class="jf-jd-title">${job.cardName || job.roleName}</h4>
-          <div class="jf-jd-meta">
-            <span><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> ${job.createdBy || 'Akross'}</span>
-            <span class="jf-jd-badge">${job.experienceBand || 'Fresher'}</span>
-          </div>
-          <h5 style="color: var(--color-gold); margin: 16px 0 8px; font-size: 0.85rem;">Job overview</h5>
-          <p class="jf-jd-desc">${job.description || 'No description provided.'}</p>
-        `}
+        ` : renderVerboseJobDescription(job)}
       </div>
     </div>
 
