@@ -1205,29 +1205,33 @@ function renderJobCards() {
             <span class="status-badge-dot"></span>
             ${status.charAt(0).toUpperCase() + status.slice(1)}
           </span>
-          <button class="btn-job-kebab" data-job-id="${jobId}" onclick="event.stopPropagation(); toggleJobKebab(this);" title="Job actions">
+          <button class="btn-job-kebab" data-job-id="${jobId}" onclick="event.stopPropagation(); toggleJobKebab(this);" title="Job actions" aria-label="Job actions">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
           </button>
-          <div class="job-kebab-dropdown" data-job-id="${jobId}">
+          <div class="job-kebab-dropdown" data-job-id="${jobId}" onclick="event.stopPropagation();" onpointerdown="event.stopPropagation();">
             <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'edit-name')">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-              Edit Job Name
+              Edit Posting
             </button>
             <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'view-flow')">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              View Job Flow
+              Configure Job Flow
+            </button>
+            <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'add-candidates')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+              Add Candidates
             </button>
             <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'career-page')">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              ${job.listedOnCareer ? 'Remove from Career Page' : 'List on Career Page'}
+              ${job.listedOnCareer ? 'Remove from Career Page' : 'Publish to Career Page'}
             </button>
             <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'duplicate')">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              Duplicate
+              Duplicate as Draft
             </button>
             <button class="kebab-item" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'settings')">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              Interview Settings
+              Question Studio
             </button>
             <div class="kebab-divider"></div>
             <button class="kebab-item ${status === 'archived' ? '' : 'kebab-item-danger'}" onclick="event.stopPropagation(); handleJobKebab('${jobId}', '${status === 'archived' ? 'unarchive' : 'archive'}')">
@@ -1236,7 +1240,7 @@ function renderJobCards() {
             </button>
             <button class="kebab-item kebab-item-danger" onclick="event.stopPropagation(); handleJobKebab('${jobId}', 'delete')">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-              Delete
+              Delete Posting
             </button>
           </div>
         </div>
@@ -1286,6 +1290,9 @@ function renderJobCards() {
           <div class="author-tag">${createdBy.charAt(0)}</div>
           <span class="author-meta">${createdBy} (me) // <a href="#" class="author-link-doc" onclick="event.stopPropagation(); openJobDescriptionDrawer('${jobId}')">Job Description</a></span>
         </div>
+        <button class="card-flow-cta" onclick="event.stopPropagation(); openJobFlowView('${jobId}');">
+          Job Flow
+        </button>
         <span class="card-responses-cta">
           View Responses
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
@@ -1293,7 +1300,8 @@ function renderJobCards() {
       </div>
     `;
 
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.job-card-header-actions, .card-flow-cta, .author-link-doc')) return;
       navigateToJobDetail(jobId);
     });
 
@@ -3295,26 +3303,30 @@ function openJobFlowView(jobId, showAddCandidates = false) {
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
       </div>
       <div class="jf-banner-content">
-        <div class="jf-banner-title">Pipeline ready — add your first candidates</div>
-        <p class="jf-banner-desc">Your AI-generated screening criteria, interview questions, and pipeline stages are configured. Import candidates to start the hiring flow.</p>
+        <div class="jf-banner-title">Job created. Finish the flow from here.</div>
+        <p class="jf-banner-desc">Review the pipeline, publish the posting, then add candidates when the setup looks right.</p>
       </div>
       <div class="jf-banner-actions">
+        <button class="btn-jf-skip" id="jf-btn-review-flow">Review Flow</button>
+        ${job.status === 'published' ? '' : `<button class="btn-jf-skip" id="jf-btn-publish-job">Publish Job</button>`}
         <button class="btn-jf-primary" id="jf-btn-add-candidates">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
           Add Candidates
         </button>
-        <button class="btn-jf-skip" id="jf-btn-skip-candidates">Skip this step</button>
       </div>
     `;
     flowView.insertBefore(banner, flowView.firstChild);
 
+    document.getElementById('jf-btn-review-flow')?.addEventListener('click', () => {
+      banner.classList.add('jf-banner-dismissing');
+      setTimeout(() => banner.remove(), 300);
+    });
+    document.getElementById('jf-btn-publish-job')?.addEventListener('click', () => {
+      openPublishJobModal(jobId);
+    });
     document.getElementById('jf-btn-add-candidates').addEventListener('click', () => {
       banner.remove();
       navigateToSourcing(jobId);
-    });
-    document.getElementById('jf-btn-skip-candidates').addEventListener('click', () => {
-      banner.classList.add('jf-banner-dismissing');
-      setTimeout(() => banner.remove(), 300);
     });
   }
 
@@ -3424,7 +3436,7 @@ function renderJobFlowConfig(job, stageKey) {
       renderCareerPageConfig(job, panel);
       break;
     case 'resumeAnalysis':
-      renderResumeAnalysisConfig(job, panel);
+      renderResumeAnalysisFlowConfig(job, panel);
       break;
     case 'recruiterScreening':
       renderScreeningConfig(job, panel);
@@ -3626,6 +3638,149 @@ function renderResumeAnalysisConfig(job, panel) {
       <div class="ra-criteria-items">${criteria.goodToHave.map((item, i) => `<div class="ra-criteria-item good-to-have"><span class="ra-criteria-num good-to-have">${i+1}</span><span class="ra-criteria-text">${item}</span></div>`).join('')}</div>
     </div>
   `;
+}
+
+function renderResumeAnalysisFlowConfig(job, panel) {
+  const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [], goodToHaveMinMatch: 1 };
+  const isEditing = panel.dataset.raEditing === 'true';
+  const renderRows = (items, groupKey, tone) => {
+    const rows = (isEditing && items.length === 0) ? [''] : items;
+    const html = rows.map((item, i) => isEditing ? `
+      <div class="ra-criteria-item-edit">
+        <span class="ra-criteria-num ${tone}">${i + 1}</span>
+        <input type="text" class="ra-criteria-edit-input" value="${(item || '').replace(/"/g, '&quot;')}" placeholder="Enter criterion..." />
+        <button class="btn-ra-remove-criteria" type="button" title="Remove criterion">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    ` : `
+      <div class="ra-criteria-item ${tone}">
+        <span class="ra-criteria-num ${tone}">${i + 1}</span>
+        <span class="ra-criteria-text">${item}</span>
+      </div>
+    `).join('');
+    return html + (isEditing ? `<button class="btn-ra-add-criteria" type="button" data-group="${groupKey}" data-tone="${tone}">+ Add Criterion</button>` : '');
+  };
+
+  panel.innerHTML = `
+    <div class="jf-config-header">
+      <div class="jf-config-header-left">
+        <h2 class="jf-config-title">Resume Analysis</h2>
+        <p class="jf-config-subtitle">Own shortlist rules here, then run candidate analysis from the Resume Analysis tab</p>
+      </div>
+      <div class="jf-config-header-actions">
+        <button class="btn-jf-edit" id="jf-btn-edit-resume">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${isEditing ? '<polyline points="20 6 9 17 4 12"/>' : '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>'}</svg>
+          ${isEditing ? 'Save Rules' : 'Edit Rules'}
+        </button>
+      </div>
+    </div>
+
+    <div class="ra-criteria-group must-have">
+      <div class="ra-criteria-group-header">
+        <span class="ra-criteria-icon must-have"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+        <div>
+          <h4 class="ra-criteria-group-title must-have">Must Have</h4>
+          <p class="ra-criteria-group-desc">Candidates meeting these rules can move forward automatically</p>
+        </div>
+      </div>
+      <div class="ra-criteria-items">${renderRows(criteria.mustHave, 'mustHave', 'must-have')}</div>
+    </div>
+
+    <div class="ra-criteria-divider"><span class="ra-criteria-divider-text">AND</span></div>
+
+    <div class="ra-criteria-group red-flags">
+      <div class="ra-criteria-group-header">
+        <span class="ra-criteria-icon red-flags"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+        <div>
+          <h4 class="ra-criteria-group-title red-flags">Red Flags</h4>
+          <p class="ra-criteria-group-desc">Detected items hold or reject a candidate for manual review</p>
+        </div>
+      </div>
+      <div class="ra-criteria-items">${renderRows(criteria.redFlags, 'redFlags', 'red-flags')}</div>
+    </div>
+
+    <div class="ra-criteria-divider"><span class="ra-criteria-divider-text">AND</span></div>
+
+    <div class="ra-criteria-group good-to-have">
+      <div class="ra-criteria-group-header">
+        <span class="ra-criteria-icon good-to-have"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <div>
+          <h4 class="ra-criteria-group-title good-to-have">Good To Have</h4>
+          <p class="ra-criteria-group-desc">Bonus signals that improve the fit score</p>
+        </div>
+      </div>
+      <div class="ra-criteria-min-match">
+        Minimum match:
+        ${isEditing ? `<input type="number" class="ra-min-match-input" value="${criteria.goodToHaveMinMatch || 1}" min="1" max="${Math.max(criteria.goodToHave.length, 1)}" />` : criteria.goodToHaveMinMatch}
+        out of ${criteria.goodToHave.length} criteria
+      </div>
+      <div class="ra-criteria-items">${renderRows(criteria.goodToHave, 'goodToHave', 'good-to-have')}</div>
+    </div>
+  `;
+
+  const renumber = (container) => {
+    container.querySelectorAll('.ra-criteria-num').forEach((num, idx) => { num.textContent = idx + 1; });
+  };
+
+  panel.querySelectorAll('.btn-ra-add-criteria').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const container = btn.closest('.ra-criteria-items');
+      if (!container) return;
+      const tone = btn.dataset.tone || 'must-have';
+      const count = container.querySelectorAll('.ra-criteria-item-edit').length + 1;
+      const row = document.createElement('div');
+      row.className = 'ra-criteria-item-edit';
+      row.innerHTML = `
+        <span class="ra-criteria-num ${tone}">${count}</span>
+        <input type="text" class="ra-criteria-edit-input" value="" placeholder="Enter criterion..." />
+        <button class="btn-ra-remove-criteria" type="button" title="Remove criterion">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      `;
+      container.insertBefore(row, btn);
+      row.querySelector('.btn-ra-remove-criteria').addEventListener('click', () => {
+        row.remove();
+        renumber(container);
+      });
+      row.querySelector('input')?.focus();
+    });
+  });
+
+  panel.querySelectorAll('.btn-ra-remove-criteria').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const container = btn.closest('.ra-criteria-items');
+      btn.closest('.ra-criteria-item-edit')?.remove();
+      if (container) renumber(container);
+    });
+  });
+
+  document.getElementById('jf-btn-edit-resume')?.addEventListener('click', () => {
+    if (!isEditing) {
+      panel.dataset.raEditing = 'true';
+      renderResumeAnalysisFlowConfig(job, panel);
+      return;
+    }
+
+    const next = { mustHave: [], redFlags: [], goodToHave: [], goodToHaveMinMatch: 1 };
+    panel.querySelectorAll('.ra-criteria-group.must-have .ra-criteria-edit-input').forEach(input => {
+      if (input.value.trim()) next.mustHave.push(input.value.trim());
+    });
+    panel.querySelectorAll('.ra-criteria-group.red-flags .ra-criteria-edit-input').forEach(input => {
+      if (input.value.trim()) next.redFlags.push(input.value.trim());
+    });
+    panel.querySelectorAll('.ra-criteria-group.good-to-have .ra-criteria-edit-input').forEach(input => {
+      if (input.value.trim()) next.goodToHave.push(input.value.trim());
+    });
+    const min = parseInt(panel.querySelector('.ra-min-match-input')?.value, 10);
+    next.goodToHaveMinMatch = Math.min(Math.max(Number.isFinite(min) ? min : 1, 1), Math.max(next.goodToHave.length, 1));
+    job.resumeCriteria = next;
+    panel.dataset.raEditing = 'false';
+    saveStateToLocalStorage();
+    showPremiumToast('Resume analysis rules saved.', 'success');
+    renderResumeAnalysisFlowConfig(job, panel);
+    renderJobFlowPipeline(job);
+  });
 }
 
 function renderScreeningConfig(job, panel) {
@@ -4653,6 +4808,9 @@ document.addEventListener('DOMContentLoaded', () => {
       case 'view-flow':
         openJobFlowView(jobId);
         break;
+      case 'add-candidates':
+        navigateToSourcing(jobId);
+        break;
       case 'career-page': {
         job.listedOnCareer = !job.listedOnCareer;
         renderJobCards();
@@ -4699,10 +4857,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (idx === -1) break;
         AppState.jobs.splice(idx, 1);
         AppState.candidates = AppState.candidates.filter(c => c.jobApplied !== job.roleName && c.jobApplied !== job.cardName);
-        renderJobCards();
-        updateJobsCounters();
-        updateSummaryMetrics();
-        showPremiumToast(`"${name}" has been permanently deleted.`, 'success');
+        saveStateToLocalStorage();
+        setTimeout(() => {
+          renderJobCards();
+          updateJobsCounters();
+          updateSummaryMetrics();
+          showPremiumToast(`"${name}" has been permanently deleted.`, 'success');
+        }, 0);
         break;
       }
     }
@@ -7906,6 +8067,22 @@ function renderJobDetailPanes(job) {
     `;
 
     resumeList.innerHTML = criteriaHTML;
+    resumeList.querySelector('.ra-config-section')?.remove();
+    resumeList.insertAdjacentHTML('afterbegin', `
+      <div class="ra-flow-redirect">
+        <div>
+          <h3 class="ra-candidates-title">Resume Analysis Candidates</h3>
+          <p class="ra-flow-redirect-copy">Shortlist rules live in Job Flow so setup and evaluation stay separated.</p>
+        </div>
+        <button class="btn-jd-ghost" id="btn-resume-edit-flow">Edit Rules in Job Flow</button>
+      </div>
+    `);
+    document.getElementById('btn-resume-edit-flow')?.addEventListener('click', () => {
+      openJobFlowView(job.id);
+      requestAnimationFrame(() => {
+        document.querySelector('.jf-stage-card[data-stage="resumeAnalysis"]')?.click();
+      });
+    });
 
     const resumeCandContainer = document.getElementById('list-stage-resume-candidates');
     if (resumeCandContainer) {
