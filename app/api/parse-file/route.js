@@ -1,7 +1,18 @@
+import { createRequire } from 'node:module';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+async function ensurePdfNodePolyfills() {
+  if (globalThis.DOMMatrix && globalThis.ImageData && globalThis.Path2D) return;
+
+  const require = createRequire(import.meta.url);
+  const canvas = require('@napi-rs/canvas');
+  globalThis.DOMMatrix ||= canvas.DOMMatrix;
+  globalThis.ImageData ||= canvas.ImageData;
+  globalThis.Path2D ||= canvas.Path2D;
+}
 
 export async function POST(request) {
   try {
@@ -19,6 +30,8 @@ export async function POST(request) {
     if (fileName.endsWith('.txt')) {
       text = buffer.toString('utf-8');
     } else if (fileName.endsWith('.pdf')) {
+      await ensurePdfNodePolyfills();
+
       const pdfModule = await import('pdf-parse');
       const PDFParseClass = pdfModule.PDFParse || (pdfModule.default && pdfModule.default.PDFParse);
       
@@ -56,7 +69,7 @@ export async function POST(request) {
     return NextResponse.json(
       {
         error: 'Failed to parse file',
-        detail: error.message
+        detail: process.env.NODE_ENV === 'production' ? undefined : error.message
       },
       { status: 500 }
     );
