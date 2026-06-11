@@ -4253,300 +4253,251 @@ function drawFunnelSVG(job, candidates) {
   if (!svgEl) return;
 
   const wrap = svgEl.parentElement;
-  const rect = wrap ? wrap.getBoundingClientRect() : { width: 460, height: 400 };
-  const W = Math.max(rect.width || 460, 200);
-  const H = Math.max(rect.height || 400, 200);
+  const rect = wrap ? wrap.getBoundingClientRect() : { width: 420, height: 380 };
+  const W = Math.max(rect.width || 420, 280);
+  const H = Math.max(rect.height || 380, 260);
   const cx = W / 2;
-  const maxHW = W * 0.32;
-  const padT = 10, padB = 10;
 
-  const total = Math.max(job.pipeline.total, 1);
+  // === NEW: Constant-width tube design ===
+  const BASE_WIDTH = Math.min(W * 0.68, 260);   // largely constant width
+  const MIN_WIDTH = BASE_WIDTH * 0.82;          // very slight taper only
+  const PAD_TOP = 18;
+  const PAD_BOT = 18;
+
+  // === Determine active stages from pipelineConfig (respect toggles) ===
+  const cfg = job.pipelineConfig || {};
+  const resumeEnabled = cfg.resumeAnalysis?.enabled !== false;
+  const recruiterEnabled = cfg.recruiterScreening?.enabled !== false;
+  const functionalEnabled = cfg.functionalInterview?.enabled !== false;
+
   const completedCount = candidates.filter(c => c.interviewStatus === 'Completed').length;
   const qualifiedCount = candidates.filter(c => c.status === 'Hired').length;
 
-  const stageLabels = ['Total Candidates', 'Resume Analysis', 'Recruiter Screening', 'Functional Interview', 'Completed', 'Qualified'];
-  const stageCounts = [
-    job.pipeline.total,
-    job.pipeline.resume || 0,
-    job.pipeline.screening || 0,
-    job.pipeline.functional || 0,
-    completedCount,
-    qualifiedCount,
+  // Build dynamic stage list (only enabled stages)
+  const allStages = [
+    { key: 'total',       label: 'Total Candidates', count: job.pipeline.total || 0, enabled: true },
+    { key: 'resume',      label: 'Resume Analysis',  count: job.pipeline.resume || 0, enabled: resumeEnabled },
+    { key: 'screening',   label: 'Recruiter Screening', count: job.pipeline.screening || 0, enabled: recruiterEnabled },
+    { key: 'functional',  label: 'Functional Interview', count: job.pipeline.functional || 0, enabled: functionalEnabled },
+    { key: 'completed',   label: 'Completed',        count: completedCount, enabled: true },
+    { key: 'qualified',   label: 'Qualified',        count: qualifiedCount, enabled: true },
   ];
-  const n = stageCounts.length;
-  const ys = stageCounts.map((_, i) => padT + (i / (n - 1)) * (H - padT - padB));
 
-  const hws = stageCounts.map((c, i) => {
-    if (i === 0) return maxHW;
-    if (c === 0) return 3;
-    return Math.max((c / total) * maxHW, 9);
+  // Filter to only enabled stages
+  const stages = allStages.filter(s => s.enabled && s.count >= 0);
+  const n = stages.length;
+
+  if (n === 0) {
+    svgEl.innerHTML = '';
+    return;
+  }
+
+  // Y positions with even spacing
+  const ys = stages.map((_, i) => PAD_TOP + (i / (n - 1)) * (H - PAD_TOP - PAD_BOT));
+
+  // Almost constant width (slight visual interest only)
+  const widths = stages.map((s, i) => {
+    if (n <= 2) return BASE_WIDTH;
+    const t = i / (n - 1);
+    return BASE_WIDTH * (1 - t * 0.18); // very gentle narrowing
   });
 
-  const pts = stageCounts.map((_, i) => ({
+  const pts = stages.map((s, i) => ({
     y: ys[i],
-    lx: cx - hws[i],
-    rx: cx + hws[i],
+    w: widths[i],
+    lx: cx - widths[i] / 2,
+    rx: cx + widths[i] / 2,
+    count: s.count,
+    label: s.label,
+    key: s.key
   }));
 
-  const isLight = document.body.classList.contains('light-theme');
-  const dividerStroke = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.065)';
-
+  // Colors
   const sourceColors = {
-    'Career Page': '#6366f1', 'ATS': '#06b6d4', 'Bulk Upload': '#f59e0b',
-    'Scheduled': '#ec4899', 'Direct Link': '#10b981'
+    'Career Page': '#6366f1',
+    'ATS': '#06b6d4',
+    'Bulk Upload': '#f59e0b',
+    'Scheduled': '#ec4899',
+    'Direct Link': '#10b981'
   };
   const sourceOrder = ['Career Page', 'ATS', 'Bulk Upload', 'Scheduled', 'Direct Link'];
-  const stageStatusMap = {
-    'Total Candidates': null, 'Resume Analysis': 'Resume', 'Recruiter Screening': 'Screening',
-    'Functional Interview': 'Functional', 'Completed': 'Functional', 'Qualified': 'Hired'
-  };
 
-  function getBreakdownForStage(stageLabel) {
-    const status = stageStatusMap[stageLabel];
-    let stageCands;
-    if (stageLabel === 'Total Candidates') stageCands = candidates;
-    else if (stageLabel === 'Completed') stageCands = candidates.filter(c => c.status === 'Functional' || c.status === 'Hired');
-    else stageCands = candidates.filter(c => c.status === status);
+  const isLight = document.body.classList.contains('light-theme');
+  const bgStroke = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+
+  function getBreakdown(stage) {
+    let filtered = candidates;
+    if (stage.key === 'total') filtered = candidates;
+    else if (stage.key === 'resume') filtered = candidates.filter(c => c.status === 'Resume' || c.status === 'Screening' || c.status === 'Functional' || c.status === 'Hired');
+    else if (stage.key === 'screening') filtered = candidates.filter(c => c.status === 'Screening' || c.status === 'Functional' || c.status === 'Hired');
+    else if (stage.key === 'functional') filtered = candidates.filter(c => c.status === 'Functional' || c.status === 'Hired');
+    else if (stage.key === 'completed') filtered = candidates.filter(c => c.interviewStatus === 'Completed' || c.status === 'Hired');
+    else if (stage.key === 'qualified') filtered = candidates.filter(c => c.status === 'Hired');
+
     const breakdown = {};
-    stageCands.forEach(c => { const src = c.source || 'Unknown'; breakdown[src] = (breakdown[src] || 0) + 1; });
+    filtered.forEach(c => {
+      const src = c.source || 'Unknown';
+      breakdown[src] = (breakdown[src] || 0) + 1;
+    });
     return breakdown;
   }
 
-  function getSourceFractions(stageIdx) {
-    const label = stageLabels[stageIdx];
-    const breakdown = getBreakdownForStage(label);
-    const stageTotal = Object.values(breakdown).reduce((a, b) => a + b, 0) || 1;
-    const fracs = [];
+  function getSourceSegments(stage) {
+    const breakdown = getBreakdown(stage);
+    const total = Object.values(breakdown).reduce((a, b) => a + b, 0) || 1;
+    const segments = [];
+
     sourceOrder.forEach(src => {
-      if (breakdown[src]) fracs.push({ source: src, frac: breakdown[src] / stageTotal, color: sourceColors[src] });
+      if (breakdown[src]) {
+        segments.push({ source: src, frac: breakdown[src] / total, color: sourceColors[src] });
+      }
     });
+
+    // Unknown sources
     Object.keys(breakdown).forEach(src => {
-      if (!sourceOrder.includes(src)) fracs.push({ source: src, frac: breakdown[src] / stageTotal, color: '#888' });
+      if (!sourceOrder.includes(src) && breakdown[src]) {
+        segments.push({ source: src, frac: breakdown[src] / total, color: '#64748b' });
+      }
     });
-    if (fracs.length === 0) fracs.push({ source: 'None', frac: 1, color: 'rgba(255,255,255,0.08)' });
-    return fracs;
+
+    if (segments.length === 0) {
+      segments.push({ source: 'None', frac: 1, color: isLight ? '#e2e8f0' : 'rgba(255,255,255,0.08)' });
+    }
+    return segments;
   }
 
+  // Clear and setup SVG
   svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svgEl.setAttribute('pointer-events', 'all');
-  svgEl.style.cursor = 'pointer';
-
   while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
 
   const svgNS = 'http://www.w3.org/2000/svg';
 
-  pts.slice(1, -1).forEach(p => {
-    const line = document.createElementNS(svgNS, 'line');
-    line.setAttribute('x1', p.lx - 14);
-    line.setAttribute('y1', p.y);
-    line.setAttribute('x2', p.rx + 14);
-    line.setAttribute('y2', p.y);
-    line.setAttribute('stroke', dividerStroke);
-    line.setAttribute('stroke-width', '1');
-    line.setAttribute('stroke-dasharray', '4 3');
-    line.setAttribute('pointer-events', 'none');
-    svgEl.appendChild(line);
-  });
-
+  // Draw each stage segment with smooth curves
   for (let i = 0; i < n - 1; i++) {
-    const g = document.createElementNS(svgNS, 'g');
-    g.setAttribute('data-stage-idx', String(i));
-    g.setAttribute('pointer-events', 'all');
-    g.style.cursor = 'pointer';
+    const p = pts[i];
+    const q = pts[i + 1];
+    const segments = getSourceSegments(stages[i]);
 
-    const p = pts[i], q = pts[i + 1];
     const dy = q.y - p.y;
-    const cp1Y = p.y + dy * 0.35;
-    const cp2Y = p.y + dy * 0.65;
-    const topW = p.rx - p.lx;
-    const botW = q.rx - q.lx;
-    const fracs = getSourceFractions(i);
+    const cp1 = p.y + dy * 0.28;
+    const cp2 = p.y + dy * 0.72;
 
-    let topOffset = 0;
-    let botOffset = 0;
-    fracs.forEach(({ frac, color }) => {
-      const topSlice = topW * frac;
-      const botSlice = botW * frac;
-      const tl = p.lx + topOffset;
-      const tr = tl + topSlice;
-      const bl = q.lx + botOffset;
-      const br = bl + botSlice;
+    let leftOffset = 0;
+    let rightOffset = 0;
 
-      const d =
-        `M ${tl} ${p.y} L ${tr} ${p.y}` +
-        ` C ${tr} ${cp1Y} ${br} ${cp2Y} ${br} ${q.y}` +
-        ` L ${bl} ${q.y}` +
-        ` C ${bl} ${cp2Y} ${tl} ${cp1Y} ${tl} ${p.y} Z`;
+    const g = document.createElementNS(svgNS, 'g');
+    g.setAttribute('data-stage', stages[i].key);
+    g.setAttribute('data-stage-idx', String(i));
+
+    segments.forEach(seg => {
+      const topW = p.w * seg.frac;
+      const botW = q.w * seg.frac;
+
+      const tl = p.lx + leftOffset;
+      const tr = tl + topW;
+      const bl = q.lx + rightOffset;
+      const br = bl + botW;
+
+      // Smooth cubic Bézier path (constant-width friendly)
+      const d = `
+        M ${tl} ${p.y}
+        L ${tr} ${p.y}
+        C ${tr} ${cp1} ${br} ${cp2} ${br} ${q.y}
+        L ${bl} ${q.y}
+        C ${bl} ${cp2} ${tl} ${cp1} ${tl} ${p.y}
+        Z
+      `.trim();
 
       const path = document.createElementNS(svgNS, 'path');
       path.setAttribute('d', d);
-      path.setAttribute('fill', color);
-      path.setAttribute('opacity', '0.9');
+      path.setAttribute('fill', seg.color);
+      path.setAttribute('opacity', '0.92');
+      path.setAttribute('stroke', bgStroke);
+      path.setAttribute('stroke-width', '0.75');
       path.setAttribute('pointer-events', 'all');
+
+      // Store data for tooltips
+      path.dataset.stageLabel = stages[i].label;
+      path.dataset.count = stages[i].count;
+      path.dataset.source = seg.source;
+      path.dataset.sourceCount = Math.round(seg.frac * stages[i].count);
+
       g.appendChild(path);
 
-      topOffset += topSlice;
-      botOffset += botSlice;
+      leftOffset += topW;
+      rightOffset += botW;
     });
 
     svgEl.appendChild(g);
   }
 
-  /* ── Feathered gradient overlays at stage boundaries ── */
-  if (n > 2) {
-    const defs = document.createElementNS(svgNS, 'defs');
-    for (let i = 1; i <= n - 2; i++) {
-      const bY = pts[i].y;
-      const bandH = 12;
-      const gradId = `funnel-blend-grad-${i}`;
+  // Subtle top and bottom caps (rounded ends)
+  const topCap = document.createElementNS(svgNS, 'ellipse');
+  topCap.setAttribute('cx', cx);
+  topCap.setAttribute('cy', PAD_TOP);
+  topCap.setAttribute('rx', pts[0].w / 2);
+  topCap.setAttribute('ry', 7);
+  topCap.setAttribute('fill', 'rgba(255,255,255,0.06)');
+  topCap.setAttribute('stroke', bgStroke);
+  topCap.setAttribute('stroke-width', '1');
+  svgEl.appendChild(topCap);
 
-      /* average colour of the two adjacent stages */
-      const fracsAbove = getSourceFractions(i - 1);
-      const fracsBelow = getSourceFractions(i);
-      const pickFirst = (arr) => (arr.length ? arr[0].color : '#888');
-      const cAbove = pickFirst(fracsAbove);
-      const cBelow = pickFirst(fracsBelow);
+  const botCap = document.createElementNS(svgNS, 'ellipse');
+  botCap.setAttribute('cx', cx);
+  botCap.setAttribute('cy', H - PAD_BOT);
+  botCap.setAttribute('rx', pts[n-1].w / 2);
+  botCap.setAttribute('ry', 7);
+  botCap.setAttribute('fill', 'rgba(255,255,255,0.06)');
+  botCap.setAttribute('stroke', bgStroke);
+  botCap.setAttribute('stroke-width', '1');
+  svgEl.appendChild(botCap);
 
-      /* parse hex → rgb helper */
-      const hexToRgb = (hex) => {
-        const h = hex.replace('#', '');
-        return [parseInt(h.substring(0,2),16), parseInt(h.substring(2,4),16), parseInt(h.substring(4,6),16)];
-      };
-      const [r1,g1,b1] = hexToRgb(cAbove);
-      const [r2,g2,b2] = hexToRgb(cBelow);
-      const mr = Math.round((r1+r2)/2), mg = Math.round((g1+g2)/2), mb = Math.round((b1+b2)/2);
-
-      const grad = document.createElementNS(svgNS, 'linearGradient');
-      grad.setAttribute('id', gradId);
-      grad.setAttribute('x1', '0'); grad.setAttribute('y1', '0');
-      grad.setAttribute('x2', '0'); grad.setAttribute('y2', '1');
-      const stops = [
-        { offset: '0%',   color: `rgba(${mr},${mg},${mb},0)` },
-        { offset: '45%',  color: `rgba(${mr},${mg},${mb},0.15)` },
-        { offset: '55%',  color: `rgba(${mr},${mg},${mb},0.15)` },
-        { offset: '100%', color: `rgba(${mr},${mg},${mb},0)` },
-      ];
-      stops.forEach(s => {
-        const stop = document.createElementNS(svgNS, 'stop');
-        stop.setAttribute('offset', s.offset);
-        stop.setAttribute('stop-color', s.color);
-        grad.appendChild(stop);
-      });
-      defs.appendChild(grad);
-
-      /* overlay rect */
-      const maxLx = Math.min(pts[i-1].lx, pts[i].lx) - 4;
-      const maxRx = Math.max(pts[i-1].rx, pts[i].rx) + 4;
-      const rect = document.createElementNS(svgNS, 'rect');
-      rect.setAttribute('x', maxLx);
-      rect.setAttribute('y', bY - bandH / 2);
-      rect.setAttribute('width', maxRx - maxLx);
-      rect.setAttribute('height', bandH);
-      rect.setAttribute('fill', `url(#${gradId})`);
-      rect.setAttribute('pointer-events', 'none');
-      svgEl.appendChild(rect);
-    }
-    svgEl.insertBefore(defs, svgEl.firstChild);
+  // Tooltip setup (reuse existing element if present)
+  let tooltip = document.getElementById('funnel-svg-tooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.id = 'funnel-svg-tooltip';
+    tooltip.className = 'funnel-svg-tooltip';
+    document.body.appendChild(tooltip);
   }
+  tooltip.style.display = 'none';
 
-  let funnelTooltipEl = document.getElementById('funnel-svg-tooltip');
-  if (!funnelTooltipEl) {
-    funnelTooltipEl = document.createElement('div');
-    funnelTooltipEl.id = 'funnel-svg-tooltip';
-    funnelTooltipEl.className = 'funnel-svg-tooltip';
-    document.body.appendChild(funnelTooltipEl);
-  }
-  funnelTooltipEl.style.display = 'none';
+  // Attach hover handlers
+  svgEl.querySelectorAll('g[data-stage]').forEach(group => {
+    group.addEventListener('mouseenter', (e) => {
+      const path = e.target.closest('path');
+      if (!path) return;
 
-  const stageItems = document.querySelectorAll('#jd-funnel-stages .jd-stage-item');
-  const stagesContainer = document.getElementById('jd-funnel-stages');
-  if (stagesContainer && stageItems.length === n) {
-    stagesContainer.style.position = 'relative';
-    stagesContainer.style.gap = '0';
-    stagesContainer.style.height = H + 'px';
-    stageItems.forEach((item, i) => {
-      const segTop = ys[i];
-      const segBot = i < n - 1 ? ys[i + 1] : H - padB;
-      const segH = segBot - segTop;
-      item.style.position = 'absolute';
-      item.style.left = '0';
-      item.style.right = '0';
-      item.style.top = segTop + 'px';
-      item.style.height = segH + 'px';
-      item.style.display = 'flex';
-      item.style.alignItems = 'center';
+      const label = path.dataset.stageLabel;
+      const count = path.dataset.count;
+      const source = path.dataset.source;
+      const sourceCount = path.dataset.sourceCount;
+
+      tooltip.innerHTML = `
+        <div style="font-weight:600; margin-bottom:4px;">${label}</div>
+        <div style="font-size:13px; opacity:0.9;">
+          <strong>${count}</strong> candidates<br>
+          <span style="color:#aaa">${source}: ${sourceCount}</span>
+        </div>
+      `;
+      tooltip.style.display = 'block';
+      tooltip.style.left = (e.clientX + 16) + 'px';
+      tooltip.style.top = (e.clientY - 10) + 'px';
     });
-  }
 
-  let activeSegIdx = -1;
+    group.addEventListener('mouseleave', () => {
+      tooltip.style.display = 'none';
+    });
 
-  function showTooltip(idx, clientX, clientY) {
-    if (activeSegIdx === idx) {
-      funnelTooltipEl.style.left = (clientX + 14) + 'px';
-      funnelTooltipEl.style.top = (clientY - 10) + 'px';
-      return;
-    }
-    activeSegIdx = idx;
-    const label = stageLabels[idx];
-    const count = stageCounts[idx];
-    const breakdown = getBreakdownForStage(label);
-    const rows = Object.entries(breakdown).map(([src, cnt]) => {
-      const color = sourceColors[src] || '#888';
-      return '<div class="funnel-tooltip-row"><span class="funnel-tooltip-dot" style="background:' + color + '"></span><span>' + src + '</span><strong>' + cnt + '</strong></div>';
-    }).join('');
-
-    funnelTooltipEl.innerHTML = '<div class="funnel-tooltip-title">' + label + ' <span>(' + count + ')</span></div>' + (rows || '<div class="funnel-tooltip-row"><span style="color:var(--color-text-faint)">No candidates</span></div>');
-    funnelTooltipEl.style.display = 'block';
-    funnelTooltipEl.style.left = (clientX + 14) + 'px';
-    funnelTooltipEl.style.top = (clientY - 10) + 'px';
-
-    svgEl.querySelectorAll('g[data-stage-idx]').forEach(g => {
-      const gi = parseInt(g.getAttribute('data-stage-idx'));
-      const paths = g.querySelectorAll('path');
-      if (gi === idx) {
-        paths.forEach(p => { p.setAttribute('opacity', '1'); p.style.filter = 'brightness(1.25)'; });
-      } else {
-        paths.forEach(p => { p.setAttribute('opacity', '0.9'); p.style.filter = ''; });
+    group.addEventListener('mousemove', (e) => {
+      if (tooltip.style.display === 'block') {
+        tooltip.style.left = (e.clientX + 16) + 'px';
+        tooltip.style.top = (e.clientY - 10) + 'px';
       }
     });
-    stageItems.forEach((si, si_i) => {
-      if (si_i === idx) si.classList.add('funnel-hover-active');
-      else si.classList.remove('funnel-hover-active');
-    });
-  }
-
-  function hideTooltip() {
-    activeSegIdx = -1;
-    funnelTooltipEl.style.display = 'none';
-    svgEl.querySelectorAll('g[data-stage-idx] path').forEach(p => {
-      p.setAttribute('opacity', '0.9');
-      p.style.filter = '';
-    });
-    stageItems.forEach(si => si.classList.remove('funnel-hover-active'));
-  }
-
-  svgEl.addEventListener('mousemove', function(e) {
-    const target = e.target;
-    const g = target.closest ? target.closest('g[data-stage-idx]') : null;
-    if (!g && target.tagName === 'path') {
-      const parent = target.parentElement;
-      if (parent && parent.tagName.toLowerCase() === 'g' && parent.hasAttribute('data-stage-idx')) {
-        showTooltip(parseInt(parent.getAttribute('data-stage-idx')), e.clientX, e.clientY);
-        return;
-      }
-    }
-    if (g) {
-      showTooltip(parseInt(g.getAttribute('data-stage-idx')), e.clientX, e.clientY);
-    } else {
-      hideTooltip();
-    }
-  });
-
-  svgEl.addEventListener('mouseleave', function() {
-    hideTooltip();
   });
 }
-
 function drawScoreDistributionSVG(job, candidates) {
   const svgEl = document.getElementById('jd-score-svg');
   if (!svgEl) return;
