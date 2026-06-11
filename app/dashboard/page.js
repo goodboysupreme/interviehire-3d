@@ -2,9 +2,9 @@
 
 import { useEffect } from 'react';
 import { initDashboardPage } from '../../src/dashboard';
-import { html } from '../../src/html/dashboard';
+import { html } from '../../src/html/dashboard-crystal';
 
-export default function DashboardPage() {
+export default function DashboardCrystalPage() {
   useEffect(() => {
     const cleanup = initDashboardPage();
     return () => {
