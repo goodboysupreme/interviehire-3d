@@ -4264,15 +4264,18 @@ function drawFunnelSVG(job, candidates) {
   const completedCount = candidates.filter(c => c.interviewStatus === 'Completed').length;
   const qualifiedCount = candidates.filter(c => c.status === 'Hired').length;
 
-  const stageLabels = ['Total Candidates', 'Resume Analysis', 'Recruiter Screening', 'Functional Interview', 'Completed', 'Qualified'];
-  const stageCounts = [
-    job.pipeline.total,
-    job.pipeline.resume || 0,
-    job.pipeline.screening || 0,
-    job.pipeline.functional || 0,
-    completedCount,
-    qualifiedCount,
-  ];
+  const cfg = job.pipelineConfig || {};
+  const includeResume = cfg.resumeAnalysis?.enabled !== false;
+  const includeScreening = cfg.recruiterScreening?.enabled !== false;
+  const includeFunctional = cfg.functionalInterview?.enabled !== false;
+
+  const stageLabels = ['Total Candidates'];
+  const stageCounts = [job.pipeline.total];
+  if (includeResume) { stageLabels.push('Resume Analysis'); stageCounts.push(job.pipeline.resume || 0); }
+  if (includeScreening) { stageLabels.push('Recruiter Screening'); stageCounts.push(job.pipeline.screening || 0); }
+  if (includeFunctional) { stageLabels.push('Functional Interview'); stageCounts.push(job.pipeline.functional || 0); }
+  stageLabels.push('Completed', 'Qualified');
+  stageCounts.push(completedCount, qualifiedCount);
   const n = stageCounts.length;
   const ys = stageCounts.map((_, i) => padT + (i / (n - 1)) * (H - padT - padB));
 
@@ -4356,8 +4359,8 @@ function drawFunnelSVG(job, candidates) {
 
     const p = pts[i], q = pts[i + 1];
     const dy = q.y - p.y;
-    const cp1Y = p.y + dy * 0.35;
-    const cp2Y = p.y + dy * 0.65;
+    const cp1Y = p.y + dy * 0.28; // organic flow
+    const cp2Y = p.y + dy * 0.72; // organic flow
     const topW = p.rx - p.lx;
     const botW = q.rx - q.lx;
     const fracs = getSourceFractions(i);
@@ -7205,27 +7208,17 @@ const resumeAnalysisCache = {};
 const reportChatCache = {};
 
 function generateAutoResumeAnalysis(candidateName) {
-  const scores = {
-    technical: (6 + Math.random() * 4).toFixed(1),
-    experience: (5 + Math.random() * 5).toFixed(1),
-    communication: (6 + Math.random() * 4).toFixed(1),
-    cultureFit: (6 + Math.random() * 4).toFixed(1),
-  };
+  // Strictly resume-analysis only — no hallucinated later-stage data
   const matchScore = Math.round(50 + Math.random() * 45);
-  const recs = ['Advance', 'Hold', 'Reject'];
-  const rec = matchScore >= 75 ? 'Advance' : matchScore >= 55 ? 'Hold' : 'Reject';
   return {
     matchScore,
-    summary: `${candidateName} demonstrates solid foundational skills relevant to this role. Resume shows consistent career progression with applicable domain experience.`,
-    experienceYears: `${Math.floor(1 + Math.random() * 6)} years`,
+    summary: `${candidateName}'s resume shows relevant experience and skills for the role.`,
     skills: {
-      detected: ['Communication', 'Project Management', 'Research'],
-      matched: ['Proposal Writing', 'Compliance'],
-      missing: ['SAP Ariba', 'GeM Portal']
+      detected: ['Communication', 'Project Management'],
+      matched: ['Proposal Writing'],
+      missing: []
     },
-    scorecard: scores,
-    recommendation: rec,
-    recommendationReason: rec === 'Advance' ? 'Strong match across key competencies.' : rec === 'Hold' ? 'Some skill gaps but has transferable experience.' : 'Significant gaps in required skills.'
+    recommendation: matchScore >= 70 ? 'Advance' : 'Hold'
   };
 }
 
@@ -7404,6 +7397,29 @@ function bindResumeAnalysisEvents(job) {
     }
     runBulkResumeAnalysis(pendingCids, job);
   });
+}
+
+
+function extractNameFromResumeText(text) {
+  if (!text) return null;
+  const lines = text.split(/?
+/).map(l => l.trim()).filter(Boolean);
+  
+  // Common patterns: "Name: John Doe", "JOHN DOE", first line that looks like a name
+  for (let line of lines.slice(0, 8)) {
+    // Skip obvious non-name lines
+    if (/^(resume|cv|curriculum|profile|email|phone|mobile|address|objective|summary|education|experience|skills)/i.test(line)) continue;
+    
+    // Match "Name: John Doe" or similar
+    const nameMatch = line.match(/(?:^|)(?:name|full name|candidate)s*[:：]s*([A-Z][a-z]+(?:s+[A-Z][a-z]+){1,3})/i);
+    if (nameMatch) return nameMatch[1].trim();
+    
+    // Match lines that look like proper names (2-4 words, mostly capitalized)
+    if (/^[A-Z][a-z]+(?:s+[A-Z][a-z]+){1,3}$/.test(line) && line.length < 40) {
+      return line;
+    }
+  }
+  return null;
 }
 
 async function handleResumeFile(cid, file) {
