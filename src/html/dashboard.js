@@ -1,18 +1,26 @@
 export const html = `
-<!-- Background grid elements -->
-    <div class="bg-grid"></div>
-    <div class="bg-radial"></div>
+<!-- Scene / Background -->
+    <div class="scene">
+      <canvas id="crystal-shader-canvas"></canvas>
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="orb orb-4"></div>
+    </div>
+    <div class="noise"></div>
 
     <!-- Dashboard App Grid -->
     <div class="dashboard-app">
       
       <!-- Left Sidebar Navigation -->
       <aside class="sidebar">
-        <!-- Logo -->
-        <a href="/" class="logo-area">
-          <img src="/Logo.png" alt="intervieHire Logo" class="logo-img" />
-          <span class="logo-text">intervie<span class="logo-highlight">Hire</span></span>
-        </a>
+        <!-- Sidebar Header -->
+        <div class="sidebar-header">
+          <a href="/" class="logo-area">
+            <div class="logo-mark">iH</div>
+            <span class="logo-text">Intervie<span class="logo-highlight">Hire</span></span>
+          </a>
+        </div>
 
         <!-- Navigation Menu -->
         <nav class="sidebar-nav">
@@ -70,8 +78,7 @@ export const html = `
                 </svg>
               </div>
               <ul class="sub-nav">
-                <li data-subtab="settings-password">Change Password</li>
-                <li data-subtab="settings-cookies">Cookie Settings</li>
+                <li data-subtab="settings-general">General Settings</li>
               </ul>
             </li>
           </ul>
@@ -112,6 +119,11 @@ export const html = `
         <!-- Header Bar -->
         <header class="dashboard-header">
           <div class="header-left">
+            <button id="btn-toggle-sidebar" class="sidebar-toggle" aria-label="Toggle Sidebar">
+              <svg class="icon-toggle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
             <div class="breadcrumbs">
               <span class="breadcrumb-link" id="bc-portal-link">Client Portal</span>
               <span class="breadcrumb-separator">/</span>
@@ -134,6 +146,10 @@ export const html = `
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon-sun"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
             </button>
+            <!-- Interview Settings Button -->
+            <button class="btn-theme-toggle" id="btn-interview-settings" aria-label="Interview Settings" title="Interview Settings">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
             <!-- Contextual action button -->
             <button class="btn-action" id="header-action-btn">
               <span class="btn-icon">+</span>
@@ -146,7 +162,7 @@ export const html = `
         <div class="dashboard-view-body">
           <!-- Dashboard Greeting Banner -->
           <div class="dashboard-banner-wrapper" id="dashboard-banner-wrapper">
-            <h1 class="header-heading" id="header-main-title">Good morning, Devasri 🌤️</h1>
+            <h1 class="header-heading" id="header-main-title">Good morning, Devasri</h1>
             <p class="header-subheading" id="header-sub-text">A squad of AI agents working for you</p>
           </div>
           
@@ -168,8 +184,8 @@ export const html = `
                 <button class="layout-toggle-btn active" id="btn-view-cards" title="Cards View">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
                 </button>
-                <button class="layout-toggle-btn" id="btn-view-board" title="Pipeline Kanban Board">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                <button class="layout-toggle-btn" id="btn-view-board" title="List View">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                 </button>
               </div>
 
@@ -184,8 +200,7 @@ export const html = `
 
             <!-- Jobs Cards Grid -->
             <div class="jobs-cards-grid" id="jobs-list-container">
-              <!-- Dynamically populated or static baseline cards -->
-              <!-- Will be loaded via JS for complete control -->
+              <!-- Dynamically populated via JS -->
             </div>
 
             <!-- Kanban board wrapper -->
@@ -213,6 +228,46 @@ export const html = `
           <!-- ANALYTICS VIEW (TAB 2) -->
           <!-- ===================================== -->
           <section class="dashboard-view" id="view-analytics">
+            <!-- Date Range Bar -->
+            <div class="date-range-bar">
+              <div class="date-range-wrap" id="analytics-date-range-wrap">
+                <button class="btn-date-range-trigger" id="btn-analytics-daterange">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  <span id="analytics-daterange-label">All Time</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <div class="date-range-dropdown" id="analytics-daterange-dropdown">
+                  <div class="dr-presets">
+                    <button class="dr-preset active" data-range="all">All Time</button>
+                    <button class="dr-preset" data-range="7d">Last 7 Days</button>
+                    <button class="dr-preset" data-range="30d">Last 30 Days</button>
+                    <button class="dr-preset" data-range="90d">Last 90 Days</button>
+                  </div>
+                  <div class="dr-divider"></div>
+                  <div class="dr-calendar-section">
+                    <label class="dr-label">Custom Range</label>
+                    <div class="dr-calendar-inputs">
+                      <div class="dr-cal-field">
+                        <label>From</label>
+                        <input type="date" id="date-from" class="date-input" />
+                      </div>
+                      <div class="dr-cal-field">
+                        <label>To</label>
+                        <input type="date" id="date-to" class="date-input" />
+                      </div>
+                    </div>
+                    <button class="dr-apply-btn" id="dr-apply-custom">Apply</button>
+                  </div>
+                </div>
+              </div>
+              <select class="date-range-select" id="date-range-select" style="display:none;">
+                <option value="all" selected>All Time</option>
+                <option value="7d">Last 7 Days</option>
+                <option value="30d">Last 30 Days</option>
+                <option value="90d">Last 90 Days</option>
+                <option value="custom">Custom Range</option>
+              </select>
+            </div>
             <!-- Metrics Row -->
             <div class="metrics-grid">
               <!-- Metric 1: Total Applicants -->
@@ -222,7 +277,7 @@ export const html = `
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                   </div>
                   <span class="metric-title">Total Applicants</span>
-                  <span class="metric-val" id="stat-total-applicants">4</span>
+                  <span class="metric-val" id="stat-total-applicants">20</span>
                 </div>
                 <div class="metric-pills">
                   <div class="m-pill">Career Page <span class="v">0</span></div>
@@ -433,80 +488,85 @@ export const html = `
                   </span>
                   <div class="pagination-pages">
                     <button class="btn-pag prev" disabled>Previous</button>
-              </div>
-            </section>
-
-            <!-- ===================================== -->
-            <!-- AI SWARM VIEW (TAB 2.5) -->
-            <!-- ===================================== -->
-            <section class="dashboard-view" id="view-swarm">
-              <div class="swarm-layout">
-                <!-- Agents Cards Grid -->
-                <div class="agents-status-grid">
-                  <!-- Agent Aria -->
-                  <div class="card-glass agent-card" id="agent-aria">
-                    <div class="agent-avatar-status">
-                      <div class="agent-pic">AR</div>
-                      <span class="pulse-dot green"></span>
-                    </div>
-                    <div class="agent-meta">
-                      <h3 class="agent-name">Aria</h3>
-                      <p class="agent-role-lbl">Resume Analyst Agent</p>
-                      <p class="agent-status-msg" id="aria-status">Monitoring candidate submissions...</p>
-                    </div>
-                  </div>
-                  <!-- Agent Kaelen -->
-                  <div class="card-glass agent-card" id="agent-kaelen">
-                    <div class="agent-avatar-status">
-                      <div class="agent-pic">KL</div>
-                      <span class="pulse-dot green"></span>
-                    </div>
-                    <div class="agent-meta">
-                      <h3 class="agent-name">Kaelen</h3>
-                      <p class="agent-role-lbl">Technical Vetting Specialist</p>
-                      <p class="agent-status-msg" id="kaelen-status">Generating code challenge rubrics...</p>
-                    </div>
-                  </div>
-                  <!-- Agent Lyra -->
-                  <div class="card-glass agent-card" id="agent-lyra">
-                    <div class="agent-avatar-status">
-                      <div class="agent-pic">LY</div>
-                      <span class="pulse-dot orange"></span>
-                    </div>
-                    <div class="agent-meta">
-                      <h3 class="agent-name">Lyra</h3>
-                      <p class="agent-role-lbl">HR Communications Bot</p>
-                      <p class="agent-status-msg" id="lyra-status">Idle. Waiting for candidate triggers...</p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Terminal console logs -->
-                <div class="card-glass terminal-box">
-                  <div class="terminal-header">
-                    <div class="terminal-dots">
-                      <span class="dot red"></span>
-                      <span class="dot yellow"></span>
-                      <span class="dot green"></span>
-                    </div>
-                    <span class="terminal-title">A.I. Swarm Ticker Activity Feed</span>
-                  </div>
-                  <div class="terminal-body" id="swarm-terminal-body">
-                    <div class="term-log"><code>[10:42:01] Aria:</code> System diagnostics initiated. Swarm link online.</div>
-                    <div class="term-log"><code>[10:42:15] Lyra:</code> Syncing candidate databases with email queue...</div>
-                    <div class="term-log font-gold"><code>[10:43:02] Kaelen:</code> Dispatched coding test to Candidate CAN-8234-EA1.</div>
-                  </div>
-                  <div class="terminal-input-wrap">
-                    <span class="terminal-prompt">&gt;</span>
-                    <input type="text" id="swarm-prompter" placeholder="Ask the AI Swarm to do something... (e.g. 'Aria, search for Go devs')" />
-                    <button id="btn-swarm-prompt" class="btn-term-send">Send</button>
+                    <span class="page-num">Page 1 of 1</span>
+                    <button class="btn-pag next" disabled>Next</button>
                   </div>
                 </div>
               </div>
-            </section>
+            </div>
+          </section>
 
-            <!-- ===================================== -->
-            <!-- CAREER PAGE VIEW (TAB 4) -->
+          <!-- ===================================== -->
+          <!-- AI SWARM VIEW (TAB 2.5) -->
+          <!-- ===================================== -->
+          <section class="dashboard-view" id="view-swarm">
+            <div class="swarm-layout">
+              <!-- Agents Cards Grid -->
+              <div class="agents-status-grid">
+                <!-- Agent Lina -->
+                <div class="card-glass agent-card" id="agent-aria">
+                  <div class="agent-avatar-status">
+                    <div class="agent-pic">AR</div>
+                    <span class="pulse-dot green"></span>
+                  </div>
+                  <div class="agent-meta">
+                    <h3 class="agent-name">Lina</h3>
+                    <p class="agent-role-lbl">Resume Analyst Agent</p>
+                    <p class="agent-status-msg" id="aria-status">Monitoring candidate submissions...</p>
+                  </div>
+                </div>
+                <!-- Agent Kaelen -->
+                <div class="card-glass agent-card" id="agent-kaelen">
+                  <div class="agent-avatar-status">
+                    <div class="agent-pic">KL</div>
+                    <span class="pulse-dot green"></span>
+                  </div>
+                  <div class="agent-meta">
+                    <h3 class="agent-name">Kaelen</h3>
+                    <p class="agent-role-lbl">Technical Vetting Specialist</p>
+                    <p class="agent-status-msg" id="kaelen-status">Generating code challenge rubrics...</p>
+                  </div>
+                </div>
+                <!-- Agent Lyra -->
+                <div class="card-glass agent-card" id="agent-lyra">
+                  <div class="agent-avatar-status">
+                    <div class="agent-pic">LY</div>
+                    <span class="pulse-dot orange"></span>
+                  </div>
+                  <div class="agent-meta">
+                    <h3 class="agent-name">Lyra</h3>
+                    <p class="agent-role-lbl">HR Communications Bot</p>
+                    <p class="agent-status-msg" id="lyra-status">Idle. Waiting for candidate triggers...</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Terminal console logs -->
+              <div class="card-glass terminal-box">
+                <div class="terminal-header">
+                  <div class="terminal-dots">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                  </div>
+                  <span class="terminal-title">A.I. Swarm Ticker Activity Feed</span>
+                </div>
+                <div class="terminal-body" id="swarm-terminal-body">
+                  <div class="term-log"><code>[10:42:01] Lina:</code> System diagnostics initiated. Swarm link online.</div>
+                  <div class="term-log"><code>[10:42:15] Lyra:</code> Syncing candidate databases with email queue...</div>
+                  <div class="term-log font-gold"><code>[10:43:02] Kaelen:</code> Dispatched coding test to Candidate CAN-8234-EA1.</div>
+                </div>
+                <div class="terminal-input-wrap">
+                  <span class="terminal-prompt">&gt;</span>
+                  <input type="text" id="swarm-prompter" placeholder="Ask the AI Swarm to do something... (e.g. 'Lina, search for Go devs')" />
+                  <button id="btn-swarm-prompt" class="btn-term-send">Send</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===================================== -->
+          <!-- CAREER PAGE VIEW (TAB 4) -->
           <!-- ===================================== -->
           <section class="dashboard-view" id="view-career">
             <div class="config-grid">
@@ -563,59 +623,177 @@ export const html = `
           <!-- ===================================== -->
           <!-- SETTINGS VIEWS (SUBTABS) -->
           <!-- ===================================== -->
-          <section class="dashboard-view" id="view-settings-password">
-            <div class="card-glass panel-setting max-w-md">
-              <h3 class="panel-title">Change Password</h3>
-              <p class="panel-desc">Update your client portal access security parameters.</p>
-              
-              <form class="settings-form" id="password-form">
-                <div class="form-group">
-                  <label for="old-pass">Current Password</label>
-                  <input type="password" id="old-pass" required />
+          <section class="dashboard-view" id="view-settings-general">
+            <div class="settings-unified">
+
+              <div class="settings-section">
+                <h4 class="settings-section-title">Account & Security</h4>
+                <p class="settings-section-desc">Manage your login credentials and authentication.</p>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-row-label">Email Address</span>
+                    <span class="settings-row-hint">vanshmalik6606@gmail.com</span>
+                  </div>
+                  <button class="settings-btn-action" id="btn-change-email">Change</button>
                 </div>
-                <div class="form-group">
-                  <label for="new-pass">New Password</label>
-                  <input type="password" id="new-pass" required />
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-row-label">Password</span>
+                    <span class="settings-row-hint">Last changed 30 days ago</span>
+                  </div>
+                  <button class="settings-btn-action" id="btn-change-password">Update Password</button>
                 </div>
-                <div class="form-group">
-                  <label for="confirm-pass">Confirm New Password</label>
-                  <input type="password" id="confirm-pass" required />
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-row-label">Two-Factor Authentication</span>
+                    <span class="settings-row-hint">Add an extra layer of security to your account</span>
+                  </div>
+                  <div class="settings-toggle" id="toggle-2fa"></div>
                 </div>
-                <button type="submit" class="btn-submit">Change Password</button>
-                <div id="pass-success" class="alert-success-inline"></div>
-              </form>
+              </div>
+
+              <div class="settings-section">
+                <h4 class="settings-section-title">Notifications</h4>
+                <p class="settings-section-desc">Control how and when you receive alerts.</p>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-row-label">Email Notifications</span>
+                    <span class="settings-row-hint">Get notified when candidates apply or interviews complete</span>
+                  </div>
+                  <div class="settings-toggle active" id="toggle-email-notif"></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-row-label">Sound Effects</span>
+                    <span class="settings-row-hint">Play chimes and click sounds in the dashboard</span>
+                  </div>
+                  <div class="settings-toggle active" id="toggle-sound"></div>
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <h4 class="settings-section-title">Privacy & Data</h4>
+                <p class="settings-section-desc">Manage cookies and data tracking preferences.</p>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-row-label">Essential Cookies</span>
+                    <span class="settings-row-hint">Required for session management. Cannot be disabled.</span>
+                  </div>
+                  <div class="settings-toggle active" style="opacity:0.5;pointer-events:none;"></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-row-label">Analytics Tracking</span>
+                    <span class="settings-row-hint">Usage metrics and performance data collection</span>
+                  </div>
+                  <div class="settings-toggle active" id="toggle-analytics"></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-row-label">Export My Data</span>
+                    <span class="settings-row-hint">Download a copy of all your stored data</span>
+                  </div>
+                  <button class="settings-btn-action" id="btn-export-data">Export</button>
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <h4 class="settings-section-title">Appearance</h4>
+                <p class="settings-section-desc">Customize the look and feel of your dashboard.</p>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-row-label">Dark Mode</span>
+                    <span class="settings-row-hint">Switch between light and dark themes</span>
+                  </div>
+                  <div class="settings-toggle active" id="toggle-dark-mode"></div>
+                </div>
+              </div>
+
+              <div class="settings-section" style="border-color: rgba(239,68,68,0.15);">
+                <h4 class="settings-section-title" style="color: #f87171;">Danger Zone</h4>
+                <p class="settings-section-desc">Irreversible actions. Proceed with caution.</p>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-row-label">Delete Account</span>
+                    <span class="settings-row-hint">Permanently remove your account and all data</span>
+                  </div>
+                  <button class="settings-btn-action danger" id="btn-delete-account">Delete Account</button>
+                </div>
+              </div>
+
             </div>
           </section>
 
-          <section class="dashboard-view" id="view-settings-cookies">
-            <div class="card-glass panel-setting max-w-md">
-              <h3 class="panel-title">Cookie Settings</h3>
-              <p class="panel-desc">Configure dashboard cookie performance track levels.</p>
-              
-              <form class="settings-form" id="cookies-form">
-                <div class="checkbox-group">
-                  <label class="checkbox-label">
-                    <input type="checkbox" id="cookie-essential" checked disabled />
-                    <span class="checkmark-wrap"></span>
-                    <span class="lbl-wrap">
-                      <strong class="title">Essential Cookies</strong>
-                      <span class="desc">Required for admin session tokens. Cannot be turned off.</span>
-                    </span>
-                  </label>
+          <!-- ===================================== -->
+          <!-- CREATE JOB VIEW -->
+          <!-- ===================================== -->
+          <section class="dashboard-view" id="view-create-job">
+            <div class="create-job-wrapper">
+
+              <!-- Lina Requisition Banner -->
+              <div class="aria-requisition-banner card-glass">
+                <div class="aria-banner-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                 </div>
-                <div class="checkbox-group">
-                  <label class="checkbox-label">
-                    <input type="checkbox" id="cookie-analytics" checked />
-                    <span class="checkmark-wrap"></span>
-                    <span class="lbl-wrap">
-                      <strong class="title">Analytics Tracking</strong>
-                      <span class="desc">Enables usage dashboard data metrics reporting.</span>
-                    </span>
-                  </label>
+                <div class="aria-banner-content">
+                  <div class="aria-banner-title">
+                    Lina Requisition: Create a new job by talking to Lina.
+                    <span class="aria-time-badge">10–15 Min</span>
+                  </div>
+                  <p class="aria-banner-desc">Lina captures the hiring manager's requirements and automatically creates a structured, AI-powered interview.</p>
                 </div>
-                <button type="submit" class="btn-submit">Save Cookie Policies</button>
-                <div id="cookies-success" class="alert-success-inline"></div>
-              </form>
+                <button class="btn-start-aria" id="btn-start-aria-creation">
+                  Start Creation <span style="font-size:1.1rem; margin-left:2px;">›</span>
+                </button>
+              </div>
+
+              <!-- OR Divider -->
+              <div class="create-job-or"><span>OR</span></div>
+
+              <!-- JD Upload Section -->
+              <div class="create-jd-section">
+                <div class="create-jd-header">
+                  <h3 class="create-jd-title">Create by Uploading a Job Description</h3>
+                  <a href="#" class="create-jd-no-file" id="btn-no-file-click">No file? click here</a>
+                </div>
+
+                <!-- Paste textarea (hidden by default) -->
+                <textarea id="create-jd-paste" class="create-jd-paste-area" placeholder="Paste your job description here..." style="display:none;"></textarea>
+
+                <!-- Drop zone -->
+                <div class="jd-dropzone" id="jd-dropzone">
+                  <input type="file" id="jd-file-input" accept=".pdf,.docx,.txt" style="display:none;" />
+                  <div class="dropzone-icon-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"></polyline><line x1="12" y1="12" x2="12" y2="21"></line><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path></svg>
+                  </div>
+                  <p class="dropzone-title">Drag and drop your file here</p>
+                  <p class="dropzone-sub">Supported Formats: .pdf &amp; .docx</p>
+                  <div class="dropzone-file-preview" id="dropzone-file-preview" style="display:none;"></div>
+                </div>
+
+                <div class="create-job-footer">
+                  <button class="btn-create-continue" id="btn-create-job-continue">
+                    Continue
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- ===================================== -->
+          <!-- ARIA CHAT VIEW -->
+          <!-- ===================================== -->
+          <section class="dashboard-view" id="view-aria-chat">
+            <div class="aria-chat-wrapper">
+              <div class="aria-chat-messages" id="aria-chat-messages"></div>
+              <div class="aria-chat-input-row">
+                <input type="text" id="aria-chat-input" class="aria-chat-input" placeholder="Type your response to Lina..." autocomplete="off" />
+                <button class="btn-aria-send" id="btn-aria-send">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+              </div>
             </div>
           </section>
 
@@ -627,18 +805,27 @@ export const html = `
             <!-- Sub-nav: tabs + action bar -->
             <div class="jd-subnav">
               <div class="jd-tabs">
-                <button class="jd-tab active" data-jd-tab="overview">Overview</button>
+                <button class="jd-tab active" data-jd-tab="overview">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                  Overview
+                </button>
                 <button class="jd-tab" data-jd-tab="resume">
                   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                   Resume Analysis
                 </button>
                 <button class="jd-tab" data-jd-tab="screening">
                   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
-                  Recruiter Screening <span class="jd-count-pill" id="jd-count-screening">0</span>
+                  Recruiter Screening
+                  <span class="jd-count-pill" id="jd-count-screening">0</span>
                 </button>
                 <button class="jd-tab" data-jd-tab="functional">
                   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
-                  Functional Interview <span class="jd-count-pill" id="jd-count-functional">0</span>
+                  Functional Interview
+                  <span class="jd-count-pill" id="jd-count-functional">0</span>
+                </button>
+                <button class="jd-tab" data-jd-tab="questions">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line><circle cx="12" cy="12" r="10"></circle></svg>
+                  Questions Generator
                 </button>
                 <button class="jd-tab" data-jd-tab="analysis">
                   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
@@ -655,11 +842,31 @@ export const html = `
                   Add Collaborator
                 </button>
                 <button class="btn-jd-primary">+ Add Applicants</button>
-                <button class="btn-jd-ghost">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                  Date Range
-                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </button>
+                <div class="jd-date-range-wrap" id="jd-date-range-wrap">
+                  <button class="btn-jd-ghost" id="btn-jd-daterange">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span id="jd-daterange-label">All Time</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+                  <div class="jd-daterange-dropdown" id="jd-daterange-dropdown">
+                    <div class="jd-daterange-presets">
+                      <button class="jd-dr-preset active" data-range="all">All Time</button>
+                      <button class="jd-dr-preset" data-range="7d">7 Days</button>
+                      <button class="jd-dr-preset" data-range="30d">30 Days</button>
+                      <button class="jd-dr-preset" data-range="90d">90 Days</button>
+                    </div>
+                    <div class="jd-daterange-custom">
+                      <div class="dr-cal-field">
+                        <label>From</label>
+                        <input type="date" id="jd-date-from" class="date-input" />
+                      </div>
+                      <div class="dr-cal-field">
+                        <label>To</label>
+                        <input type="date" id="jd-date-to" class="date-input" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -735,6 +942,156 @@ export const html = `
               <div class="jd-pane" id="jd-pane-functional">
                 <div class="jd-stage-candidates-list" id="list-stage-functional"></div>
               </div>
+
+              <!-- Questions Generator Pane -->
+              <div class="jd-pane" id="jd-pane-questions">
+                <div class="qg-studio">
+
+                  <aside class="qg-studio-rail">
+                    <header class="qg-rail-header">
+                      <div class="qg-rail-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"/><path d="M8 6h8"/><path d="M6 9h12"/><path d="M5 12h14"/><path d="M6 15h12"/><path d="M8 18h8"/><path d="M12 21v-3"/></svg>
+                      </div>
+                      <div class="qg-rail-heading">
+                        <h2 class="qg-rail-title">Question Studio</h2>
+                        <p class="qg-rail-desc">Tune generation, then build your interview rubric</p>
+                      </div>
+                    </header>
+
+                    <section class="qg-rail-block">
+                      <h3 class="qg-block-label">Generation settings</h3>
+                      <div class="qg-config-grid">
+                        <div class="qg-field">
+                          <label class="qg-field-label" for="cfg-num-questions">Count</label>
+                          <select id="cfg-num-questions" class="qg-field-select">
+                            <option value="3">3 questions</option>
+                            <option value="5" selected>5 questions</option>
+                            <option value="7">7 questions</option>
+                            <option value="10">10 questions</option>
+                          </select>
+                        </div>
+                        <div class="qg-field qg-field-full">
+                          <label class="qg-field-label">Focus</label>
+                          <div class="qg-pill-group" data-target="cfg-question-types">
+                            <button type="button" class="qg-pill active" data-val="mixed">Mixed</button>
+                            <button type="button" class="qg-pill" data-val="technical">Technical</button>
+                            <button type="button" class="qg-pill" data-val="behavioral">Behavioral</button>
+                            <button type="button" class="qg-pill" data-val="situational">Situational</button>
+                          </div>
+                          <select id="cfg-question-types" class="qg-field-select" hidden>
+                            <option value="mixed" selected>Mixed types</option>
+                            <option value="technical">Technical</option>
+                            <option value="behavioral">Behavioral</option>
+                            <option value="situational">Situational</option>
+                          </select>
+                        </div>
+                        <div class="qg-field qg-field-full">
+                          <label class="qg-field-label">Difficulty</label>
+                          <div class="qg-pill-group" data-target="cfg-difficulty">
+                            <button type="button" class="qg-pill active" data-val="mixed">Mixed</button>
+                            <button type="button" class="qg-pill" data-val="beginner">Beginner</button>
+                            <button type="button" class="qg-pill" data-val="intermediate">Intermediate</button>
+                            <button type="button" class="qg-pill" data-val="advanced">Advanced</button>
+                          </div>
+                          <select id="cfg-difficulty" class="qg-field-select" hidden>
+                            <option value="mixed" selected>Mixed levels</option>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                          </select>
+                        </div>
+                        <div class="qg-field">
+                          <label class="qg-field-label" for="cfg-duration">Interview length</label>
+                          <select id="cfg-duration" class="qg-field-select">
+                            <option value="15">15 minutes</option>
+                            <option value="30" selected>30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60">60 minutes</option>
+                          </select>
+                        </div>
+                        <div class="qg-field qg-field-full">
+                          <label class="qg-field-label" for="cfg-followups">Follow-ups per question</label>
+                          <select id="cfg-followups" class="qg-field-select">
+                            <option value="0">None</option>
+                            <option value="2" selected>2 follow-ups</option>
+                            <option value="3">3 follow-ups</option>
+                          </select>
+                        </div>
+                      </div>
+                      <button type="button" class="btn-qg-generate" id="btn-generate-questions">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <span class="btn-text">Generate questions</span>
+                      </button>
+                    </section>
+
+                    <section class="qg-rail-block qg-jd-block">
+                      <button type="button" class="qg-jd-head" id="btn-toggle-jd" aria-expanded="true" aria-controls="qg-jd-details">
+                        <span class="qg-jd-head-left">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                          Job description
+                        </span>
+                        <svg class="qg-jd-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                      </button>
+                      <div class="qg-jd-details open" id="qg-jd-details">
+                        <div class="qg-jd-hint-row" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
+                          <p class="qg-jd-hint" style="margin: 0; font-size: 0.72rem; line-height: 1.35; color: var(--color-text-muted);">Role context the AI uses to draft targeted questions and rubrics.</p>
+                          <button type="button" class="btn-qg-secondary" id="btn-upload-qg-jd" style="padding: 3px 8px; font-size: 0.65rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--color-text-muted); cursor: pointer; transition: all 0.15s ease; white-space: nowrap;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            Upload File
+                          </button>
+                          <input type="file" id="qg-jd-file-input" accept=".txt,.pdf,.docx" style="display: none;" />
+                        </div>
+                        <textarea id="jd-raw-description" rows="6" placeholder="Paste responsibilities, required skills, experience level, and competencies to assess..."></textarea>
+                      </div>
+                    </section>
+                  </aside>
+
+                  <div class="qg-studio-main">
+                    <header class="qg-main-header">
+                      <div class="qg-main-heading">
+                        <h3 class="qg-main-title">Interview rubric</h3>
+                        <p class="qg-main-subtitle">Questions, scoring notes, and follow-ups for this role <span class="qg-auto-hint">· edits save instantly</span></p>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" class="btn-jd-ghost btn-sm" id="btn-toggle-all-rubrics" style="padding: 3px 8px; font-size: 0.65rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--color-text-muted); cursor: pointer; transition: all 0.15s ease; white-space: nowrap;">
+                          Collapse All
+                        </button>
+                        <span class="qg-count-chip" id="questions-count-badge">0 questions</span>
+                      </div>
+                    </header>
+
+                    <div class="qg-staging" id="jd-staging-area" hidden>
+                      <div class="qg-staging-head">
+                        <div class="qg-staging-label">
+                          <span class="qg-staging-dot" aria-hidden="true"></span>
+                          <span class="staging-title">Review generated batch</span>
+                        </div>
+                        <div class="staging-actions">
+                          <button type="button" class="btn-jd-ghost btn-sm" id="btn-staging-replace">Replace list</button>
+                          <button type="button" class="btn-jd-primary btn-sm" id="btn-staging-append">Append to rubric</button>
+                          <button type="button" class="btn-close-staging" id="btn-close-staging" aria-label="Dismiss review">&times;</button>
+                        </div>
+                      </div>
+                      <div class="staging-list" id="staging-questions-list"></div>
+                    </div>
+
+                    <div class="qg-questions-scroll" id="list-questions"></div>
+
+                    <footer class="qg-composer">
+                      <label class="qg-composer-label" for="input-custom-question">Add a custom question</label>
+                      <div class="qg-composer-row">
+                        <textarea id="input-custom-question" rows="2" placeholder="Draft a question (e.g. How do you prioritize incidents during an on-call rotation?)"></textarea>
+                        <div class="qg-composer-actions">
+                          <button type="button" class="btn-qg-secondary" id="btn-add-question-raw">Add as-is</button>
+                          <button type="button" class="btn-qg-generate btn-qg-generate--compact" id="btn-enhance-custom">Enhance with AI</button>
+                        </div>
+                      </div>
+                    </footer>
+                  </div>
+
+                </div>
+              </div>
+
               <div class="jd-pane" id="jd-pane-analysis">
                 <div id="list-stage-analysis"></div>
               </div>
@@ -742,6 +1099,16 @@ export const html = `
             </div><!-- /jd-panes -->
 
           </section><!-- /view-job-detail -->
+
+          <!-- ===================================== -->
+          <!-- JOB FLOW PIPELINE VIEW -->
+          <!-- ===================================== -->
+          <section class="dashboard-view" id="view-job-flow">
+            <div class="jf-layout">
+              <div class="jf-pipeline-panel" id="jf-pipeline-panel"></div>
+              <div class="jf-config-panel" id="jf-config-panel"></div>
+            </div>
+          </section>
 
           <!-- ===================================== -->
           <!-- SOURCING & MASS ADD APPLICANTS VIEW -->
@@ -787,24 +1154,30 @@ export const html = `
               <button class="sourcing-tab-card active" id="card-src-csv" data-sourcing-tab="csv">
                 <span class="selection-dot"></span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="card-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                <span class="card-title">Upload Sheet (CSV)</span>
-                <span class="card-desc">Import candidates from a spreadsheet</span>
+                <div class="sourcing-card-text">
+                  <span class="card-title">Upload Sheet (CSV)</span>
+                  <span class="card-desc">Import candidates from a spreadsheet</span>
+                </div>
               </button>
 
               <!-- Upload Resumes -->
               <button class="sourcing-tab-card" id="card-src-resumes" data-sourcing-tab="resumes">
                 <span class="selection-dot"></span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="card-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 18v-6M9 15l3-3 3 3"/></svg>
-                <span class="card-title">Upload Resumes</span>
-                <span class="card-desc">Upload single or multiple resumes as file</span>
+                <div class="sourcing-card-text">
+                  <span class="card-title">Upload Resumes</span>
+                  <span class="card-desc">Upload single or multiple resumes</span>
+                </div>
               </button>
 
               <!-- Add Manually -->
               <button class="sourcing-tab-card" id="card-src-manual" data-sourcing-tab="manual">
                 <span class="selection-dot"></span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="card-icon"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
-                <span class="card-title">Add Manually</span>
-                <span class="card-desc">Enter candidate details manually</span>
+                <div class="sourcing-card-text">
+                  <span class="card-title">Add Manually</span>
+                  <span class="card-desc">Enter candidate details manually</span>
+                </div>
               </button>
 
               <!-- Connect ATS -->
@@ -813,8 +1186,10 @@ export const html = `
                   <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                 </span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="card-icon"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-                <span class="card-title">Connect ATS</span>
-                <span class="card-desc">Import applicants from your ATS</span>
+                <div class="sourcing-card-text">
+                  <span class="card-title">Connect ATS</span>
+                  <span class="card-desc">Import from your ATS</span>
+                </div>
               </button>
             </div>
 
@@ -970,6 +1345,36 @@ export const html = `
       <!-- ===================================== -->
       <!-- SLIDE-OUT DRAWERS (FORM SECTIONS) -->
       <!-- ===================================== -->
+      <!-- Modal: Edit Job Name -->
+      <div class="modal-overlay" id="modal-edit-job" style="display: none;">
+        <div class="modal-box">
+          <div class="modal-header">
+            <h2 class="modal-title">Edit Job Name</h2>
+            <button class="modal-close-btn" id="modal-edit-job-close" aria-label="Close">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="modal-field">
+              <label class="modal-label">Job Name <span class="modal-required">*</span></label>
+              <input type="text" id="modal-edit-job-name" class="modal-input" placeholder="Enter job name" />
+            </div>
+            <div class="modal-field">
+              <label class="modal-label">Job Id <span class="modal-optional">(optional)</span></label>
+              <input type="text" id="modal-edit-job-id" class="modal-input" placeholder="e.g. 49298af015c842336b57a62a1" />
+            </div>
+            <div class="modal-field">
+              <label class="modal-label">Tags <span class="modal-optional">(optional)</span></label>
+              <div class="modal-tags-wrap">
+                <div class="modal-tags-list" id="modal-edit-tags-list"></div>
+                <input type="text" id="modal-edit-tags-input" class="modal-input" placeholder="Type and press Enter or comma" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="modal-save-btn" id="modal-edit-job-save">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
       <div class="drawer-overlay" id="drawer-backdrop"></div>
 
       <!-- Drawer: Job Creator -->
@@ -1006,6 +1411,10 @@ export const html = `
               <input type="text" id="job-creator-input" value="Devasri" readonly />
             </div>
             <div class="form-group">
+              <label for="job-description-input">Job Description</label>
+              <textarea id="job-description-input" placeholder="Enter detailed job description, responsibilities, and required skills..." rows="4"></textarea>
+            </div>
+            <div class="form-group">
               <label>Initial Pipeline Statuses</label>
               <div class="pipeline-checkbox-list">
                 <label class="pipeline-check-item">
@@ -1022,8 +1431,72 @@ export const html = `
                 </label>
               </div>
             </div>
+            <div class="form-group">
+              <label>Interview Configuration</label>
+              <div class="drawer-interview-config">
+                <div class="drawer-config-item">
+                  <span>Number of Questions</span>
+                  <select id="drawer-cfg-num-q">
+                    <option value="3">3</option>
+                    <option value="5" selected>5</option>
+                    <option value="7">7</option>
+                    <option value="10">10</option>
+                  </select>
+                </div>
+                <div class="drawer-config-item">
+                  <span>Question Types</span>
+                  <select id="drawer-cfg-types">
+                    <option value="mixed" selected>Mixed</option>
+                    <option value="technical">Technical</option>
+                    <option value="behavioral">Behavioral</option>
+                    <option value="situational">Situational</option>
+                  </select>
+                </div>
+                <div class="drawer-config-item">
+                  <span>Difficulty</span>
+                  <select id="drawer-cfg-diff">
+                    <option value="mixed" selected>Mixed</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </select>
+                </div>
+                <div class="drawer-config-item">
+                  <span>Interview Duration</span>
+                  <select id="drawer-cfg-duration">
+                    <option value="15">15 min</option>
+                    <option value="30" selected>30 min</option>
+                    <option value="45">45 min</option>
+                    <option value="60">60 min</option>
+                  </select>
+                </div>
+              </div>
+            </div>
             <button type="submit" class="btn-drawer-submit">Create Job Card</button>
           </form>
+        </div>
+      </div>
+
+      <!-- Drawer: Job Description View/Edit -->
+      <div class="slide-drawer" id="drawer-view-jd">
+        <div class="drawer-header">
+          <h2 class="drawer-title">Job Description</h2>
+          <button class="btn-close-drawer" id="btn-close-drawer-view-jd" aria-label="Close panel">×</button>
+        </div>
+        <div class="drawer-body">
+          <div class="jd-viewer-container" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="form-group" style="flex-grow: 1; display: flex; flex-direction: column;">
+              <label for="drawer-jd-text">Edit detailed requirements and skills for this role:</label>
+              <textarea id="drawer-jd-text" style="flex-grow: 1; min-height: 250px; max-height: 450px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; padding: 12px; color: var(--color-text-primary); font-family: var(--font-body); font-size: 0.88rem; line-height: 1.5; outline: none;"></textarea>
+            </div>
+            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+              <button class="btn-drawer-submit" id="btn-save-drawer-jd">Save Description</button>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-enhance-drawer-jd" style="flex:1; padding: 9px 12px; background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.3); border-radius: 8px; color: var(--color-gold); font-size: 0.82rem; font-family: var(--font-body); cursor: pointer; transition: var(--spring-fast);">✨ Enhance with AI</button>
+                <button id="btn-generate-from-drawer-jd" style="flex:1; padding: 9px 12px; background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.3); border-radius: 8px; color: var(--color-indigo, #6366f1); font-size: 0.82rem; font-family: var(--font-body); cursor: pointer; transition: var(--spring-fast);">📋 Generate Questions</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1121,9 +1594,9 @@ export const html = `
             </div>
 
             <div class="report-tabs">
-              <button class="report-tab-btn active" data-report-tab="score">Score</button>
-              <button class="report-tab-btn" data-report-tab="transcript">Transcription & Audio</button>
-              <button class="report-tab-btn" data-report-tab="caveats">Scores & Caveats</button>
+              <button class="report-tab-btn active" data-report-tab="score">Stage Summary</button>
+              <button class="report-tab-btn" data-report-tab="transcript">Transcript</button>
+              <button class="report-tab-btn" data-report-tab="caveats">Evidence</button>
               <button class="report-tab-btn" data-report-tab="actions">Notes & Actions</button>
             </div>
 
@@ -1150,7 +1623,7 @@ export const html = `
                 </div>
               </div>
 
-              <!-- Transcription & Audio tab -->
+              <!-- Transcript tab -->
               <div class="report-tab-content" id="rep-tab-transcript">
                 <div class="waveform-box">
                   <h4 class="waveform-title">Interview Audio Recording</h4>
@@ -1164,12 +1637,12 @@ export const html = `
                   </div>
                 </div>
                 <div class="report-transcript-body" id="report-transcript-body">
-                  <span class="transcript-label">AI Interview Transcript:</span>
+                  <span class="transcript-label">Recorded Transcript:</span>
                   <div class="transcript-chat-flow" id="report-transcript-flow"></div>
                 </div>
               </div>
 
-              <!-- Scores & Caveats tab -->
+              <!-- Evidence tab -->
               <div class="report-tab-content" id="rep-tab-caveats">
                 <div class="report-caveats-body" id="report-caveats-body"></div>
               </div>
@@ -1212,6 +1685,42 @@ export const html = `
         </div>
       </div>
 
+      <!-- Modal: AI Question Enhancer -->
+      <div class="modal-overlay" id="enhance-modal" style="display: none;">
+        <div class="modal-card card-glass">
+          <div class="modal-header">
+            <h3 class="modal-title">✨ AI Question Enhancer</h3>
+            <button class="btn-close-modal" id="btn-close-enhance-modal" aria-label="Close modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="comparison-grid">
+              <div class="comp-col">
+                <label class="comp-label">Original Draft</label>
+                <div class="comp-box-original" id="modal-original-text"></div>
+              </div>
+              <div class="comp-col">
+                <label class="comp-label">Enhanced Question Text</label>
+                <textarea id="modal-enhanced-text" class="input-glass" style="height: 120px; width: 100%; border-radius: 8px; border: 1px solid var(--glass-border); padding: 10px; color: var(--color-text-primary); background: rgba(0,0,0,0.2); font-family: var(--font-body);"></textarea>
+              </div>
+            </div>
+            <div class="form-group-modal" style="margin-top: 16px;">
+              <label class="comp-label">Suggested Evaluation Rubric</label>
+              <textarea id="modal-rubric-text" class="input-glass" style="height: 80px; width: 100%; border-radius: 8px; border: 1px solid var(--glass-border); padding: 10px; color: var(--color-text-primary); background: rgba(0,0,0,0.2); font-family: var(--font-body);"></textarea>
+            </div>
+            <div class="form-group-modal" style="margin-top: 16px;">
+              <label class="comp-label">Suggested Follow-Up Questions</label>
+              <div class="follow-ups-list" id="modal-follow-ups" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                <!-- Dynamically populated list of inputs -->
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+            <button class="btn-jd-ghost" id="btn-cancel-enhance">Discard</button>
+            <button class="btn-jd-primary" id="btn-accept-enhance">Accept & Add to Rubric</button>
+          </div>
+        </div>
+      </div>
+
       <!-- CMD+K Spotlight Command Bar -->
       <div class="spotlight-overlay" id="spotlight-modal">
         <div class="spotlight-box card-glass">
@@ -1228,6 +1737,103 @@ export const html = `
         </div>
       </div>
 
+    </div>
+
+    <!-- Interview Settings Modal -->
+    <div class="iset-overlay" id="interview-settings-overlay">
+      <div class="iset-modal">
+        <div class="iset-header">
+          <h3 class="iset-title">Interview Settings</h3>
+          <button class="iset-close" id="btn-close-iset">&times;</button>
+        </div>
+        <div class="iset-body">
+          <div class="iset-row">
+            <div class="iset-row-left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><polyline points="9 11 12 14 22 4"/></svg>
+              <div class="iset-row-info">
+                <span class="iset-label">Interview status</span>
+                <span class="iset-hint">Enable or disable the interview</span>
+              </div>
+            </div>
+            <div class="settings-toggle active" id="iset-toggle-status"></div>
+          </div>
+          <div class="iset-row">
+            <div class="iset-row-left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              <div class="iset-row-info">
+                <span class="iset-label">Allow access on mobile</span>
+                <span class="iset-hint">We recommend using desktop for better experience</span>
+              </div>
+            </div>
+            <div class="settings-toggle" id="iset-toggle-mobile"></div>
+          </div>
+          <div class="iset-row">
+            <div class="iset-row-left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <div class="iset-row-info">
+                <span class="iset-label">Allow late attempts</span>
+                <span class="iset-hint">Enables candidates to attempt after the scheduled time</span>
+              </div>
+            </div>
+            <div class="settings-toggle" id="iset-toggle-late"></div>
+          </div>
+          <div class="iset-row">
+            <div class="iset-row-left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 10 20 15 15 20"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg>
+              <div class="iset-row-info">
+                <span class="iset-label">Continue from middle</span>
+                <span class="iset-hint">Candidates can resume from where they left off</span>
+              </div>
+            </div>
+            <div class="settings-toggle active" id="iset-toggle-continue"></div>
+          </div>
+          <div class="iset-row">
+            <div class="iset-row-left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              <div class="iset-row-info">
+                <span class="iset-label">Allow reattempt</span>
+                <span class="iset-hint">Enable candidates to reattempt the interview</span>
+              </div>
+            </div>
+            <div class="settings-toggle" id="iset-toggle-reattempt"></div>
+          </div>
+          <div class="iset-row">
+            <div class="iset-row-left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <div class="iset-row-info">
+                <span class="iset-label">Request candidate's CV</span>
+              </div>
+            </div>
+            <div class="settings-toggle active" id="iset-toggle-cv"></div>
+          </div>
+          <div class="iset-row">
+            <div class="iset-row-left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <div class="iset-row-info">
+                <span class="iset-label">Anti-Cheat Proctoring</span>
+                <span class="iset-hint">Monitor candidates for suspicious behavior</span>
+              </div>
+            </div>
+            <div class="settings-toggle active" id="iset-toggle-proctor"></div>
+          </div>
+          <div class="iset-row">
+            <div class="iset-row-left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <div class="iset-row-info">
+                <span class="iset-label">Allow interview access to</span>
+              </div>
+            </div>
+            <select class="iset-select" id="iset-access">
+              <option value="link" selected>Anyone with the link</option>
+              <option value="invited">Invited candidates only</option>
+              <option value="scheduled">Scheduled candidates only</option>
+            </select>
+          </div>
+        </div>
+        <div class="iset-footer">
+          <button class="btn-jd-primary" id="btn-save-iset" style="width:100%;">Save Settings</button>
+        </div>
+      </div>
     </div>
 
     <!-- Scripts -->
