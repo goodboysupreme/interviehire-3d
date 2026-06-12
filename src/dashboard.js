@@ -7402,8 +7402,7 @@ function bindResumeAnalysisEvents(job) {
 
 function extractNameFromResumeText(text) {
   if (!text) return null;
-  const lines = text.split(/?
-/).map(l => l.trim()).filter(Boolean);
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   
   // Common patterns: "Name: John Doe", "JOHN DOE", first line that looks like a name
   for (let line of lines.slice(0, 8)) {
@@ -7411,17 +7410,16 @@ function extractNameFromResumeText(text) {
     if (/^(resume|cv|curriculum|profile|email|phone|mobile|address|objective|summary|education|experience|skills)/i.test(line)) continue;
     
     // Match "Name: John Doe" or similar
-    const nameMatch = line.match(/(?:^|)(?:name|full name|candidate)s*[:：]s*([A-Z][a-z]+(?:s+[A-Z][a-z]+){1,3})/i);
+    const nameMatch = line.match(/(?:^|\b)(?:name|full name|candidate)\s*[::]\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})/i);
     if (nameMatch) return nameMatch[1].trim();
     
     // Match lines that look like proper names (2-4 words, mostly capitalized)
-    if (/^[A-Z][a-z]+(?:s+[A-Z][a-z]+){1,3}$/.test(line) && line.length < 40) {
+    if (/^[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3}$/.test(line) && line.length < 40) {
       return line;
     }
   }
   return null;
 }
-
 async function handleResumeFile(cid, file) {
   const isPdfOrDocx = /\.(pdf|docx?)$/i.test(file.name);
 
