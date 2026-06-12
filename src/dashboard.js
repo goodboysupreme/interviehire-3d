@@ -2698,6 +2698,195 @@ function openCandidateReport(candidateId) {
   soundEngine.playChime([392.00, 523.25, 659.25], 0.15, 0.08);
 }
 
+function getCandidateNextStage(status) {
+  if (status === 'Resume') return 'Screening';
+  if (status === 'Screening') return 'Functional';
+  if (status === 'Functional') return 'Hired';
+  return null;
+}
+
+function getCandidateStageRank(status) {
+  const ranks = { Resume: 0, Screening: 1, Functional: 2, Hired: 3 };
+  return ranks[status] ?? 0;
+}
+
+function getReportStageRows(candidate, aiResult) {
+  const rank = getCandidateStageRank(candidate.status);
+  return [
+    {
+      label: 'Resume Analysis',
+      state: aiResult ? 'complete' : 'current',
+      badge: aiResult ? `${aiResult.matchScore || 0}%` : 'Pending',
+      note: aiResult ? (aiResult.recommendationReason || aiResult.summary || 'Resume analysed against the job criteria.') : 'Upload or paste a resume to generate the first evidence-backed decision.'
+    },
+    {
+      label: 'Screening Interview',
+      state: rank >= 2 ? 'complete' : rank === 1 ? 'current' : 'locked',
+      badge: rank >= 2 ? 'Passed' : rank === 1 ? 'Current' : 'Locked',
+      note: rank >= 2 ? 'Candidate has passed screening. No transcript artifact is attached yet.' : rank === 1 ? 'Candidate is in screening. Transcript appears only after real interview data is recorded.' : 'Available after resume screening is passed.'
+    },
+    {
+      label: 'Functional Assessment',
+      state: rank >= 3 ? 'complete' : rank === 2 ? 'current' : 'locked',
+      badge: rank >= 3 ? 'Passed' : rank === 2 ? 'Current' : 'Locked',
+      note: rank >= 3 ? 'Candidate has cleared functional evaluation. Detailed artifact is not attached yet.' : rank === 2 ? 'Candidate is in functional evaluation. Results appear once recorded.' : 'Available after screening is passed.'
+    },
+    {
+      label: 'Hiring Decision',
+      state: candidate.status === 'Hired' ? 'complete' : 'locked',
+      badge: candidate.status === 'Hired' ? 'Hired' : 'Locked',
+      note: candidate.status === 'Hired' ? 'Candidate has been marked as hired.' : 'Available after functional evaluation is passed.'
+    }
+  ];
+}
+
+function renderReportEmptyState(title, copy) {
+  return `
+    <div class="report-empty-state">
+      <span class="report-empty-kicker">No invented data</span>
+      <h4>${escapeHTML(title)}</h4>
+      <p>${escapeHTML(copy)}</p>
+    </div>
+  `;
+}
+
+function normalizeAnalysisList(items) {
+  if (!Array.isArray(items)) return [];
+  return items.filter(Boolean).map(item => String(item).trim()).filter(Boolean);
+}
+
+function renderReportTagList(label, items, cls = '') {
+  const list = normalizeAnalysisList(items);
+  if (!list.length) return '';
+  return `
+    <div class="resume-evidence-card">
+      <span class="resume-evidence-label">${escapeHTML(label)}</span>
+      <div class="resume-evidence-tags">
+        ${list.map(item => `<span class="resume-evidence-tag ${cls}">${escapeHTML(item)}</span>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderStageEvidenceTimeline(candidate, aiResult) {
+  return `
+    <div class="stage-evidence-timeline">
+      ${getReportStageRows(candidate, aiResult).map((stage, index) => `
+        <div class="stage-evidence-step ${stage.state}">
+          <div class="stage-evidence-index">${index + 1}</div>
+          <div class="stage-evidence-copy">
+            <div class="stage-evidence-title-row">
+              <strong>${escapeHTML(stage.label)}</strong>
+              <span class="stage-evidence-badge">${escapeHTML(stage.badge)}</span>
+            </div>
+            <p>${escapeHTML(stage.note)}</p>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderResumeScorecardRows(aiResult) {
+  if (!aiResult || !aiResult.scorecard) return '';
+  const rubrics = [
+    { label: 'Technical Skills', score: aiResult.scorecard.technical },
+    { label: 'Experience', score: aiResult.scorecard.experience },
+    { label: 'Communication', score: aiResult.scorecard.communication },
+    { label: 'Culture Fit', score: aiResult.scorecard.cultureFit },
+  ];
+  return `
+    <div class="resume-scorecard-panel">
+      <span class="section-sub-title">Resume Scorecard</span>
+      ${rubrics.map(r => {
+        const score = Number.isFinite(Number(r.score)) ? Number(r.score) : 0;
+        return `
+          <div class="rubric-item">
+            <div class="rubric-meta"><span>${escapeHTML(r.label)}</span><strong class="val">${score.toFixed(1)} / 10</strong></div>
+            <div class="bar-outer"><div class="bar-inner" style="width: ${Math.max(0, Math.min(100, score * 10))}%;"></div></div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderResumeAnalysisSummary(candidate, aiResult) {
+  if (!aiResult) {
+    return renderReportEmptyState('Resume analysis pending', 'Only resume analysis results will appear here after a real resume is uploaded or pasted.');
+  }
+  const recClass = aiResult.recommendation === 'Advance' ? 'high' : aiResult.recommendation === 'Hold' ? 'medium' : 'low';
+  return `
+    <div class="resume-evidence-hero">
+      <div>
+        <span class="report-section-kicker">Resume-only result</span>
+        <h4>${escapeHTML(candidate.name)} against ${escapeHTML(candidate.jobApplied || 'the selected role')}</h4>
+        <p>${escapeHTML(aiResult.summary || 'Resume analysed against the configured job criteria.')}</p>
+      </div>
+      <div class="resume-evidence-score">
+        <strong>${escapeHTML(String(aiResult.matchScore || 0))}%</strong>
+        <span class="ra-rec-badge ${recClass}">${escapeHTML(aiResult.recommendation || 'Hold')}</span>
+      </div>
+    </div>
+    <div class="resume-evidence-grid">
+      <div class="resume-evidence-card">
+        <span class="resume-evidence-label">Decision Reason</span>
+        <p>${escapeHTML(aiResult.recommendationReason || 'No decision reason returned.')}</p>
+      </div>
+      <div class="resume-evidence-card">
+        <span class="resume-evidence-label">Experience</span>
+        <p>${escapeHTML(aiResult.experienceYears || 'Not stated in resume')}</p>
+      </div>
+      ${renderReportTagList('Matched Criteria', aiResult.skills?.matched, 'matched')}
+      ${renderReportTagList('Missing Criteria', aiResult.skills?.missing, 'missing')}
+      ${renderReportTagList('Other Resume Skills', aiResult.skills?.detected, 'detected')}
+      ${renderReportTagList('Red Flags Found', aiResult.redFlagsDetected, 'warning')}
+    </div>
+    ${renderResumeScorecardRows(aiResult)}
+  `;
+}
+
+function getCandidateTranscriptLines(candidate) {
+  const raw = candidate.screeningTranscript || candidate.interviewTranscript || candidate.transcript;
+  if (Array.isArray(raw)) return raw.filter(line => line && (line.text || typeof line === 'string'));
+  if (typeof raw === 'string' && raw.trim()) {
+    return raw.split('\n').map(line => ({ speaker: 'Transcript', text: line.trim() })).filter(line => line.text);
+  }
+  return [];
+}
+
+function renderTranscriptEvidence(candidate) {
+  const lines = getCandidateTranscriptLines(candidate);
+  if (!lines.length) {
+    const copy = candidate.status === 'Resume'
+      ? 'This candidate has only resume-stage evidence right now. Screening transcript will appear after interview data is recorded.'
+      : 'This candidate has reached a later stage, but no real transcript artifact is attached yet.';
+    return renderReportEmptyState('No transcript recorded', copy);
+  }
+  return lines.map(line => {
+    const speaker = typeof line === 'string' ? 'Transcript' : (line.speaker || 'Transcript');
+    const text = typeof line === 'string' ? line : line.text;
+    return `
+      <div class="transcript-chat-line chat-speaker-${escapeHTML(String(speaker).toLowerCase().replace(/[^a-z0-9-]/g, ''))}">
+        <span class="chat-speaker-badge">${escapeHTML(speaker)}:</span>
+        <span class="chat-text-bubble">${escapeHTML(text)}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderReportEvidencePane(candidate, aiResult) {
+  if (!aiResult) {
+    return renderReportEmptyState('No resume evidence yet', 'Upload or paste a resume first. Later-stage evidence stays hidden until that stage has real recorded data.');
+  }
+  return `
+    ${renderResumeAnalysisSummary(candidate, aiResult)}
+    <div class="report-stage-note">
+      Screening and functional evidence will be added here only after those stages record real results.
+    </div>
+  `;
+}
+
 function openReportDrawerForCandidate(candidateId) {
   const candidate = AppState.candidates.find(c => c.id === candidateId);
   if (!candidate) return;
@@ -2710,107 +2899,36 @@ function openReportDrawerForCandidate(candidateId) {
   document.getElementById('report-avatar').textContent = initials;
 
   const aiResult = resumeAnalysisCache[candidateId];
-  const numericScore = aiResult ? aiResult.matchScore : (parseFloat(candidate.score) || 0);
-
-  const rubrics = aiResult && aiResult.scorecard
-    ? [
-        { label: 'Technical Skills', score: aiResult.scorecard.technical?.toFixed(1) || '0.0' },
-        { label: 'Experience', score: aiResult.scorecard.experience?.toFixed(1) || '0.0' },
-        { label: 'Communication', score: aiResult.scorecard.communication?.toFixed(1) || '0.0' },
-        { label: 'Culture Fit', score: aiResult.scorecard.cultureFit?.toFixed(1) || '0.0' },
-      ]
-    : [
-        { label: 'Technical Skills', score: '—' },
-        { label: 'Experience', score: '—' },
-        { label: 'Communication', score: '—' },
-        { label: 'Culture Fit', score: '—' },
-      ];
+  const nextStage = getCandidateNextStage(candidate.status);
 
   const rubricListEl = document.getElementById('report-rubric-list');
   if (rubricListEl) {
-    rubricListEl.innerHTML = rubrics.map(r => {
-      const val = parseFloat(r.score) || 0;
-      return `
-        <div class="rubric-item">
-          <div class="rubric-meta"><span>${r.label}</span><strong class="val">${r.score}${r.score !== '—' ? ' / 10' : ''}</strong></div>
-          <div class="bar-outer"><div class="bar-inner" style="width: ${val * 10}%;"></div></div>
-        </div>
-      `;
-    }).join('');
+    rubricListEl.innerHTML = `
+      ${renderStageEvidenceTimeline(candidate, aiResult)}
+      ${renderResumeAnalysisSummary(candidate, aiResult)}
+    `;
   }
-
-  const vetting = getCandidateVettingDetails(candidateId, candidate.name);
 
   const transcriptFlow = document.getElementById('report-transcript-flow');
   if (transcriptFlow) {
-    if (aiResult && aiResult.summary) {
-      transcriptFlow.innerHTML = `
-        <div class="ra-ai-summary-block">
-          <div class="ra-ai-summary-header">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            AI Resume Analysis
-          </div>
-          <p class="ra-ai-summary-text">${aiResult.summary}</p>
-          ${aiResult.recommendation ? `<div class="ra-ai-rec-line"><strong>Recommendation:</strong> <span class="ra-rec-badge ${aiResult.recommendation === 'Advance' ? 'high' : aiResult.recommendation === 'Hold' ? 'medium' : 'low'}">${aiResult.recommendation}</span> ${aiResult.recommendationReason || ''}</div>` : ''}
-          ${aiResult.experienceYears ? `<div class="ra-ai-detail-line"><strong>Experience:</strong> ${aiResult.experienceYears}</div>` : ''}
-          ${aiResult.skills ? `
-            <div class="ra-skills-grid">
-              ${aiResult.skills.matched?.length ? `<div class="ra-skill-group matched"><span class="ra-skill-label">Matched Skills</span><div class="ra-skill-tags">${aiResult.skills.matched.map(s => `<span class="ra-skill-tag matched">${s}</span>`).join('')}</div></div>` : ''}
-              ${aiResult.skills.missing?.length ? `<div class="ra-skill-group missing"><span class="ra-skill-label">Missing Skills</span><div class="ra-skill-tags">${aiResult.skills.missing.map(s => `<span class="ra-skill-tag missing">${s}</span>`).join('')}</div></div>` : ''}
-              ${aiResult.skills.detected?.length ? `<div class="ra-skill-group detected"><span class="ra-skill-label">Other Skills</span><div class="ra-skill-tags">${aiResult.skills.detected.filter(s => !aiResult.skills.matched?.includes(s)).slice(0, 8).map(s => `<span class="ra-skill-tag">${s}</span>`).join('')}</div></div>` : ''}
-            </div>
-          ` : ''}
-        </div>
-      ` + vetting.transcript.map(line => `
-        <div class="transcript-chat-line chat-speaker-${line.speaker.toLowerCase()}">
-          <span class="chat-speaker-badge">${line.speaker}:</span>
-          <span class="chat-text-bubble">${line.text}</span>
-        </div>
-      `).join('');
-    } else {
-      transcriptFlow.innerHTML = vetting.transcript.map(line => `
-        <div class="transcript-chat-line chat-speaker-${line.speaker.toLowerCase()}">
-          <span class="chat-speaker-badge">${line.speaker}:</span>
-          <span class="chat-text-bubble">${line.text}</span>
-        </div>
-      `).join('');
-    }
+    transcriptFlow.innerHTML = renderTranscriptEvidence(candidate);
   }
+  const waveformBox = document.querySelector('#rep-tab-transcript .waveform-box');
+  if (waveformBox) waveformBox.style.display = getCandidateTranscriptLines(candidate).length ? '' : 'none';
 
   const caveatsBody = document.getElementById('report-caveats-body');
   if (caveatsBody) {
-    const rubricRows = (aiResult && aiResult.scorecard ? rubrics : vetting.rubrics).map(r => {
-      const val = parseFloat(r.score) || 0;
-      return `
-        <div class="rubric-row">
-          <span class="rubric-lbl">${r.label}</span>
-          <div class="rubric-bar-track"><div class="rubric-bar-fill indigo" style="width: ${val * 10}%"></div></div>
-          <span class="rubric-val">${r.score !== '—' ? r.score + '/10' : '—'}</span>
-        </div>
-      `;
-    }).join('');
-    const caveatTags = vetting.caveats.map(cav => `
-      <div class="caveat-tag ${cav.type}">
-        <span class="caveat-icon">${cav.type === 'warning' ? '⚠️' : '💡'}</span>
-        <span class="caveat-text">${cav.text}</span>
-      </div>
-    `).join('');
-    caveatsBody.innerHTML = `
-      <div class="rubrics-section"><span class="section-sub-title">AI Vetting Scorecard</span>${rubricRows}</div>
-      <div class="caveats-section"><span class="section-sub-title">AI Caveats & Flags</span><div class="caveats-list-tags">${caveatTags}</div></div>
-      <div class="pros-cons-grid">
-        <div class="pro-col"><span class="section-sub-title pros">Pros</span><ul>${vetting.pros.map(p => `<li><span class="list-bullet pro">✓</span>${p}</li>`).join('')}</ul></div>
-        <div class="con-col"><span class="section-sub-title cons">Cons</span><ul>${vetting.cons.map(cn => `<li><span class="list-bullet con">✗</span>${cn}</li>`).join('')}</ul></div>
-      </div>
-    `;
+    caveatsBody.innerHTML = renderReportEvidencePane(candidate, aiResult);
   }
 
   const actionsBody = document.getElementById('report-action-buttons');
   if (actionsBody) {
+    const canAdvance = !!nextStage && (candidate.status !== 'Resume' || !!aiResult);
     actionsBody.innerHTML = `
+      ${!aiResult && candidate.status === 'Resume' ? '<div class="report-stage-note">Run resume analysis before moving this candidate to screening.</div>' : ''}
       <div class="jd-card-actions inline">
-        <button class="btn-stage-reject" data-candidate-id="${candidateId}">Reject</button>
-        <button class="btn-stage-advance" data-candidate-id="${candidateId}" data-next-stage="${candidate.status === 'Screening' ? 'Functional' : 'Hired'}">${candidate.status === 'Screening' ? 'Advance to Functional →' : 'Hire Candidate ✓'}</button>
+        ${candidate.status !== 'Hired' && candidate.status !== 'Rejected' ? `<button class="btn-stage-reject" data-candidate-id="${candidateId}">Reject</button>` : ''}
+        ${nextStage ? `<button class="btn-stage-advance" data-candidate-id="${candidateId}" data-next-stage="${nextStage}" ${canAdvance ? '' : 'disabled'}>${nextStage === 'Hired' ? 'Mark Hired' : `Advance to ${nextStage}`}</button>` : `<span class="report-terminal-state">${candidate.status === 'Hired' ? 'Candidate hired' : 'No next stage available'}</span>`}
       </div>
     `;
     actionsBody.querySelector('.btn-stage-reject')?.addEventListener('click', () => {
@@ -2818,12 +2936,12 @@ function openReportDrawerForCandidate(candidateId) {
       closeAllDrawers();
     });
     actionsBody.querySelector('.btn-stage-advance')?.addEventListener('click', () => {
-      const next = candidate.status === 'Screening' ? 'Functional' : 'Hired';
+      const next = getCandidateNextStage(candidate.status);
+      if (!next) return;
       updateCandidateStatus(candidateId, next);
       closeAllDrawers();
     });
   }
-
   setupWaveformBars();
   resetWaveformAudio();
 
@@ -2887,7 +3005,7 @@ function openReportDrawerForCandidate(candidateId) {
       const job = AppState.jobs.find(j => j.roleName === candidate.jobApplied || j.cardName === candidate.jobApplied) || AppState.jobs[0];
       let resumeText = resumeTextCache[candidateId] || '';
       if (!resumeText) {
-        resumeText = generateSyntheticResume(candidate, job);
+        resumeText = 'No resume text has been uploaded or pasted for this candidate.';
       }
 
       const promptMsg = [
@@ -6740,27 +6858,10 @@ function simulateResumesParsing(files) {
       size: (file.size / 1024).toFixed(1) + ' KB',
       progress: 0,
       status: 'parsing',
-      textContent: null
+      textContent: null,
+      identity: null
     };
     uploadedFiles.push(item);
-
-    const isTxt = /\.(txt|text)$/i.test(file.name);
-    const isPdfOrDocx = /\.(pdf|docx?)$/i.test(file.name);
-    if (isTxt) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        const text = e.target.result;
-        if (!isGarbageText(text)) item.textContent = text;
-      };
-      reader.readAsText(file);
-    } else if (isPdfOrDocx) {
-      const fd = new FormData();
-      fd.append('file', file);
-      fetch('/api/parse-file', { method: 'POST', body: fd })
-        .then(r => r.ok ? r.json() : Promise.reject())
-        .then(data => { if (data.text && !isGarbageText(data.text)) item.textContent = data.text; })
-        .catch(() => {});
-    }
 
     const fileRow = document.createElement('div');
     fileRow.className = 'upload-file-item';
@@ -6784,28 +6885,52 @@ function simulateResumesParsing(files) {
 
     let currentProgress = 0;
     const interval = setInterval(() => {
-      currentProgress += Math.floor(Math.random() * 20 + 15);
-      if (currentProgress >= 100) {
-        currentProgress = 100;
-        clearInterval(interval);
-
-        const badge = document.getElementById(`status-badge-${idx}`);
-        if (badge) {
-          badge.textContent = 'Extracted';
-          badge.className = 'upload-file-status-badge done';
-        }
-
-        appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Successfully extracted text from <strong>${file.name}</strong>.`);
-
-        item.status = 'done';
-        checkAllResumesDone();
-      }
-
+      currentProgress = Math.min(92, currentProgress + Math.floor(Math.random() * 14 + 8));
       const progressInner = document.getElementById(`progress-inner-${idx}`);
       if (progressInner) {
         progressInner.style.setProperty('--progress', currentProgress / 100);
       }
     }, 150 + Math.random() * 150);
+
+    extractTextFromResumeFile(file)
+      .then(text => {
+        const fallbackName = extractCandidateNameFromFilename(file.name);
+        if (text && !isGarbageText(text)) {
+          item.textContent = text;
+          item.identity = extractResumeIdentity(text, fallbackName, file.name);
+        } else {
+          item.identity = extractResumeIdentity('', fallbackName, file.name);
+        }
+      })
+      .catch(() => {
+        item.identity = extractResumeIdentity('', extractCandidateNameFromFilename(file.name), file.name);
+      })
+      .finally(() => {
+        clearInterval(interval);
+        currentProgress = 100;
+
+        const progressInner = document.getElementById(`progress-inner-${idx}`);
+        if (progressInner) {
+          progressInner.style.setProperty('--progress', 1);
+        }
+
+        const badge = document.getElementById(`status-badge-${idx}`);
+        if (badge) {
+          badge.textContent = item.textContent ? 'Extracted' : 'Name only';
+          badge.className = 'upload-file-status-badge done';
+        }
+
+        const nameEl = fileRow.querySelector('.upload-file-name');
+        if (nameEl && item.identity?.name) {
+          nameEl.textContent = item.identity.name;
+          nameEl.title = file.name;
+        }
+
+        appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> ${item.textContent ? 'Extracted text and identity' : 'Used filename fallback'} for <strong>${file.name}</strong>${item.identity?.name ? ` as <strong>${item.identity.name}</strong>` : ''}.`);
+
+        item.status = 'done';
+        checkAllResumesDone();
+      });
   });
 }
 
@@ -6818,6 +6943,31 @@ function checkAllResumesDone() {
   }
 }
 
+async function extractTextFromResumeFile(file) {
+  const isTxt = /\.(txt|text)$/i.test(file.name);
+  const isPdfOrDocx = /\.(pdf|docx?)$/i.test(file.name);
+
+  if (isTxt) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result || '');
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  }
+
+  if (isPdfOrDocx) {
+    const fd = new FormData();
+    fd.append('file', file);
+    const resp = await fetch('/api/parse-file', { method: 'POST', body: fd });
+    if (!resp.ok) throw new Error('Parse failed');
+    const data = await resp.json();
+    return data.text || '';
+  }
+
+  return '';
+}
+
 function importResumesCandidates() {
   if (uploadedFiles.length === 0) return;
 
@@ -6826,10 +6976,12 @@ function importResumesCandidates() {
 
   const importedCandIds = [];
   uploadedFiles.forEach(file => {
-    const rawName = extractCandidateNameFromFilename(file.name);
-    const email = rawName.toLowerCase().replace(/\\s+/g, ".") + "@example.com";
-    const phone = "+1 (555) 01" + Math.floor(Math.random() * 900 + 100);
-    const candId = addCandidateToAppState(rawName, email, phone, activeJob, file.textContent);
+    const fallbackName = extractCandidateNameFromFilename(file.name);
+    const identity = file.identity || extractResumeIdentity(file.textContent, fallbackName, file.name);
+    const name = identity.name || fallbackName;
+    const email = identity.email || createPlaceholderEmail(name);
+    const phone = identity.phone || '';
+    const candId = addCandidateToAppState(name, email, phone, activeJob, file.textContent);
     importedCandIds.push(candId);
   });
 
@@ -6865,12 +7017,151 @@ function importResumesCandidates() {
 }
 
 function extractCandidateNameFromFilename(filename) {
-  let name = filename.replace(/\\.[^/.]+$/, ""); // strip extension
-  name = name.replace(/[_\-\\.]/g, " "); // replace symbols
-  name = name.replace(/\\b(resume|cv|hiring|job|developer|executive|profile|senior|junior|doc|pdf|en)\\b/gi, "");
-  name = name.trim().split(/\\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  let name = filename.replace(/\.[^/.]+$/, "");
+  name = name.replace(/[_\-.]/g, " ");
+  name = name.replace(/\b(resume|cv|hiring|job|developer|executive|profile|senior|junior|doc|pdf|en)\b/gi, "");
+  name = name.trim().split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
   if (!name) name = "Candidate " + Math.floor(Math.random() * 1000);
   return name;
+}
+
+function extractResumeIdentity(text = '', fallbackName = '', filename = '') {
+  const cleanText = normalizeResumeText(text);
+  const email = extractResumeEmail(cleanText);
+  const phone = extractResumePhone(cleanText);
+  const linkedin = extractResumeLinkedIn(cleanText);
+  const explicitName = extractExplicitResumeName(cleanText);
+  const headerName = explicitName || extractHeaderResumeName(cleanText);
+  const emailName = email ? nameFromEmail(email) : '';
+  const filenameName = fallbackName || (filename ? extractCandidateNameFromFilename(filename) : '');
+  const name = normalizeCandidateName(headerName || emailName || filenameName);
+
+  return {
+    name,
+    email,
+    phone,
+    linkedin,
+    source: headerName ? 'resume' : emailName ? 'email' : filename ? 'filename' : 'provided'
+  };
+}
+
+function normalizeResumeText(text = '') {
+  return String(text)
+    .replace(/\u0000/g, ' ')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\r\n?/g, '\n')
+    .trim();
+}
+
+function extractResumeEmail(text) {
+  const match = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  return match ? match[0].toLowerCase() : '';
+}
+
+function extractResumePhone(text) {
+  const candidates = text.match(/(?:\+?\d[\d\s().-]{7,}\d)/g) || [];
+  for (const candidate of candidates) {
+    const digits = candidate.replace(/\D/g, '');
+    if (digits.length >= 10 && digits.length <= 15) {
+      return candidate.replace(/\s+/g, ' ').trim();
+    }
+  }
+  return '';
+}
+
+function extractResumeLinkedIn(text) {
+  const match = text.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[^\s)]+/i);
+  return match ? match[0].replace(/[.,;]+$/, '') : '';
+}
+
+function extractExplicitResumeName(text) {
+  const patterns = [
+    /(?:^|\n)\s*(?:name|full name|candidate name)\s*[:-]\s*([A-Za-z][A-Za-z.' -]{2,80})/i,
+    /(?:^|\n)\s*(?:candidate)\s*[:-]\s*([A-Za-z][A-Za-z.' -]{2,80})/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      const candidate = cleanNameLine(match[1]);
+      if (isLikelyPersonName(candidate)) return candidate;
+    }
+  }
+  return '';
+}
+
+function extractHeaderResumeName(text) {
+  const lines = text.split('\n')
+    .map(line => line.trim())
+    .filter(Boolean)
+    .slice(0, 30);
+
+  for (const line of lines) {
+    const parts = line.split(/\s+[|]\s+|\s+-\s+|\s+--\s+/);
+    for (const part of parts.slice(0, 2)) {
+      const candidate = cleanNameLine(part);
+      if (isLikelyPersonName(candidate)) return candidate;
+    }
+  }
+  return '';
+}
+
+function cleanNameLine(line = '') {
+  return line
+    .replace(/^[^A-Za-z]+|[^A-Za-z.' -]+$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeCandidateName(name = '') {
+  const cleaned = cleanNameLine(name);
+  if (!cleaned) return '';
+  return cleaned.split(/\s+/).map(part => {
+    if (/^[A-Z]{2,}$/.test(part)) {
+      return part.charAt(0) + part.slice(1).toLowerCase();
+    }
+    return part.charAt(0).toUpperCase() + part.slice(1);
+  }).join(' ');
+}
+
+function isLikelyPersonName(name = '') {
+  const cleaned = cleanNameLine(name);
+  if (!cleaned || cleaned.length < 4 || cleaned.length > 60) return false;
+  if (/[0-9@:/\\]/.test(cleaned)) return false;
+
+  const lower = cleaned.toLowerCase();
+  const blocked = [
+    'resume', 'curriculum vitae', 'cv', 'profile', 'summary', 'objective',
+    'education', 'experience', 'employment', 'skills', 'projects', 'certifications',
+    'contact', 'email', 'phone', 'mobile', 'address', 'linkedin', 'github',
+    'developer', 'engineer', 'manager', 'executive', 'consultant', 'analyst',
+    'full stack', 'frontend', 'backend', 'software', 'tender', 'proposal'
+  ];
+  if (blocked.some(word => lower === word || lower.includes(`${word} `) || lower.includes(` ${word}`))) return false;
+
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  if (words.length < 2 || words.length > 5) return false;
+  return words.every(word => /^[A-Za-z][A-Za-z.'-]{1,}$/.test(word));
+}
+
+function nameFromEmail(email) {
+  const local = email.split('@')[0] || '';
+  const parts = local
+    .replace(/[0-9]+/g, ' ')
+    .split(/[._+-]+/)
+    .map(part => part.trim())
+    .filter(part => part.length > 1 && !['info', 'contact', 'mail', 'hello', 'admin', 'resume', 'cv'].includes(part.toLowerCase()));
+  if (parts.length < 2) return '';
+  return normalizeCandidateName(parts.slice(0, 3).join(' '));
+}
+
+function createPlaceholderEmail(name) {
+  const slug = normalizeCandidateName(name)
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, '')
+    .trim()
+    .replace(/\s+/g, '.');
+  return `${slug || 'candidate'}@resume.local`;
 }
 
 // === Manual Queue Intake Logic ===
@@ -6979,6 +7270,11 @@ function importManualQueue() {
 
 // === Shared Candidate Insertion helper ===
 function addCandidateToAppState(name, email, phone, job, resumeText) {
+  const identity = extractResumeIdentity(resumeText, name);
+  const candidateName = identity.name || normalizeCandidateName(name) || name;
+  const candidateEmail = identity.email || email || createPlaceholderEmail(candidateName);
+  const candidatePhone = identity.phone || phone || '';
+
   const idChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let candId = 'CAN-';
   for (let i = 0; i < 4; i++) {
@@ -6998,8 +7294,11 @@ function addCandidateToAppState(name, email, phone, job, resumeText) {
 
   AppState.candidates.push({
     id: candId,
-    name: name,
-    email: email,
+    name: candidateName,
+    email: candidateEmail,
+    phone: candidatePhone,
+    linkedin: identity.linkedin || '',
+    resumeIdentitySource: identity.source,
     jobApplied: job.roleName,
     status: status,
     score: score,
@@ -7008,6 +7307,7 @@ function addCandidateToAppState(name, email, phone, job, resumeText) {
 
   if (resumeText && !isGarbageText(resumeText)) {
     resumeTextCache[candId] = resumeText;
+    resumeIdentityCache[candId] = identity;
   }
 
   return candId;
@@ -7204,8 +7504,41 @@ function renderColumnsSelectorDropdowns() {
 // ==========================================
 
 const resumeTextCache = {};
+const resumeIdentityCache = {};
 const resumeAnalysisCache = {};
 const reportChatCache = {};
+
+function cacheResumeTextAndIdentity(cid, text, filename = '') {
+  if (!text || isGarbageText(text)) return null;
+
+  resumeTextCache[cid] = text;
+  const candidate = AppState.candidates.find(c => c.id === cid);
+  const identity = extractResumeIdentity(text, candidate?.name || '', filename);
+  resumeIdentityCache[cid] = identity;
+
+  if (candidate) {
+    if (identity.name && identity.source !== 'filename') candidate.name = identity.name;
+    if (identity.email) candidate.email = identity.email;
+    if (identity.phone) candidate.phone = identity.phone;
+    if (identity.linkedin) candidate.linkedin = identity.linkedin;
+    candidate.resumeIdentitySource = identity.source;
+    saveStateToLocalStorage();
+    refreshResumeCandidateRowIdentity(cid);
+  }
+
+  return identity;
+}
+
+function refreshResumeCandidateRowIdentity(cid) {
+  const candidate = AppState.candidates.find(c => c.id === cid);
+  const row = document.querySelector(`tr[data-cid="${cid}"]`);
+  if (!candidate || !row) return;
+
+  const nameEl = row.querySelector('.cand-name-link');
+  const emailEl = row.querySelector('.cand-email-sub');
+  if (nameEl) nameEl.textContent = candidate.name;
+  if (emailEl) emailEl.textContent = candidate.email || 'No email found';
+}
 
 function generateAutoResumeAnalysis(candidateName) {
   // Strictly resume-analysis only — no hallucinated later-stage data
@@ -7371,7 +7704,7 @@ function bindResumeAnalysisEvents(job) {
 
       if (pasteArea && pasteArea.value.trim()) {
         const existing = resumeTextCache[cid] || '';
-        resumeTextCache[cid] = (existing + '\n' + pasteArea.value.trim()).trim();
+        cacheResumeTextAndIdentity(cid, (existing + '\n' + pasteArea.value.trim()).trim(), 'pasted resume');
       }
       runResumeAnalysis(cid, job);
     });
@@ -7401,24 +7734,7 @@ function bindResumeAnalysisEvents(job) {
 
 
 function extractNameFromResumeText(text) {
-  if (!text) return null;
-  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  
-  // Common patterns: "Name: John Doe", "JOHN DOE", first line that looks like a name
-  for (let line of lines.slice(0, 8)) {
-    // Skip obvious non-name lines
-    if (/^(resume|cv|curriculum|profile|email|phone|mobile|address|objective|summary|education|experience|skills)/i.test(line)) continue;
-    
-    // Match "Name: John Doe" or similar
-    const nameMatch = line.match(/(?:^|\b)(?:name|full name|candidate)\s*[::]\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})/i);
-    if (nameMatch) return nameMatch[1].trim();
-    
-    // Match lines that look like proper names (2-4 words, mostly capitalized)
-    if (/^[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3}$/.test(line) && line.length < 40) {
-      return line;
-    }
-  }
-  return null;
+  return extractResumeIdentity(text).name || null;
 }
 async function handleResumeFile(cid, file) {
   const isPdfOrDocx = /\.(pdf|docx?)$/i.test(file.name);
@@ -7431,7 +7747,7 @@ async function handleResumeFile(cid, file) {
       if (!resp.ok) throw new Error('Parse failed');
       const data = await resp.json();
       if (data.text && !isGarbageText(data.text)) {
-        resumeTextCache[cid] = data.text;
+        const identity = cacheResumeTextAndIdentity(cid, data.text, file.name);
         showPremiumToast(`${file.name} parsed — ${data.text.split('\\n').length} lines extracted.`, 'success');
       } else {
         resumeTextCache[cid] = null;
@@ -7452,7 +7768,7 @@ async function handleResumeFile(cid, file) {
         resumeTextCache[cid] = null;
         showPremiumToast(`${file.name} loaded — binary content, will generate candidate profile.`, 'info');
       } else {
-        resumeTextCache[cid] = text;
+        cacheResumeTextAndIdentity(cid, text, file.name);
         showPremiumToast(`${file.name} loaded — ${text.split('\\n').length} lines extracted.`, 'success');
       }
       resolve();
@@ -7524,19 +7840,21 @@ function isGarbageText(text) {
   return printable.length / text.length < 0.7;
 }
 
+function extractExperienceYearsFromText(text) {
+  const matches = [...String(text || '').matchAll(/(\d+(?:\.\d+)?)\+?\s*(?:years?|yrs?)\s+(?:of\s+)?experience/gi)];
+  if (!matches.length) return 'Not stated';
+  const years = Math.max(...matches.map(match => Number(match[1])).filter(Number.isFinite));
+  return `${years} year${years === 1 ? '' : 's'}`;
+}
+
 async function runResumeAnalysis(cid, job) {
   const pasteArea = document.getElementById(`ra-paste-${cid}`);
   const btn = document.getElementById(`ra-btn-${cid}`);
   let resumeText = ((resumeTextCache[cid] || '') + '\n' + (pasteArea?.value || '')).trim();
   const candidate = AppState.candidates.find(c => c.id === cid);
   if (!resumeText || isGarbageText(resumeText)) {
-    if (candidate) {
-      resumeText = generateSyntheticResume(candidate, job);
-      showPremiumToast('Using auto-generated candidate profile for analysis.', 'info');
-    } else {
-      showPremiumToast('Upload a resume or paste text first.', 'error');
-      return;
-    }
+    showPremiumToast('Upload a resume or paste resume text first.', 'error');
+    return false;
   }
 
   const origHTML = btn ? btn.innerHTML : '';
@@ -7651,6 +7969,7 @@ ${resumeText.slice(0, 4000)}`;
     showPremiumToast('Resume analysis complete.', 'success');
 
     appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Candidate <strong>${candidate ? candidate.name : cid}</strong> analysis complete. Match Score: <strong style="color: #10b981;">${result.matchScore}%</strong>. Recommendation: <strong>${result.recommendation}</strong>.`, result.recommendation === 'Advance' ? 'font-gold' : '');
+    return true;
   } catch (err) {
     console.warn('Real AI analysis failed, falling back to local scanning engine:', err);
     appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> <span style="color: #f59e0b;">DeepSeek API offline or unauthorized. Engaging local rule-based parsing engine...</span>`);
@@ -7693,27 +8012,35 @@ ${resumeText.slice(0, 4000)}`;
         }
       });
 
-      let matchScore = 60;
+      const experienceYears = extractExperienceYearsFromText(resumeText);
+      let matchScore = 0;
       if (criteria.mustHave.length > 0) {
         const mustHaveRatio = matched.filter(m => criteria.mustHave.includes(m)).length / criteria.mustHave.length;
         matchScore = Math.round(mustHaveRatio * 60);
+      } else {
+        matchScore += Math.min(40, detected.length * 8);
       }
       if (criteria.goodToHave.length > 0) {
         const goodToHaveRatio = matched.filter(m => criteria.goodToHave.includes(m)).length / criteria.goodToHave.length;
-        matchScore += Math.round(goodToHaveRatio * 20);
+        matchScore += Math.round(goodToHaveRatio * 25);
+      } else {
+        matchScore += Math.min(20, detected.length * 4);
       }
-      matchScore += Math.round(10 + Math.random() * 10);
+      matchScore += Math.min(15, (detected.length * 2) + (experienceYears !== 'Not stated' ? 5 : 0));
       matchScore = Math.max(0, Math.min(100, matchScore));
 
-      const technicalScore = Math.round(4 + (matchScore / 100) * 5 + Math.random() * 1);
-      const experienceScore = Math.round(4 + (matchScore / 100) * 5 + Math.random() * 1);
-      const communicationScore = Math.round(6 + Math.random() * 3);
-      const cultureFitScore = Math.round(6 + Math.random() * 3);
+      const technicalScore = matched.length > 0 ? Math.max(4, Math.round((matchScore / 100) * 10)) : (detected.length > 0 ? 5 : 2);
+      const experienceScore = experienceYears !== 'Not stated' ? Math.max(4, Math.round((matchScore / 100) * 9)) : 4;
+      const communicationScore = /\b(communication|presentation|stakeholder|client|collaboration)\b/i.test(resumeText) ? 6 : 5;
+      const cultureFitScore = /\b(team|collaboration|ownership|lead|mentor)\b/i.test(resumeText) ? 6 : 5;
+      const summaryEvidence = matched.length > 0
+        ? `Matched criteria found: ${matched.slice(0, 3).join(', ')}.`
+        : 'No configured criteria were directly matched in the resume text.';
 
       const localResult = {
         matchScore: matchScore,
-        summary: `Local scanning analysis: candidate demonstrates familiarity with ${matched.slice(0, 3).join(', ') || 'some key areas'}. ${missing.length > 0 ? `Areas for growth: ${missing.slice(0, 2).join(', ')}.` : ''} Vetted against local rules.`,
-        experienceYears: `${Math.floor(2 + Math.random() * 5)} years`,
+        summary: `Local scanning analysis: ${summaryEvidence} ${missing.length > 0 ? `Missing criteria: ${missing.slice(0, 2).join(', ')}.` : 'No configured missing criteria found.'}`,
+        experienceYears,
         skills: {
           detected: detected.slice(0, 6),
           matched: matched,
@@ -7747,6 +8074,7 @@ ${resumeText.slice(0, 4000)}`;
       showPremiumToast('Resume analysis complete (Local fallback).', 'info');
 
       appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Candidate <strong>${candidate ? candidate.name : cid}</strong> analysis complete. Match Score: <strong style="color: #10b981;">${localResult.matchScore}%</strong>. Recommendation: <strong>${localResult.recommendation}</strong>.`, localResult.recommendation === 'Advance' ? 'font-gold' : '');
+      return true;
     } catch (fallbackErr) {
       console.error('Fallback failed:', fallbackErr);
       showPremiumToast('Analysis failed — please try again.', 'error');
@@ -7825,8 +8153,8 @@ async function runBulkResumeAnalysis(candidateIds, job) {
   let done = 0;
   for (const cid of pending) {
     try {
-      await runResumeAnalysis(cid, job);
-      done++;
+      const ok = await runResumeAnalysis(cid, job);
+      if (ok === true) done++;
     } catch {
       showPremiumToast(`Failed to analyse candidate ${cid}, continuing…`, 'error');
     }
@@ -8606,10 +8934,8 @@ function renderJobDetailPanes(job) {
                 if (idx < stages.length - 1) {
                   const next = stages[idx + 1];
                   cand.status = next;
-                  if ((next === 'Screening' || next === 'Functional') && cand.interviewScore == null) {
-                    cand.interviewStatus = 'Completed';
-                    cand.interviewScore = Math.floor(Math.random() * 31) + 60;
-                    if (!cand.cheatProbability) cand.cheatProbability = 'Low';
+                  if ((next === 'Screening' || next === 'Functional') && cand.interviewStatus == null) {
+                    cand.interviewStatus = 'Not Started';
                   }
                 }
               }
@@ -8736,10 +9062,8 @@ function updateCandidateStatus(candId, newStatus) {
   const oldStatus = candidate.status;
   candidate.status = newStatus;
 
-  if ((newStatus === 'Screening' || newStatus === 'Functional') && candidate.interviewScore == null) {
-    candidate.interviewStatus = 'Completed';
-    candidate.interviewScore = Math.floor(Math.random() * 31) + 60;
-    if (!candidate.cheatProbability) candidate.cheatProbability = 'Low';
+  if ((newStatus === 'Screening' || newStatus === 'Functional') && candidate.interviewStatus == null) {
+    candidate.interviewStatus = 'Not Started';
   }
 
   if (newStatus === 'Rejected') {
@@ -10930,7 +11254,3 @@ function initCrystalAnimations() {
     delete window.removeCandidateFromQueue;
   };
 }
-
-
-
-

@@ -2149,6 +2149,240 @@ body.light-theme .theme-icon-sun { display: block; }
 .report-tab-content { display: none; padding: 20px 24px; }
 .report-tab-content.active { display: block; animation: view-in 0.35s cubic-bezier(0.16,1,0.3,1) both; }
 
+.stage-evidence-timeline {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.stage-evidence-step {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+}
+
+.stage-evidence-step.complete {
+  border-color: rgba(34, 197, 94, 0.24);
+  background: rgba(34, 197, 94, 0.06);
+}
+
+.stage-evidence-step.current {
+  border-color: rgba(var(--color-gold-rgb), 0.34);
+  background: rgba(var(--color-gold-rgb), 0.08);
+}
+
+.stage-evidence-step.locked {
+  opacity: 0.62;
+}
+
+.stage-evidence-index {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--glass-border);
+}
+
+.stage-evidence-step.complete .stage-evidence-index {
+  color: #22c55e;
+  border-color: rgba(34, 197, 94, 0.32);
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.stage-evidence-step.current .stage-evidence-index {
+  color: var(--color-gold);
+  border-color: rgba(var(--color-gold-rgb), 0.4);
+  background: rgba(var(--color-gold-rgb), 0.12);
+}
+
+.stage-evidence-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.stage-evidence-title-row strong {
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+}
+
+.stage-evidence-badge {
+  flex-shrink: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  background: rgba(255,255,255,0.04);
+}
+
+.stage-evidence-copy p,
+.resume-evidence-card p,
+.resume-evidence-hero p,
+.report-empty-state p,
+.report-stage-note {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.resume-evidence-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+  padding: 16px;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(var(--color-indigo-rgb), 0.08), rgba(var(--color-gold-rgb), 0.04));
+  margin-bottom: 14px;
+}
+
+.report-section-kicker,
+.report-empty-kicker,
+.resume-evidence-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.resume-evidence-hero h4,
+.report-empty-state h4 {
+  margin: 0 0 6px;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.resume-evidence-score {
+  min-width: 90px;
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.resume-evidence-score strong {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--color-text-primary);
+}
+
+.resume-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.resume-evidence-card,
+.resume-scorecard-panel,
+.report-empty-state {
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  padding: 14px;
+}
+
+.resume-evidence-card {
+  min-width: 0;
+}
+
+.resume-evidence-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.resume-evidence-tag {
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: var(--color-text-secondary);
+  background: rgba(255,255,255,0.04);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.resume-evidence-tag.matched {
+  color: #22c55e;
+  border-color: rgba(34, 197, 94, 0.22);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.resume-evidence-tag.missing,
+.resume-evidence-tag.warning {
+  color: #f97316;
+  border-color: rgba(249, 115, 22, 0.24);
+  background: rgba(249, 115, 22, 0.08);
+}
+
+.resume-evidence-tag.detected {
+  color: var(--color-text-primary);
+}
+
+.resume-scorecard-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.report-empty-state {
+  text-align: left;
+  padding: 18px;
+}
+
+.report-stage-note {
+  border: 1px dashed var(--glass-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.025);
+  margin-bottom: 14px;
+}
+
+.report-terminal-state {
+  color: var(--color-text-secondary);
+  font-size: 0.84rem;
+  font-weight: 700;
+  align-self: center;
+}
+
+@media (max-width: 760px) {
+  .resume-evidence-hero,
+  .resume-evidence-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .resume-evidence-score {
+    justify-items: start;
+  }
+
+  .stage-evidence-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
 .rubric-list { display: flex; flex-direction: column; gap: 14px; }
 .rubric-item { display: flex; flex-direction: column; gap: 8px; }
 .rubric-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
@@ -2815,8 +3049,24 @@ body.light-theme .code-review-pane .review-comment {
   box-shadow: var(--glass-glow-gold-hover);
 }
 
+.btn-stage-advance:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-stage-advance:disabled:hover {
+  background: var(--glass-bg-hover);
+  color: var(--color-gold);
+}
+
 body.light-theme .btn-stage-advance:hover {
   color: #ffffff !important;
+}
+
+body.light-theme .btn-stage-advance:disabled:hover {
+  color: var(--color-gold) !important;
 }
 
 /* ============================================================
@@ -10635,6 +10885,37 @@ body.light-theme .q-card-top-row,
 body.light-theme .q-card-footer,
 body.light-theme .jf-candidates-banner {
   background: #f8fafc;
+}
+
+body.light-theme .stage-evidence-step,
+body.light-theme .resume-evidence-card,
+body.light-theme .resume-scorecard-panel,
+body.light-theme .report-empty-state,
+body.light-theme .report-stage-note {
+  background: #ffffff;
+  border-color: #d8e0ea;
+}
+
+body.light-theme .resume-evidence-hero {
+  background: linear-gradient(135deg, #ffffff, #f0fdfa);
+  border-color: #d8e0ea;
+}
+
+body.light-theme .stage-evidence-step.current {
+  background: #fefce8;
+  border-color: #fde68a;
+}
+
+body.light-theme .stage-evidence-step.complete {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+}
+
+body.light-theme .stage-evidence-index,
+body.light-theme .stage-evidence-badge,
+body.light-theme .resume-evidence-tag {
+  background: #f8fafc;
+  border-color: #d8e0ea;
 }
 
 body.light-theme .pipeline-step {

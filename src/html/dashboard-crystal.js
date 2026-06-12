@@ -1594,9 +1594,9 @@ export const html = `
             </div>
 
             <div class="report-tabs">
-              <button class="report-tab-btn active" data-report-tab="score">Score</button>
-              <button class="report-tab-btn" data-report-tab="transcript">Transcription & Audio</button>
-              <button class="report-tab-btn" data-report-tab="caveats">Scores & Caveats</button>
+              <button class="report-tab-btn active" data-report-tab="score">Stage Summary</button>
+              <button class="report-tab-btn" data-report-tab="transcript">Transcript</button>
+              <button class="report-tab-btn" data-report-tab="caveats">Evidence</button>
               <button class="report-tab-btn" data-report-tab="actions">Notes & Actions</button>
             </div>
 
@@ -1623,7 +1623,7 @@ export const html = `
                 </div>
               </div>
 
-              <!-- Transcription & Audio tab -->
+              <!-- Transcript tab -->
               <div class="report-tab-content" id="rep-tab-transcript">
                 <div class="waveform-box">
                   <h4 class="waveform-title">Interview Audio Recording</h4>
@@ -1637,12 +1637,12 @@ export const html = `
                   </div>
                 </div>
                 <div class="report-transcript-body" id="report-transcript-body">
-                  <span class="transcript-label">AI Interview Transcript:</span>
+                  <span class="transcript-label">Recorded Transcript:</span>
                   <div class="transcript-chat-flow" id="report-transcript-flow"></div>
                 </div>
               </div>
 
-              <!-- Scores & Caveats tab -->
+              <!-- Evidence tab -->
               <div class="report-tab-content" id="rep-tab-caveats">
                 <div class="report-caveats-body" id="report-caveats-body"></div>
               </div>
