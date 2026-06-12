@@ -12,6 +12,7 @@ import { AppState, generateJobId } from './state.js';
 
 function saveStateToLocalStorage() {
   localStorage.setItem('IntervieHire_jobs_state', JSON.stringify(AppState.jobs));
+  localStorage.setItem('IntervieHire_candidates_state', JSON.stringify(AppState.candidates));
 }
 
 function loadStateFromLocalStorage() {
@@ -104,6 +105,7 @@ function loadStateFromLocalStorage() {
       const fallbackQuestions = hardcodedDefault ? hardcodedDefault.questions : [];
       
       return {
+        ...pj, // keep every saved field (resumeCriteria, scoringConfig, pipelineConfig, …)
         id: pj.id || generateJobId(),
         roleName: pj.roleName || (hardcodedDefault ? hardcodedDefault.roleName : 'Untitled Role'),
         cardName: pj.cardName || pj.roleName || (hardcodedDefault ? hardcodedDefault.cardName : 'Untitled Job'),
@@ -121,6 +123,16 @@ function loadStateFromLocalStorage() {
     console.error("Error loading jobs from localStorage", e);
     // If corrupt, save fresh hardcoded defaults
     saveStateToLocalStorage();
+  }
+
+  try {
+    const savedCandidates = localStorage.getItem('IntervieHire_candidates_state');
+    if (savedCandidates) {
+      const parsed = JSON.parse(savedCandidates);
+      if (Array.isArray(parsed) && parsed.length > 0) AppState.candidates = parsed;
+    }
+  } catch (e) {
+    console.error("Error loading candidates from localStorage", e);
   }
 }
 

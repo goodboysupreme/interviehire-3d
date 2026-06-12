@@ -3,6 +3,7 @@ import { callDeepSeekAPI, sanitizeJSONResponse, saveStateToLocalStorage } from '
 import { renderJobDetailPanes } from './job-detail-panes.js';
 import { appendTerminalLog } from './kanban-swarm.js';
 import { openReportDrawerForCandidate } from './report.js';
+import { computeWeightedScore, getScoringConfig, recommendationFromScore } from './scoring-config.js';
 import { soundEngine } from './sound.js';
 import { extractResumeIdentity, showPremiumToast } from './sourcing.js';
 import { AppState } from './state.js';
@@ -64,6 +65,11 @@ function generateAutoResumeAnalysis(candidateName) {
 }
 
 function renderResumeStagePaneForJob(candidates, job, container) {
+  // Hydrate the in-memory cache from analyses persisted on candidates
+  candidates.forEach(c => {
+    if (!resumeAnalysisCache[c.id] && c.resumeAnalysis) resumeAnalysisCache[c.id] = c.resumeAnalysis;
+  });
+
   const getMatchClass = (score) => {
     if (score >= 75) return 'high';
     if (score >= 50) return 'medium';
@@ -355,6 +361,278 @@ function extractExperienceYearsFromText(text) {
   return `${years} year${years === 1 ? '' : 's'}`;
 }
 
+function clampScore(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : 0;
+}
+
+function asStringArray(v, max = 12) {
+  if (!Array.isArray(v)) return [];
+  return v.filter(Boolean).map(x => String(x).trim()).filter(Boolean).slice(0, max);
+}
+
+function buildCriteriaBlock(criteria, config) {
+  const lines = [];
+  if (criteria.mustHave.length) lines.push(`MUST HAVE (gate criteria): ${criteria.mustHave.join('; ')}`);
+  if (criteria.goodToHave.length) lines.push(`GOOD TO HAVE (bonus): ${criteria.goodToHave.join('; ')}`);
+  if (criteria.redFlags.length) lines.push(`RED FLAGS (disqualify if present): ${criteria.redFlags.join('; ')}`);
+  if (config.customCriteria.length) {
+    lines.push('RECRUITER CUSTOM CRITERIA (score each individually):');
+    config.customCriteria.forEach((c, i) => {
+      lines.push(`  ${i + 1}. ${c.label} (importance ${c.weight}/10)${c.description ? ` — ${c.description}` : ''}`);
+    });
+  }
+  return lines.length ? `\nSCREENING CRITERIA:\n${lines.join('\n')}` : '';
+}
+
+function deriveLegacyScorecard(dims) {
+  return {
+    technical: Math.round((dims.mustHave.score || 0) / 10 * 10) / 10,
+    experience: Math.round((dims.experience.score || 0) / 10 * 10) / 10,
+    communication: Math.round(((dims.projects.score + dims.education.score) / 2 || 0) / 10 * 10) / 10,
+    cultureFit: Math.round((dims.niceToHave.score || 0) / 10 * 10) / 10,
+  };
+}
+
+function applyGatesAndScore(result, config, criteria) {
+  const dims = result.dimensions;
+  const { matchScore, breakdown } = computeWeightedScore(dims, config, criteria);
+  result.matchScore = matchScore;
+  result.weightedBreakdown = breakdown;
+  result.gateNotes = [];
+
+  const missingMust = (result.criteriaVerdicts || [])
+    .filter(v => v.group === 'mustHave' && v.met !== true && v.met !== 'true' && v.met !== 'partial')
+    .map(v => v.criterion);
+  if (config.mustHaveGate && missingMust.length > 0 && result.matchScore > config.mustHaveCap) {
+    result.matchScore = config.mustHaveCap;
+    result.gateNotes.push(`Score capped at ${config.mustHaveCap}: missing must-have — ${missingMust.slice(0, 3).join(', ')}`);
+  }
+
+  result.recommendation = recommendationFromScore(result.matchScore, config);
+  if (config.mustHaveGate && missingMust.length > 0) result.recommendation = 'Reject';
+
+  if (result.redFlagsDetected.length > 0) {
+    result.matchScore = Math.min(30, result.matchScore);
+    result.recommendation = 'Reject';
+    result.gateNotes.push(`Red flag found: ${result.redFlagsDetected.join(', ')} — score capped at 30`);
+  }
+
+  if (!result.recommendationReason) {
+    result.recommendationReason = `Weighted score of ${result.matchScore} against your configured criteria yields ${result.recommendation}.`;
+  }
+  result.scorecard = deriveLegacyScorecard(dims);
+  result.analysedAt = new Date().toISOString();
+}
+
+function normalizeDeepResult(result, config, criteria) {
+  const dims = result.dimensions && typeof result.dimensions === 'object' ? result.dimensions : {};
+  ['mustHave', 'niceToHave', 'projects', 'experience', 'education', 'custom'].forEach(k => {
+    if (!dims[k] || typeof dims[k] !== 'object') dims[k] = { score: 0, evidence: '' };
+    dims[k].score = clampScore(dims[k].score);
+    dims[k].evidence = dims[k].evidence ? String(dims[k].evidence) : '';
+  });
+  result.dimensions = dims;
+
+  if (!result.skills || typeof result.skills !== 'object') result.skills = {};
+  result.skills.detected = asStringArray(result.skills.detected, 8);
+  result.skills.matched = asStringArray(result.skills.matched, 16);
+  result.skills.missing = asStringArray(result.skills.missing, 16);
+  result.redFlagsDetected = asStringArray(result.redFlagsDetected, 8);
+  result.strengths = asStringArray(result.strengths, 6);
+  result.improvements = asStringArray(result.improvements, 5);
+  result.interviewProbes = asStringArray(result.interviewProbes, 5);
+  result.recommendationBullets = asStringArray(result.recommendationBullets, 5);
+  result.summary = result.summary ? String(result.summary) : 'Resume analysed against the configured job criteria.';
+  result.experienceYears = result.experienceYears ? String(result.experienceYears) : 'Not stated';
+
+  result.projects = (Array.isArray(result.projects) ? result.projects : []).slice(0, 6).map(p => ({
+    name: String(p?.name || 'Untitled project'),
+    summary: String(p?.summary || ''),
+    relevance: clampScore(p?.relevance),
+    whyItMatters: String(p?.whyItMatters || ''),
+    skills: asStringArray(p?.skills, 8),
+  }));
+
+  result.competencies = (Array.isArray(result.competencies) ? result.competencies : []).slice(0, 8).map(c => ({
+    name: String(c?.name || 'Competency'),
+    score: clampScore(c?.score),
+    bullets: asStringArray(c?.bullets, 5),
+  }));
+
+  result.criteriaVerdicts = (Array.isArray(result.criteriaVerdicts) ? result.criteriaVerdicts : []).slice(0, 30).map(v => ({
+    criterion: String(v?.criterion || ''),
+    group: ['mustHave', 'goodToHave', 'custom', 'redFlag'].includes(v?.group) ? v.group : 'custom',
+    met: v?.met === true || v?.met === 'true' ? true : v?.met === 'partial' ? 'partial' : false,
+    evidence: String(v?.evidence || ''),
+  })).filter(v => v.criterion);
+
+  applyGatesAndScore(result, config, criteria);
+  return result;
+}
+
+function tokenize(text) {
+  return new Set(String(text).toLowerCase().match(/[a-z][a-z0-9+#.]{2,}/g) || []);
+}
+
+const STOPWORDS = new Set(['the', 'and', 'for', 'with', 'that', 'this', 'from', 'have', 'has', 'are', 'was', 'were', 'will', 'can', 'their', 'our', 'your', 'into', 'using', 'used', 'use', 'work', 'worked', 'working', 'role', 'team', 'years', 'year', 'experience', 'skills', 'strong', 'ability', 'including', 'developed', 'managed']);
+
+function relevanceOverlap(textTokens, jdTokens) {
+  let hits = 0, total = 0;
+  jdTokens.forEach(t => {
+    if (STOPWORDS.has(t)) return;
+    total++;
+    if (textTokens.has(t)) hits++;
+  });
+  return total ? Math.round((hits / total) * 100) : 0;
+}
+
+function extractProjectsLocally(resumeText, job, criteria) {
+  const jdTokens = tokenize(`${job.roleName} ${job.description || ''} ${criteria.mustHave.join(' ')} ${criteria.goodToHave.join(' ')}`);
+  const lines = resumeText.split('\n');
+  const projects = [];
+  let current = null;
+  const headingRe = /^([A-Z][\w .,&()+/-]{4,70})(?:\s*[—–|:]\s*|\s*\()/;
+  let inSection = false;
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    const upper = trimmed.toUpperCase();
+    if (/^(PROJECTS?|WORK EXPERIENCE|EXPERIENCE|PROFESSIONAL EXPERIENCE|INTERNSHIPS?)\b/.test(upper)) { inSection = true; return; }
+    if (/^(EDUCATION|CERTIFICATIONS?|SKILLS|ACHIEVEMENTS|AWARDS|HOBBIES|LANGUAGES)\b/.test(upper)) {
+      if (current) projects.push(current);
+      inSection = false; current = null; return;
+    }
+    if (!inSection) return;
+    if (/^[-•*]/.test(trimmed)) {
+      if (current) current.body += ' ' + trimmed;
+      return;
+    }
+    const m = trimmed.match(headingRe);
+    if (m && trimmed.length < 90) {
+      if (current) projects.push(current);
+      current = { name: m[1].trim(), body: '' };
+    } else if (current) {
+      current.body += ' ' + trimmed;
+    }
+  });
+  if (current) projects.push(current);
+
+  const seen = new Set();
+  const unique = projects.filter(p => {
+    const key = p.name.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  return unique.slice(0, 5).map(p => {
+    const relevance = Math.min(95, relevanceOverlap(tokenize(p.name + ' ' + p.body), jdTokens) + 25);
+    const skillHits = [...criteria.mustHave, ...criteria.goodToHave].filter(s =>
+      (p.name + ' ' + p.body).toLowerCase().includes(s.toLowerCase().split(/\s+/)[0] || '')
+    ).slice(0, 5);
+    return {
+      name: p.name,
+      summary: p.body.trim().slice(0, 160) || 'Listed in resume without further detail.',
+      relevance,
+      whyItMatters: relevance >= 50
+        ? `Overlaps directly with the ${job.roleName} requirements${skillHits.length ? ` (touches: ${skillHits.slice(0, 3).join(', ')})` : ''}.`
+        : 'Limited direct overlap with this role — treat as transferable experience and probe in interview.',
+      skills: skillHits,
+    };
+  });
+}
+
+function matchCriterion(resumeLower, criterion) {
+  const clean = criterion.replace(/[^\w\s+#.]/g, '').toLowerCase().trim();
+  if (!clean) return false;
+  if (resumeLower.includes(clean)) return true;
+  const words = clean.split(/\s+/).filter(w => w.length > 3 && !STOPWORDS.has(w));
+  if (!words.length) return false;
+  const hits = words.filter(w => resumeLower.includes(w)).length;
+  return hits === words.length ? true : hits / words.length >= 0.5 ? 'partial' : false;
+}
+
+function buildLocalDeepAnalysis(resumeText, job, config, criteria) {
+  const resumeLower = resumeText.toLowerCase();
+  const verdicts = [];
+  const matched = [], missing = [];
+
+  criteria.mustHave.forEach(c => {
+    const met = matchCriterion(resumeLower, c);
+    verdicts.push({ criterion: c, group: 'mustHave', met, evidence: met ? 'Keyword evidence found in resume text.' : 'No mention found in resume text.' });
+    (met === true || met === 'partial' ? matched : missing).push(c);
+  });
+  criteria.goodToHave.forEach(c => {
+    const met = matchCriterion(resumeLower, c);
+    verdicts.push({ criterion: c, group: 'goodToHave', met, evidence: met ? 'Keyword evidence found in resume text.' : 'Not found in resume text.' });
+    (met === true || met === 'partial' ? matched : missing).push(c);
+  });
+
+  const customScores = config.customCriteria.map(c => {
+    // Match against the label first; the description only dilutes keyword overlap
+    const met = matchCriterion(resumeLower, c.label) || matchCriterion(resumeLower, c.description || '');
+    verdicts.push({ criterion: c.label, group: 'custom', met, evidence: met ? 'Related keywords present in resume.' : 'No supporting evidence found.' });
+    return { weight: c.weight || 5, score: met === true ? 75 : met === 'partial' ? 50 : 20 };
+  });
+  const customWeightSum = customScores.reduce((s, c) => s + c.weight, 0);
+  const customScore = customWeightSum ? Math.round(customScores.reduce((s, c) => s + c.score * c.weight, 0) / customWeightSum) : 0;
+
+  const redFlagsFound = criteria.redFlags.filter(f => matchCriterion(resumeLower, f) === true);
+
+  const detected = ['JavaScript', 'TypeScript', 'React', 'Node.js', 'Python', 'SQL', 'AWS', 'Docker', 'Excel', 'Project Management', 'Agile', 'Communication', 'Proposal Writing', 'Compliance', 'Tender Management']
+    .filter(s => resumeLower.includes(s.toLowerCase())).slice(0, 8);
+
+  const projects = extractProjectsLocally(resumeText, job, criteria);
+  const projectsScore = projects.length ? Math.round(projects.reduce((s, p) => s + p.relevance, 0) / projects.length) : 30;
+
+  const expText = extractExperienceYearsFromText(resumeText);
+  const expYears = parseFloat(expText) || 0;
+  const bandMin = parseFloat(String(job.experienceBand || '').match(/\d+/)?.[0] || '0');
+  const experienceScore = expText === 'Not stated' ? 35 : Math.min(95, 50 + Math.min(expYears, bandMin + 4) * 10);
+
+  const eduScore = /ph\.?d|doctorate/.test(resumeLower) ? 90
+    : /master|m\.?tech|mba|m\.?sc/.test(resumeLower) ? 80
+    : /b\.?tech|bachelor|b\.?e\b|b\.?sc|undergraduate/.test(resumeLower) ? 70
+    : /diploma|certificat/.test(resumeLower) ? 55 : 35;
+
+  const mustRatio = criteria.mustHave.length ? criteria.mustHave.filter(c => matched.includes(c)).length / criteria.mustHave.length : 0;
+  const niceRatio = criteria.goodToHave.length ? criteria.goodToHave.filter(c => matched.includes(c)).length / criteria.goodToHave.length : 0;
+
+  const dims = {
+    mustHave: { score: Math.round(mustRatio * 100), evidence: `${criteria.mustHave.filter(c => matched.includes(c)).length}/${criteria.mustHave.length} must-have criteria evidenced in the text.` },
+    niceToHave: { score: Math.round(niceRatio * 100), evidence: `${criteria.goodToHave.filter(c => matched.includes(c)).length}/${criteria.goodToHave.length} nice-to-have criteria evidenced.` },
+    projects: { score: projectsScore, evidence: projects.length ? `${projects.length} project(s) parsed, avg relevance ${projectsScore}%.` : 'No distinct project sections found.' },
+    experience: { score: experienceScore, evidence: `Stated experience: ${expText}; band requires ${job.experienceBand || 'unspecified'}.` },
+    education: { score: eduScore, evidence: 'Education level inferred from degree keywords.' },
+    custom: { score: customScore, evidence: config.customCriteria.length ? 'Custom criteria keyword-matched individually.' : '' },
+  };
+
+  const missingMustList = criteria.mustHave.filter(c => missing.includes(c));
+  const result = {
+    engine: 'local',
+    summary: `Local rules engine: ${matched.length ? `evidenced ${matched.slice(0, 3).join(', ')}` : 'no configured criteria matched'}${missingMustList.length ? `; missing must-haves: ${missingMustList.slice(0, 2).join(', ')}` : ''}. ${projects.length ? `${projects.length} project(s) assessed for role relevance.` : ''}`,
+    experienceYears: expText,
+    skills: { detected, matched, missing },
+    redFlagsDetected: redFlagsFound,
+    dimensions: dims,
+    criteriaVerdicts: verdicts,
+    projects,
+    competencies: [
+      { name: 'Criteria Coverage', score: Math.round(mustRatio * 100), bullets: matched.length ? matched.slice(0, 4).map(m => `Evidence found for: ${m}`) : ['No configured criteria matched in the resume text.'] },
+      { name: 'Project Relevance', score: projectsScore, bullets: projects.slice(0, 3).map(p => `${p.name}: ${p.relevance}% relevant`) },
+      { name: 'Experience Depth', score: dims.experience.score, bullets: [dims.experience.evidence] },
+      { name: 'Education & Certifications', score: eduScore, bullets: [dims.education.evidence] },
+    ],
+    strengths: matched.slice(0, 3).map(m => `Demonstrates ${m} with direct resume evidence.`),
+    improvements: missing.slice(0, 3).map(m => `No evidence found for ${m} — verify in screening.`),
+    interviewProbes: missing.slice(0, 3).map(m => `Ask the candidate to walk through hands-on experience with ${m}.`),
+    recommendationBullets: [],
+    recommendationReason: '',
+  };
+  normalizeDeepResult(result, config, criteria);
+  return result;
+}
+
 async function runResumeAnalysis(cid, job) {
   const pasteArea = document.getElementById(`ra-paste-${cid}`);
   const btn = document.getElementById(`ra-btn-${cid}`);
@@ -372,50 +650,53 @@ async function runResumeAnalysis(cid, job) {
   }
 
   const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [] };
-  const criteriaBlock = criteria.mustHave.length > 0 ? `
-SCREENING CRITERIA:
-Must Have: ${criteria.mustHave.join('; ')}
-Red Flags (reject if present): ${criteria.redFlags.join('; ')}
-Good to Have (bonus): ${criteria.goodToHave.join('; ')}` : '';
+  const config = getScoringConfig(job);
+  const criteriaBlock = buildCriteriaBlock(criteria, config);
 
-  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Initiated resume analysis for Candidate <strong>${candidate ? candidate.name : cid}</strong>...`);
-  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Extracting skills and matching criteria against job: <strong>${job.roleName}</strong>...`);
+  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Initiated deep resume analysis for <strong>${candidate ? candidate.name : cid}</strong>...`);
+  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Scoring ${criteria.mustHave.length + criteria.goodToHave.length + config.customCriteria.length} criteria across 6 weighted dimensions for <strong>${job.roleName}</strong>...`);
 
-  const systemPrompt = `You are Lina, an expert ATS resume analyst for IntervieHire. You perform rigorous, criteria-driven resume screening.
+  const systemPrompt = `You are Lina, an expert recruiting analyst for IntervieHire. You perform rigorous, evidence-first resume screening FOR RECRUITERS — they need to understand exactly how this candidate's real work history maps to THEIR role.
 
-TASK: Analyse the resume against the job requirements and screening criteria. Score honestly — do NOT inflate scores. A candidate missing must-have skills should score below 50.
+THINK DEEPLY, THEN REPORT:
+- For every project in the resume, reason about what it actually proves: scale, the candidate's own contribution, and how directly it transfers to this specific role.
+- Quote or paraphrase concrete resume evidence — never generic praise.
+- Score each dimension 0-100 INDEPENDENTLY. Do NOT compute an overall score; the platform combines dimensions using the recruiter's own weights.
+- Be honest. Thin or auto-generated resumes get low dimension scores and a note in the summary. Missing evidence = low score, not benefit of the doubt.
 
-SCORING RULES:
-- matchScore: 0–100 overall fit. Weight must-have criteria at 60%, experience at 20%, good-to-have at 20%.
-- scorecard values: 0.0–10.0 each.
-- If the resume is clearly auto-generated or lacks real detail, cap matchScore at 40 and note it.
-- recommendation: "Advance" if matchScore >= 70, "Hold" if 45-69, "Reject" if < 45.
+DIMENSIONS (score each 0-100 with 1-line evidence):
+- mustHave: coverage of the MUST HAVE list (100 = all clearly evidenced)
+- niceToHave: coverage of GOOD TO HAVE list
+- projects: how relevant the candidate's actual projects are to this role's day-to-day work
+- experience: depth/seniority vs the required experience band
+- education: degrees and certifications relevant to the role
+- custom: performance against the RECRUITER CUSTOM CRITERIA only (ignore if none listed)
 
-STRICT SKILL RULES:
-- "missing" must ONLY contain skills from the Must Have or Good to Have criteria that the candidate lacks. NEVER invent skills not listed in the job criteria.
-- "matched" must ONLY contain skills from the criteria that the candidate demonstrably has.
-- "detected" lists other relevant skills found in the resume (keep to top 6).
-- Do NOT hallucinate technical skills irrelevant to the role.
+STRICT RULES:
+- criteriaVerdicts must contain ONE entry per must-have, good-to-have and custom criterion with met true/false/"partial" and short evidence.
+- "missing" lists ONLY criteria from the configured lists that lack evidence. Never invent skills.
+- redFlagsDetected: ONLY items from the RED FLAGS list actually found.
+- competencies: 4-6 role-specific competencies you derive from the job description, each with score and 2-4 evidence bullets.
 
-Respond ONLY with a valid JSON object — no markdown fences, no extra text:
+Respond ONLY with valid JSON, no markdown fences:
 {
-  "matchScore": number,
-  "summary": "2-3 sentence assessment with specific evidence from resume",
+  "summary": "2-3 sentences with specific evidence",
   "experienceYears": "e.g. 4 years",
-  "skills": {
-    "detected": ["other relevant skills from resume, max 6"],
-    "matched": ["criteria skills the candidate has"],
-    "missing": ["criteria skills the candidate lacks — ONLY from Must Have and Good to Have lists"]
+  "dimensions": {
+    "mustHave": {"score": 0, "evidence": ""}, "niceToHave": {"score": 0, "evidence": ""},
+    "projects": {"score": 0, "evidence": ""}, "experience": {"score": 0, "evidence": ""},
+    "education": {"score": 0, "evidence": ""}, "custom": {"score": 0, "evidence": ""}
   },
-  "redFlagsDetected": ["list any red flags from the job criteria list that were found in this resume. Keep empty if none found."],
-  "scorecard": {
-    "technical": number,
-    "experience": number,
-    "communication": number,
-    "cultureFit": number
-  },
-  "recommendation": "Advance|Hold|Reject",
-  "recommendationReason": "1 sentence with specific reason"
+  "criteriaVerdicts": [{"criterion": "", "group": "mustHave|goodToHave|custom", "met": true, "evidence": ""}],
+  "projects": [{"name": "", "summary": "1 line", "relevance": 0, "whyItMatters": "what this proves for OUR role", "skills": [""]}],
+  "skills": {"detected": ["max 8 other relevant skills"], "matched": ["criteria with evidence"], "missing": ["criteria lacking evidence"]},
+  "redFlagsDetected": [],
+  "competencies": [{"name": "", "score": 0, "bullets": [""]}],
+  "strengths": ["3-5 evidence-backed strengths"],
+  "improvements": ["2-4 specific gaps"],
+  "interviewProbes": ["3-4 questions to verify weak evidence in the next round"],
+  "recommendationBullets": ["3-4 executive-summary bullets for the hiring panel"],
+  "recommendationReason": "1 sentence"
 }`;
 
   const userMsg = `JOB: ${job.cardName} (${job.roleName})
@@ -423,176 +704,41 @@ Experience Required: ${job.experienceBand}
 Description: ${job.description || '(Not provided)'}${criteriaBlock}
 
 --- CANDIDATE RESUME ---
-${resumeText.slice(0, 4000)}`;
+${resumeText.slice(0, 5000)}`;
 
+  let result;
   try {
     const raw = await callDeepSeekAPI(
       [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }],
       true
     );
-    const result = JSON.parse(sanitizeJSONResponse(raw));
-
-    // Ensure structure conforms safely to prevent runtime crashes
-    if (typeof result.matchScore !== 'number') result.matchScore = parseInt(result.matchScore) || 0;
-    if (!result.skills) result.skills = { detected: [], matched: [], missing: [] };
-    if (!result.skills.detected) result.skills.detected = [];
-    if (!result.skills.matched) result.skills.matched = [];
-    if (!result.skills.missing) result.skills.missing = [];
-    if (!result.scorecard) result.scorecard = { technical: 5, experience: 5, communication: 5, cultureFit: 5 };
-    if (typeof result.scorecard.technical !== 'number') result.scorecard.technical = parseFloat(result.scorecard.technical) || 5;
-    if (typeof result.scorecard.experience !== 'number') result.scorecard.experience = parseFloat(result.scorecard.experience) || 5;
-    if (typeof result.scorecard.communication !== 'number') result.scorecard.communication = parseFloat(result.scorecard.communication) || 5;
-    if (typeof result.scorecard.cultureFit !== 'number') result.scorecard.cultureFit = parseFloat(result.scorecard.cultureFit) || 5;
-    if (!result.recommendation) result.recommendation = result.matchScore >= 70 ? 'Advance' : result.matchScore >= 45 ? 'Hold' : 'Reject';
-    if (!result.recommendationReason) result.recommendationReason = 'Screened against job requirements.';
-
-    // Post-processing programmatic guardrails for extreme consistency
-    if (result.skills && result.skills.missing && criteria.mustHave.length > 0) {
-      const missingMustHaves = result.skills.missing.filter(missingSkill => {
-        return criteria.mustHave.some(must => {
-          const mLower = must.toLowerCase();
-          const msLower = missingSkill.toLowerCase();
-          return mLower.includes(msLower) || msLower.includes(mLower);
-        });
-      });
-      if (missingMustHaves.length > 0) {
-        if (result.matchScore >= 50) {
-          result.matchScore = Math.min(48, Math.round(result.matchScore * 0.6));
-        }
-        result.recommendation = 'Reject';
-        result.recommendationReason = `Capped score due to missing Must-Have criteria: ${missingMustHaves.join(', ')}. ` + result.recommendationReason;
-      }
-    }
-
-    if (result.redFlagsDetected && result.redFlagsDetected.length > 0) {
-      result.matchScore = Math.min(30, result.matchScore);
-      result.recommendation = 'Reject';
-      result.recommendationReason = `Disqualified due to Red Flag detected: ${result.redFlagsDetected.join(', ')}. ` + result.recommendationReason;
-    }
-
-    resumeAnalysisCache[cid] = result;
-    const cand = AppState.candidates.find(c => c.id === cid);
-    if (cand) { cand.score = `${result.matchScore}%`; saveStateToLocalStorage(); }
-    renderAnalysisResult(cid, result);
-    showPremiumToast('Resume analysis complete.', 'success');
-
-    appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Candidate <strong>${candidate ? candidate.name : cid}</strong> analysis complete. Match Score: <strong style="color: #10b981;">${result.matchScore}%</strong>. Recommendation: <strong>${result.recommendation}</strong>.`, result.recommendation === 'Advance' ? 'font-gold' : '');
-    return true;
+    result = JSON.parse(sanitizeJSONResponse(raw));
+    result.engine = 'deepseek';
+    normalizeDeepResult(result, config, criteria);
   } catch (err) {
-    console.warn('Real AI analysis failed, falling back to local scanning engine:', err);
-    appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> <span style="color: #f59e0b;">DeepSeek API offline or unauthorized. Engaging local rule-based parsing engine...</span>`);
-    
+    console.warn('AI analysis failed, using local deep-scan engine:', err);
+    appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> <span style="color: #f59e0b;">DeepSeek API offline. Engaging local deep-scan engine...</span>`);
     try {
-      const matched = [];
-      const missing = [];
-      const detected = [];
-      const redFlagsFound = [];
-
-      const commonSkills = ['JavaScript', 'TypeScript', 'React', 'Next.js', 'Node.js', 'Python', 'AWS', 'Docker', 'SQL', 'Git', 'HTML', 'CSS', 'Project Management', 'Agile', 'Scrum', 'DevOps', 'CI/CD'];
-      commonSkills.forEach(s => {
-        if (resumeText.toLowerCase().includes(s.toLowerCase())) {
-          detected.push(s);
-        }
-      });
-
-      criteria.mustHave.forEach(must => {
-        const cleanMust = must.replace(/[^\w\s]/g, '').toLowerCase().trim();
-        if (resumeText.toLowerCase().includes(cleanMust) || cleanMust.split(/\s+/).filter(w => w.length > 3).every(w => resumeText.toLowerCase().includes(w))) {
-          matched.push(must);
-        } else {
-          missing.push(must);
-        }
-      });
-
-      criteria.goodToHave.forEach(good => {
-        const cleanGood = good.replace(/[^\w\s]/g, '').toLowerCase().trim();
-        if (resumeText.toLowerCase().includes(cleanGood) || cleanGood.split(/\s+/).filter(w => w.length > 3).every(w => resumeText.toLowerCase().includes(w))) {
-          matched.push(good);
-        } else {
-          missing.push(good);
-        }
-      });
-
-      criteria.redFlags.forEach(flag => {
-        const cleanFlag = flag.replace(/[^\w\s]/g, '').toLowerCase().trim();
-        if (resumeText.toLowerCase().includes(cleanFlag)) {
-          redFlagsFound.push(flag);
-        }
-      });
-
-      const experienceYears = extractExperienceYearsFromText(resumeText);
-      let matchScore = 0;
-      if (criteria.mustHave.length > 0) {
-        const mustHaveRatio = matched.filter(m => criteria.mustHave.includes(m)).length / criteria.mustHave.length;
-        matchScore = Math.round(mustHaveRatio * 60);
-      } else {
-        matchScore += Math.min(40, detected.length * 8);
-      }
-      if (criteria.goodToHave.length > 0) {
-        const goodToHaveRatio = matched.filter(m => criteria.goodToHave.includes(m)).length / criteria.goodToHave.length;
-        matchScore += Math.round(goodToHaveRatio * 25);
-      } else {
-        matchScore += Math.min(20, detected.length * 4);
-      }
-      matchScore += Math.min(15, (detected.length * 2) + (experienceYears !== 'Not stated' ? 5 : 0));
-      matchScore = Math.max(0, Math.min(100, matchScore));
-
-      const technicalScore = matched.length > 0 ? Math.max(4, Math.round((matchScore / 100) * 10)) : (detected.length > 0 ? 5 : 2);
-      const experienceScore = experienceYears !== 'Not stated' ? Math.max(4, Math.round((matchScore / 100) * 9)) : 4;
-      const communicationScore = /\b(communication|presentation|stakeholder|client|collaboration)\b/i.test(resumeText) ? 6 : 5;
-      const cultureFitScore = /\b(team|collaboration|ownership|lead|mentor)\b/i.test(resumeText) ? 6 : 5;
-      const summaryEvidence = matched.length > 0
-        ? `Matched criteria found: ${matched.slice(0, 3).join(', ')}.`
-        : 'No configured criteria were directly matched in the resume text.';
-
-      const localResult = {
-        matchScore: matchScore,
-        summary: `Local scanning analysis: ${summaryEvidence} ${missing.length > 0 ? `Missing criteria: ${missing.slice(0, 2).join(', ')}.` : 'No configured missing criteria found.'}`,
-        experienceYears,
-        skills: {
-          detected: detected.slice(0, 6),
-          matched: matched,
-          missing: missing
-        },
-        redFlagsDetected: redFlagsFound,
-        scorecard: {
-          technical: Math.min(10, technicalScore),
-          experience: Math.min(10, experienceScore),
-          communication: Math.min(10, communicationScore),
-          cultureFit: Math.min(10, cultureFitScore)
-        },
-        recommendation: matchScore >= 70 ? 'Advance' : matchScore >= 45 ? 'Hold' : 'Reject',
-        recommendationReason: redFlagsFound.length > 0 ? `Rejected due to red flags: ${redFlagsFound.join(', ')}.` : `Score of ${matchScore}% yields ${matchScore >= 70 ? 'Advance' : matchScore >= 45 ? 'Hold' : 'Reject'} recommendation.`
-      };
-
-      if (missing.some(m => criteria.mustHave.includes(m))) {
-        localResult.matchScore = Math.min(48, Math.round(localResult.matchScore * 0.6));
-        localResult.recommendation = 'Reject';
-        localResult.recommendationReason = `Capped score due to missing Must-Have criteria: ${missing.filter(m => criteria.mustHave.includes(m)).join(', ')}. ` + localResult.recommendationReason;
-      }
-      if (redFlagsFound.length > 0) {
-        localResult.matchScore = Math.min(30, localResult.matchScore);
-        localResult.recommendation = 'Reject';
-      }
-
-      resumeAnalysisCache[cid] = localResult;
-      const cand = AppState.candidates.find(c => c.id === cid);
-      if (cand) { cand.score = `${localResult.matchScore}%`; saveStateToLocalStorage(); }
-      renderAnalysisResult(cid, localResult);
-      showPremiumToast('Resume analysis complete (Local fallback).', 'info');
-
-      appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Candidate <strong>${candidate ? candidate.name : cid}</strong> analysis complete. Match Score: <strong style="color: #10b981;">${localResult.matchScore}%</strong>. Recommendation: <strong>${localResult.recommendation}</strong>.`, localResult.recommendation === 'Advance' ? 'font-gold' : '');
-      return true;
+      result = buildLocalDeepAnalysis(resumeText, job, config, criteria);
     } catch (fallbackErr) {
-      console.error('Fallback failed:', fallbackErr);
+      console.error('Fallback analysis failed:', fallbackErr);
       showPremiumToast('Analysis failed — please try again.', 'error');
-      appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> <span style="color: #f43f5e;">Error during candidate evaluation: ${err.message}.</span>`);
-    }
-    if (btn) {
-      btn.disabled = false;
-      btn.innerHTML = origHTML;
+      if (btn) { btn.disabled = false; btn.innerHTML = origHTML; }
+      return false;
     }
   }
+
+  resumeAnalysisCache[cid] = result;
+  const cand = AppState.candidates.find(c => c.id === cid);
+  if (cand) {
+    cand.score = `${result.matchScore}%`;
+    cand.resumeAnalysis = result;
+    saveStateToLocalStorage();
+  }
+  renderAnalysisResult(cid, result);
+  showPremiumToast(result.engine === 'local' ? 'Resume analysed (local engine).' : 'Deep resume analysis complete.', 'success');
+  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> <strong>${candidate ? candidate.name : cid}</strong> scored <strong style="color: #10b981;">${result.matchScore}/100</strong> (weighted) → <strong>${result.recommendation}</strong>.`, result.recommendation === 'Advance' ? 'font-gold' : '');
+  return true;
 }
 
 function renderAnalysisResult(cid, result) {

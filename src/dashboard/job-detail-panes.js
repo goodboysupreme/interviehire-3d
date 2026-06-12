@@ -10,6 +10,7 @@ import { renderQuestionsPane } from './questions.js';
 import { filterCandidatesByDateRange, renderAnalyticsTable, renderJobCards, updateSummaryMetrics } from './render-views.js';
 import { openReportDrawerForCandidate } from './report.js';
 import { applyStageFilters, buildFilterDropdown, hasActiveFilters, openScheduleModal, renderResumeStagePaneForJob, toggleResumeCriteriaEdit } from './resume-analysis.js';
+import { renderScoringEditor } from './scoring-config.js';
 import { soundEngine } from './sound.js';
 import { showPremiumToast } from './sourcing.js';
 import { AppState } from './state.js';
@@ -135,6 +136,7 @@ function renderJobDetailPanes(job) {
         </div>
         <button class="btn-jd-ghost" id="btn-resume-edit-flow">Edit Rules in Job Flow</button>
       </div>
+      <div id="ra-scoring-editor-root"></div>
     `);
     document.getElementById('btn-resume-edit-flow')?.addEventListener('click', () => {
       openJobFlowView(job.id);
@@ -142,6 +144,9 @@ function renderJobDetailPanes(job) {
         document.querySelector('.jf-stage-card[data-stage="resumeAnalysis"]')?.click();
       });
     });
+
+    const scoringRoot = document.getElementById('ra-scoring-editor-root');
+    if (scoringRoot) renderScoringEditor(job, scoringRoot);
 
     const resumeCandContainer = document.getElementById('list-stage-resume-candidates');
     if (resumeCandContainer) {
