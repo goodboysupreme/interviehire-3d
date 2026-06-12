@@ -3,12 +3,9 @@ import { gsap } from 'gsap';
 import { SoundEngine, soundEngine } from './dashboard/sound.js';
 import { AppState } from './dashboard/state.js';
 import { CandidateVettingDetails, activeCandidateSubTabs, getCandidateVettingDetails } from './dashboard/data.js';
-import { extractTextFromResumeFile, checkAllResumesDone } from './dashboard/resume-parser.js';
+import { extractTextFromResumeFile, importResumesCandidates, extractCandidateNameFromFilename, extractResumeIdentity, normalizeResumeText, extractResumeEmail, extractResumePhone, extractResumeLinkedIn, extractExplicitResumeName, extractHeaderResumeName, cleanNameLine, normalizeCandidateName, isLikelyPersonName, nameFromEmail, createPlaceholderEmail, checkAllResumesDone } from './dashboard/resume-parser.js';
 import { addCandidateToManualQueue, removeCandidateFromQueue, renderManualQueue, importManualQueue } from './dashboard/queue.js';
 import { initKanbanDragAndDrop, renderColumnsSelectorDropdowns } from './dashboard/kanban.js';
-import { resumeTextCache, resumeIdentityCache, resumeAnalysisCache, reportChatCache, cacheResumeTextAndIdentity, refreshResumeCandidateRowIdentity, generateAutoResumeAnalysis, renderResumeStagePaneForJob, bindResumeAnalysisEvents, extractNameFromResumeText, handleResumeFile, generateSyntheticResume, isGarbageText, extractExperienceYearsFromText, runResumeAnalysis, renderAnalysisResult, runBulkResumeAnalysis, toggleResumeCriteriaEdit } from './dashboard/resume-analysis.js';
-import { openScheduleModal, buildFilterDropdown, applyStageFilters, hasActiveFilters } from './dashboard/filters.js';
-import { renderJobDetailPanes, updateCandidateStatus } from './dashboard/pipeline.js';
 
 // Ensure THREE is globally accessible but shadow it in the init function
 if (typeof window !== 'undefined') {
@@ -5876,8 +5873,1610 @@ function showPremiumToast(message, type = 'success') {
   }, 2800);
 }
 
+const resumeTextCache = {};
+const resumeIdentityCache = {};
+const resumeAnalysisCache = {};
+const reportChatCache = {};
+
+function cacheResumeTextAndIdentity(cid, text, filename = '') {
+  if (!text || isGarbageText(text)) return null;
+
+  resumeTextCache[cid] = text;
+  const candidate = AppState.candidates.find(c => c.id === cid);
+  const identity = extractResumeIdentity(text, candidate?.name || '', filename);
+  resumeIdentityCache[cid] = identity;
+
+  if (candidate) {
+    if (identity.name && identity.source !== 'filename') candidate.name = identity.name;
+    if (identity.email) candidate.email = identity.email;
+    if (identity.phone) candidate.phone = identity.phone;
+    if (identity.linkedin) candidate.linkedin = identity.linkedin;
+    candidate.resumeIdentitySource = identity.source;
+    saveStateToLocalStorage();
+    refreshResumeCandidateRowIdentity(cid);
+  }
+
+  return identity;
+}
+
+function refreshResumeCandidateRowIdentity(cid) {
+  const candidate = AppState.candidates.find(c => c.id === cid);
+  const row = document.querySelector(`tr[data-cid="${cid}"]`);
+  if (!candidate || !row) return;
+
+  const nameEl = row.querySelector('.cand-name-link');
+  const emailEl = row.querySelector('.cand-email-sub');
+  if (nameEl) nameEl.textContent = candidate.name;
+  if (emailEl) emailEl.textContent = candidate.email || 'No email found';
+}
+
+function generateAutoResumeAnalysis(candidateName) {
+  // Strictly resume-analysis only — no hallucinated later-stage data
+  const matchScore = Math.round(50 + Math.random() * 45);
+  return {
+    matchScore,
+    summary: `${candidateName}'s resume shows relevant experience and skills for the role.`,
+    skills: {
+      detected: ['Communication', 'Project Management'],
+      matched: ['Proposal Writing'],
+      missing: []
+    },
+    recommendation: matchScore >= 70 ? 'Advance' : 'Hold'
+  };
+}
+
+function renderResumeStagePaneForJob(candidates, job, container) {
+  const getMatchClass = (score) => {
+    if (score >= 75) return 'high';
+    if (score >= 50) return 'medium';
+    if (score > 0) return 'low';
+    return 'pending';
+  };
+
+  const getRecBadge = (rec) => {
+    if (!rec) return '';
+    const cls = rec === 'Advance' ? 'high' : rec === 'Hold' ? 'medium' : 'low';
+    return `<span class="ra-rec-badge ${cls}">${rec}</span>`;
+  };
+
+  const pendingCount = candidates.filter(c => !resumeAnalysisCache[c.id]).length;
+  const analysedCount = candidates.length - pendingCount;
+
+  container.innerHTML = `
+    <div class="stage-table-container">
+      <div class="ra-toolbar">
+        <div class="ra-toolbar-left">
+          <span class="ra-toolbar-stat">${analysedCount} analysed</span>
+          <span class="ra-toolbar-stat pending">${pendingCount} pending</span>
+        </div>
+        <div class="ra-toolbar-right">
+          ${pendingCount > 0 ? `<button class="btn-ra-analyse-all" id="btn-ra-analyse-all">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Analyse All (${pendingCount})
+          </button>` : ''}
+        </div>
+      </div>
+      <div class="ra-table-wrapper">
+        <table class="ra-data-table">
+          <thead>
+            <tr>
+              <th style="width:36px;"><input type="checkbox" class="table-checkbox-all" /></th>
+              <th>Candidate</th>
+              <th>Match</th>
+              <th>Recommendation</th>
+              <th>Resume Input</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${candidates.map(c => {
+              const cached = resumeAnalysisCache[c.id];
+              const score = cached ? cached.matchScore : 0;
+              const matchClass = getMatchClass(score);
+              const isAnalysed = !!cached;
+              const hasText = !!resumeTextCache[c.id];
+              return `
+                <tr data-candidate-id="${c.id}" data-cid="${c.id}" class="${isAnalysed ? 'ra-row-done' : ''}">
+                  <td><input type="checkbox" class="table-checkbox-row" /></td>
+                  <td>
+                    <div class="table-candidate-cell">
+                      <span class="cand-name-link">${c.name}</span>
+                      <span class="cand-email-sub">${c.email}</span>
+                      ${isAnalysed && cached.summary ? `<span class="ra-summary-preview">${cached.summary.slice(0, 90)}${cached.summary.length > 90 ? '…' : ''}</span>` : ''}
+                    </div>
+                  </td>
+                  <td>
+                    <span class="ra-match-pill ${matchClass}">${isAnalysed ? score + '%' : '—'}</span>
+                  </td>
+                  <td>
+                    ${isAnalysed ? getRecBadge(cached.recommendation) : '<span class="ra-status-badge pending">Pending</span>'}
+                  </td>
+                  <td>
+                    <div class="ra-input-cell">
+                      <input type="file" id="ra-file-${c.id}" accept=".pdf,.doc,.docx,.txt" hidden>
+                      ${isAnalysed
+                        ? `<button class="btn-ra-view-resume" data-cid="${c.id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            View Report
+                          </button>`
+                        : `<div class="ra-input-group">
+                            <button class="btn-ra-upload" data-cid="${c.id}" title="Upload resume file">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                              ${hasText ? 'Replace' : 'Upload'}
+                            </button>
+                            <span class="ra-file-status ${hasText ? 'has-file' : ''}">${hasText ? 'Text loaded' : 'No file'}</span>
+                            <button class="btn-ra-analyse" data-cid="${c.id}" id="ra-btn-${c.id}">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                              Analyse
+                            </button>
+                          </div>`
+                      }
+                      ${!isAnalysed ? `<textarea id="ra-paste-${c.id}" class="ra-paste-area" placeholder="Or paste resume text here..." rows="2"></textarea>` : ''}
+                    </div>
+                  </td>
+                  <td>
+                    <div class="ra-action-btns">
+                      <button class="btn-stage-reject" data-candidate-id="${c.id}">Reject</button>
+                      <button class="btn-stage-advance" data-candidate-id="${c.id}" data-next-stage="Screening">Advance</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="stage-table-footer">
+        <span class="table-selection-info">${candidates.length} candidate${candidates.length !== 1 ? 's' : ''} in resume analysis</span>
+        <div class="table-pagination">
+          <span>Page 1 of 1</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  bindResumeAnalysisEvents(job);
+}
+
+function bindResumeAnalysisEvents(job) {
+  document.querySelectorAll('.ra-data-table tr[data-cid]').forEach(row => {
+    const cid = row.dataset.cid;
+    const fileInput = document.getElementById(`ra-file-${cid}`);
+    const analyseBtn = row.querySelector('.btn-ra-analyse');
+    const viewBtn = row.querySelector('.btn-ra-view-resume');
+    const uploadBtn = row.querySelector('.btn-ra-upload');
+    const pasteArea = document.getElementById(`ra-paste-${cid}`);
+
+    uploadBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInput?.click();
+    });
+
+    fileInput?.addEventListener('change', async () => {
+      if (fileInput.files[0]) {
+        await handleResumeFile(cid, fileInput.files[0]);
+        const badge = row.querySelector('.ra-file-status');
+        if (badge) {
+          badge.textContent = fileInput.files[0].name;
+          badge.classList.add('has-file');
+        }
+      }
+    });
+
+    analyseBtn?.addEventListener('click', async () => {
+      const hasPaste = pasteArea && pasteArea.value.trim().length > 20;
+      const hasFile = resumeTextCache[cid];
+
+      if (!hasPaste && !hasFile) {
+        runResumeAnalysis(cid, job);
+        return;
+      }
+
+      if (pasteArea && pasteArea.value.trim()) {
+        const existing = resumeTextCache[cid] || '';
+        cacheResumeTextAndIdentity(cid, (existing + '\n' + pasteArea.value.trim()).trim(), 'pasted resume');
+      }
+      runResumeAnalysis(cid, job);
+    });
+
+    viewBtn?.addEventListener('click', () => {
+      if (resumeAnalysisCache[cid]) {
+        openReportDrawerForCandidate(cid);
+      }
+    });
+  });
+
+  const analyseAllBtn = document.getElementById('btn-ra-analyse-all');
+  analyseAllBtn?.addEventListener('click', () => {
+    const pendingCids = [];
+    document.querySelectorAll('.ra-data-table tr[data-cid]').forEach(row => {
+      if (!resumeAnalysisCache[row.dataset.cid]) {
+        pendingCids.push(row.dataset.cid);
+      }
+    });
+    if (pendingCids.length === 0) {
+      showPremiumToast('All candidates already analysed.', 'info');
+      return;
+    }
+    runBulkResumeAnalysis(pendingCids, job);
+  });
+}
 
 
+function extractNameFromResumeText(text) {
+  return extractResumeIdentity(text).name || null;
+}
+async function handleResumeFile(cid, file) {
+  const isPdfOrDocx = /\.(pdf|docx?)$/i.test(file.name);
+
+  if (isPdfOrDocx) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const resp = await fetch('/api/parse-file', { method: 'POST', body: formData });
+      if (!resp.ok) throw new Error('Parse failed');
+      const data = await resp.json();
+      if (data.text && !isGarbageText(data.text)) {
+        const identity = cacheResumeTextAndIdentity(cid, data.text, file.name);
+        showPremiumToast(`${file.name} parsed — ${data.text.split('\\n').length} lines extracted.`, 'success');
+      } else {
+        resumeTextCache[cid] = null;
+        showPremiumToast(`${file.name} — could not extract text, will generate profile.`, 'info');
+      }
+    } catch {
+      resumeTextCache[cid] = null;
+      showPremiumToast(`Could not parse ${file.name} — will generate candidate profile.`, 'info');
+    }
+    return;
+  }
+
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const text = e.target.result;
+      if (isGarbageText(text)) {
+        resumeTextCache[cid] = null;
+        showPremiumToast(`${file.name} loaded — binary content, will generate candidate profile.`, 'info');
+      } else {
+        cacheResumeTextAndIdentity(cid, text, file.name);
+        showPremiumToast(`${file.name} loaded — ${text.split('\\n').length} lines extracted.`, 'success');
+      }
+      resolve();
+    };
+    reader.onerror = () => {
+      resumeTextCache[cid] = null;
+      showPremiumToast(`Could not read ${file.name} — will generate candidate profile.`, 'info');
+      resolve();
+    };
+    reader.readAsText(file);
+  });
+}
+
+function generateSyntheticResume(candidate, job) {
+  const allSkills = {
+    'Full Stack Developer': {
+      core: ['JavaScript', 'React', 'Node.js', 'PostgreSQL', 'TypeScript', 'REST APIs', 'Git', 'Docker', 'AWS', 'MongoDB', 'GraphQL', 'Redis', 'Express.js', 'Next.js', 'CI/CD', 'Kubernetes'],
+      companies: ['Infosys', 'TCS', 'Wipro', 'Flipkart', 'Razorpay', 'Swiggy', 'Paytm', 'Zoho'],
+      tasks: ['Built responsive web dashboards serving 50K+ daily users', 'Implemented RESTful microservices reducing API latency by 40%', 'Led migration from monolith to microservices architecture', 'Designed and maintained CI/CD pipelines with GitHub Actions', 'Optimized database queries resulting in 3x faster page loads', 'Mentored 3 junior developers on React best practices']
+    },
+    'Government Tender & Proposal Executive': {
+      core: ['Proposal Writing', 'RFP Analysis', 'Compliance', 'GeM Portal', 'SAP Ariba', 'Tender Management', 'Government Procurement', 'Documentation', 'MS Office', 'Contract Negotiation', 'Bid Management', 'CPPP Portal', 'Public Procurement', 'Financial Proposals'],
+      companies: ['L&T', 'BHEL', 'NTPC', 'Tata Projects', 'Adani Group', 'GMR Group', 'HCL Infra'],
+      tasks: ['Managed end-to-end tender lifecycle for 20+ government contracts', 'Drafted technical and financial proposals worth INR 50Cr+', 'Ensured 100% compliance with GeM and CPPP portal requirements', 'Coordinated with legal and finance teams for bid documentation', 'Won 15 government contracts through competitive bidding process', 'Maintained vendor database with 200+ suppliers']
+    }
+  };
+  const profile = allSkills[job.roleName] || allSkills['Full Stack Developer'];
+  const shuffled = [...profile.core].sort(() => 0.5 - Math.random());
+  const numSkills = 6 + Math.floor(Math.random() * 5);
+  const picked = shuffled.slice(0, numSkills);
+  const yrs = 1 + Math.floor(Math.random() * 7);
+  const company1 = profile.companies[Math.floor(Math.random() * profile.companies.length)];
+  const company2 = profile.companies.filter(c => c !== company1)[Math.floor(Math.random() * (profile.companies.length - 1))];
+  const tasks = [...profile.tasks].sort(() => 0.5 - Math.random()).slice(0, 3);
+  const tasks2 = [...profile.tasks].sort(() => 0.5 - Math.random()).slice(0, 2);
+
+  return `RESUME
+
+Name: ${candidate.name}
+Email: ${candidate.email}
+Phone: ${candidate.phone}
+
+PROFESSIONAL SUMMARY
+Results-driven professional with ${yrs} years of experience in ${job.roleName.toLowerCase()} roles. Strong background in ${picked.slice(0, 3).join(', ')} with a proven ability to deliver high-quality outcomes under deadline pressure.
+
+TECHNICAL SKILLS
+${picked.join(' | ')}
+
+WORK EXPERIENCE
+
+${job.roleName} — ${company1} (${Math.max(yrs - 2, 1)} years, current)
+${tasks.map(t => '  - ' + t).join('\n')}
+
+Associate ${job.roleName} — ${company2} (2 years)
+${tasks2.map(t => '  - ' + t).join('\n')}
+
+EDUCATION
+B.Tech in Computer Science — Indian Institute of Technology, Delhi (2018-2022)
+CGPA: ${(7 + Math.random() * 2.5).toFixed(1)}/10
+
+CERTIFICATIONS
+- AWS Certified Solutions Architect (2024)
+- Google Project Management Certificate (2023)`;
+}
+
+function isGarbageText(text) {
+  if (!text || text.length < 20) return true;
+  const printable = text.replace(/[^\x20-\x7E\n\r\t]/g, '');
+  return printable.length / text.length < 0.7;
+}
+
+function extractExperienceYearsFromText(text) {
+  const matches = [...String(text || '').matchAll(/(\d+(?:\.\d+)?)\+?\s*(?:years?|yrs?)\s+(?:of\s+)?experience/gi)];
+  if (!matches.length) return 'Not stated';
+  const years = Math.max(...matches.map(match => Number(match[1])).filter(Number.isFinite));
+  return `${years} year${years === 1 ? '' : 's'}`;
+}
+
+async function runResumeAnalysis(cid, job) {
+  const pasteArea = document.getElementById(`ra-paste-${cid}`);
+  const btn = document.getElementById(`ra-btn-${cid}`);
+  let resumeText = ((resumeTextCache[cid] || '') + '\n' + (pasteArea?.value || '')).trim();
+  const candidate = AppState.candidates.find(c => c.id === cid);
+  if (!resumeText || isGarbageText(resumeText)) {
+    showPremiumToast('Upload a resume or paste resume text first.', 'error');
+    return false;
+  }
+
+  const origHTML = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="ra-spinner"></span> Analysing…`;
+  }
+
+  const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [] };
+  const criteriaBlock = criteria.mustHave.length > 0 ? `
+SCREENING CRITERIA:
+Must Have: ${criteria.mustHave.join('; ')}
+Red Flags (reject if present): ${criteria.redFlags.join('; ')}
+Good to Have (bonus): ${criteria.goodToHave.join('; ')}` : '';
+
+  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Initiated resume analysis for Candidate <strong>${candidate ? candidate.name : cid}</strong>...`);
+  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Extracting skills and matching criteria against job: <strong>${job.roleName}</strong>...`);
+
+  const systemPrompt = `You are Lina, an expert ATS resume analyst for IntervieHire. You perform rigorous, criteria-driven resume screening.
+
+TASK: Analyse the resume against the job requirements and screening criteria. Score honestly — do NOT inflate scores. A candidate missing must-have skills should score below 50.
+
+SCORING RULES:
+- matchScore: 0–100 overall fit. Weight must-have criteria at 60%, experience at 20%, good-to-have at 20%.
+- scorecard values: 0.0–10.0 each.
+- If the resume is clearly auto-generated or lacks real detail, cap matchScore at 40 and note it.
+- recommendation: "Advance" if matchScore >= 70, "Hold" if 45-69, "Reject" if < 45.
+
+STRICT SKILL RULES:
+- "missing" must ONLY contain skills from the Must Have or Good to Have criteria that the candidate lacks. NEVER invent skills not listed in the job criteria.
+- "matched" must ONLY contain skills from the criteria that the candidate demonstrably has.
+- "detected" lists other relevant skills found in the resume (keep to top 6).
+- Do NOT hallucinate technical skills irrelevant to the role.
+
+Respond ONLY with a valid JSON object — no markdown fences, no extra text:
+{
+  "matchScore": number,
+  "summary": "2-3 sentence assessment with specific evidence from resume",
+  "experienceYears": "e.g. 4 years",
+  "skills": {
+    "detected": ["other relevant skills from resume, max 6"],
+    "matched": ["criteria skills the candidate has"],
+    "missing": ["criteria skills the candidate lacks — ONLY from Must Have and Good to Have lists"]
+  },
+  "redFlagsDetected": ["list any red flags from the job criteria list that were found in this resume. Keep empty if none found."],
+  "scorecard": {
+    "technical": number,
+    "experience": number,
+    "communication": number,
+    "cultureFit": number
+  },
+  "recommendation": "Advance|Hold|Reject",
+  "recommendationReason": "1 sentence with specific reason"
+}`;
+
+  const userMsg = `JOB: ${job.cardName} (${job.roleName})
+Experience Required: ${job.experienceBand}
+Description: ${job.description || '(Not provided)'}${criteriaBlock}
+
+--- CANDIDATE RESUME ---
+${resumeText.slice(0, 4000)}`;
+
+  try {
+    const raw = await callDeepSeekAPI(
+      [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }],
+      true
+    );
+    const result = JSON.parse(sanitizeJSONResponse(raw));
+
+    // Ensure structure conforms safely to prevent runtime crashes
+    if (typeof result.matchScore !== 'number') result.matchScore = parseInt(result.matchScore) || 0;
+    if (!result.skills) result.skills = { detected: [], matched: [], missing: [] };
+    if (!result.skills.detected) result.skills.detected = [];
+    if (!result.skills.matched) result.skills.matched = [];
+    if (!result.skills.missing) result.skills.missing = [];
+    if (!result.scorecard) result.scorecard = { technical: 5, experience: 5, communication: 5, cultureFit: 5 };
+    if (typeof result.scorecard.technical !== 'number') result.scorecard.technical = parseFloat(result.scorecard.technical) || 5;
+    if (typeof result.scorecard.experience !== 'number') result.scorecard.experience = parseFloat(result.scorecard.experience) || 5;
+    if (typeof result.scorecard.communication !== 'number') result.scorecard.communication = parseFloat(result.scorecard.communication) || 5;
+    if (typeof result.scorecard.cultureFit !== 'number') result.scorecard.cultureFit = parseFloat(result.scorecard.cultureFit) || 5;
+    if (!result.recommendation) result.recommendation = result.matchScore >= 70 ? 'Advance' : result.matchScore >= 45 ? 'Hold' : 'Reject';
+    if (!result.recommendationReason) result.recommendationReason = 'Screened against job requirements.';
+
+    // Post-processing programmatic guardrails for extreme consistency
+    if (result.skills && result.skills.missing && criteria.mustHave.length > 0) {
+      const missingMustHaves = result.skills.missing.filter(missingSkill => {
+        return criteria.mustHave.some(must => {
+          const mLower = must.toLowerCase();
+          const msLower = missingSkill.toLowerCase();
+          return mLower.includes(msLower) || msLower.includes(mLower);
+        });
+      });
+      if (missingMustHaves.length > 0) {
+        if (result.matchScore >= 50) {
+          result.matchScore = Math.min(48, Math.round(result.matchScore * 0.6));
+        }
+        result.recommendation = 'Reject';
+        result.recommendationReason = `Capped score due to missing Must-Have criteria: ${missingMustHaves.join(', ')}. ` + result.recommendationReason;
+      }
+    }
+
+    if (result.redFlagsDetected && result.redFlagsDetected.length > 0) {
+      result.matchScore = Math.min(30, result.matchScore);
+      result.recommendation = 'Reject';
+      result.recommendationReason = `Disqualified due to Red Flag detected: ${result.redFlagsDetected.join(', ')}. ` + result.recommendationReason;
+    }
+
+    resumeAnalysisCache[cid] = result;
+    const cand = AppState.candidates.find(c => c.id === cid);
+    if (cand) { cand.score = `${result.matchScore}%`; saveStateToLocalStorage(); }
+    renderAnalysisResult(cid, result);
+    showPremiumToast('Resume analysis complete.', 'success');
+
+    appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Candidate <strong>${candidate ? candidate.name : cid}</strong> analysis complete. Match Score: <strong style="color: #10b981;">${result.matchScore}%</strong>. Recommendation: <strong>${result.recommendation}</strong>.`, result.recommendation === 'Advance' ? 'font-gold' : '');
+    return true;
+  } catch (err) {
+    console.warn('Real AI analysis failed, falling back to local scanning engine:', err);
+    appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> <span style="color: #f59e0b;">DeepSeek API offline or unauthorized. Engaging local rule-based parsing engine...</span>`);
+    
+    try {
+      const matched = [];
+      const missing = [];
+      const detected = [];
+      const redFlagsFound = [];
+
+      const commonSkills = ['JavaScript', 'TypeScript', 'React', 'Next.js', 'Node.js', 'Python', 'AWS', 'Docker', 'SQL', 'Git', 'HTML', 'CSS', 'Project Management', 'Agile', 'Scrum', 'DevOps', 'CI/CD'];
+      commonSkills.forEach(s => {
+        if (resumeText.toLowerCase().includes(s.toLowerCase())) {
+          detected.push(s);
+        }
+      });
+
+      criteria.mustHave.forEach(must => {
+        const cleanMust = must.replace(/[^\w\s]/g, '').toLowerCase().trim();
+        if (resumeText.toLowerCase().includes(cleanMust) || cleanMust.split(/\s+/).filter(w => w.length > 3).every(w => resumeText.toLowerCase().includes(w))) {
+          matched.push(must);
+        } else {
+          missing.push(must);
+        }
+      });
+
+      criteria.goodToHave.forEach(good => {
+        const cleanGood = good.replace(/[^\w\s]/g, '').toLowerCase().trim();
+        if (resumeText.toLowerCase().includes(cleanGood) || cleanGood.split(/\s+/).filter(w => w.length > 3).every(w => resumeText.toLowerCase().includes(w))) {
+          matched.push(good);
+        } else {
+          missing.push(good);
+        }
+      });
+
+      criteria.redFlags.forEach(flag => {
+        const cleanFlag = flag.replace(/[^\w\s]/g, '').toLowerCase().trim();
+        if (resumeText.toLowerCase().includes(cleanFlag)) {
+          redFlagsFound.push(flag);
+        }
+      });
+
+      const experienceYears = extractExperienceYearsFromText(resumeText);
+      let matchScore = 0;
+      if (criteria.mustHave.length > 0) {
+        const mustHaveRatio = matched.filter(m => criteria.mustHave.includes(m)).length / criteria.mustHave.length;
+        matchScore = Math.round(mustHaveRatio * 60);
+      } else {
+        matchScore += Math.min(40, detected.length * 8);
+      }
+      if (criteria.goodToHave.length > 0) {
+        const goodToHaveRatio = matched.filter(m => criteria.goodToHave.includes(m)).length / criteria.goodToHave.length;
+        matchScore += Math.round(goodToHaveRatio * 25);
+      } else {
+        matchScore += Math.min(20, detected.length * 4);
+      }
+      matchScore += Math.min(15, (detected.length * 2) + (experienceYears !== 'Not stated' ? 5 : 0));
+      matchScore = Math.max(0, Math.min(100, matchScore));
+
+      const technicalScore = matched.length > 0 ? Math.max(4, Math.round((matchScore / 100) * 10)) : (detected.length > 0 ? 5 : 2);
+      const experienceScore = experienceYears !== 'Not stated' ? Math.max(4, Math.round((matchScore / 100) * 9)) : 4;
+      const communicationScore = /\b(communication|presentation|stakeholder|client|collaboration)\b/i.test(resumeText) ? 6 : 5;
+      const cultureFitScore = /\b(team|collaboration|ownership|lead|mentor)\b/i.test(resumeText) ? 6 : 5;
+      const summaryEvidence = matched.length > 0
+        ? `Matched criteria found: ${matched.slice(0, 3).join(', ')}.`
+        : 'No configured criteria were directly matched in the resume text.';
+
+      const localResult = {
+        matchScore: matchScore,
+        summary: `Local scanning analysis: ${summaryEvidence} ${missing.length > 0 ? `Missing criteria: ${missing.slice(0, 2).join(', ')}.` : 'No configured missing criteria found.'}`,
+        experienceYears,
+        skills: {
+          detected: detected.slice(0, 6),
+          matched: matched,
+          missing: missing
+        },
+        redFlagsDetected: redFlagsFound,
+        scorecard: {
+          technical: Math.min(10, technicalScore),
+          experience: Math.min(10, experienceScore),
+          communication: Math.min(10, communicationScore),
+          cultureFit: Math.min(10, cultureFitScore)
+        },
+        recommendation: matchScore >= 70 ? 'Advance' : matchScore >= 45 ? 'Hold' : 'Reject',
+        recommendationReason: redFlagsFound.length > 0 ? `Rejected due to red flags: ${redFlagsFound.join(', ')}.` : `Score of ${matchScore}% yields ${matchScore >= 70 ? 'Advance' : matchScore >= 45 ? 'Hold' : 'Reject'} recommendation.`
+      };
+
+      if (missing.some(m => criteria.mustHave.includes(m))) {
+        localResult.matchScore = Math.min(48, Math.round(localResult.matchScore * 0.6));
+        localResult.recommendation = 'Reject';
+        localResult.recommendationReason = `Capped score due to missing Must-Have criteria: ${missing.filter(m => criteria.mustHave.includes(m)).join(', ')}. ` + localResult.recommendationReason;
+      }
+      if (redFlagsFound.length > 0) {
+        localResult.matchScore = Math.min(30, localResult.matchScore);
+        localResult.recommendation = 'Reject';
+      }
+
+      resumeAnalysisCache[cid] = localResult;
+      const cand = AppState.candidates.find(c => c.id === cid);
+      if (cand) { cand.score = `${localResult.matchScore}%`; saveStateToLocalStorage(); }
+      renderAnalysisResult(cid, localResult);
+      showPremiumToast('Resume analysis complete (Local fallback).', 'info');
+
+      appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Candidate <strong>${candidate ? candidate.name : cid}</strong> analysis complete. Match Score: <strong style="color: #10b981;">${localResult.matchScore}%</strong>. Recommendation: <strong>${localResult.recommendation}</strong>.`, localResult.recommendation === 'Advance' ? 'font-gold' : '');
+      return true;
+    } catch (fallbackErr) {
+      console.error('Fallback failed:', fallbackErr);
+      showPremiumToast('Analysis failed — please try again.', 'error');
+      appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> <span style="color: #f43f5e;">Error during candidate evaluation: ${err.message}.</span>`);
+    }
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHTML;
+    }
+  }
+}
+
+function renderAnalysisResult(cid, result) {
+  const row = document.querySelector(`tr[data-cid="${cid}"]`);
+  if (!row) return;
+
+  row.classList.add('ra-row-done');
+  const tds = row.querySelectorAll('td');
+
+  const matchClass = result.matchScore >= 75 ? 'high' : result.matchScore >= 50 ? 'medium' : 'low';
+  if (tds[1]) {
+    const cell = tds[1].querySelector('.table-candidate-cell');
+    if (cell && result.summary) {
+      const existing = cell.querySelector('.ra-summary-preview');
+      if (existing) existing.remove();
+      const span = document.createElement('span');
+      span.className = 'ra-summary-preview';
+      span.textContent = result.summary.slice(0, 90) + (result.summary.length > 90 ? '…' : '');
+      cell.appendChild(span);
+    }
+  }
+  if (tds[2]) {
+    tds[2].innerHTML = `<span class="ra-match-pill ${matchClass}">${result.matchScore}%</span>`;
+  }
+  if (tds[3]) {
+    const recCls = result.recommendation === 'Advance' ? 'high' : result.recommendation === 'Hold' ? 'medium' : 'low';
+    tds[3].innerHTML = `<span class="ra-rec-badge ${recCls}">${result.recommendation}</span>`;
+  }
+  if (tds[4]) {
+    tds[4].innerHTML = `<div class="ra-input-cell">
+      <button class="btn-ra-view-resume" data-cid="${cid}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        View Report
+      </button>
+    </div>`;
+    tds[4].querySelector('.btn-ra-view-resume')?.addEventListener('click', () => {
+      openReportDrawerForCandidate(cid);
+    });
+  }
+
+  const pendingBtns = document.querySelectorAll('.btn-ra-analyse-all, .ra-toolbar-stat.pending');
+  const remaining = document.querySelectorAll('tr[data-cid]:not(.ra-row-done)').length;
+  pendingBtns.forEach(el => {
+    if (el.classList.contains('ra-toolbar-stat')) {
+      el.textContent = `${remaining} pending`;
+    } else if (remaining === 0) {
+      el.style.display = 'none';
+    } else {
+      el.innerHTML = el.innerHTML.replace(/\(\d+\)/, `(${remaining})`);
+    }
+  });
+  const analysedStat = document.querySelector('.ra-toolbar-stat:not(.pending)');
+  if (analysedStat) {
+    const done = document.querySelectorAll('tr.ra-row-done').length;
+    analysedStat.textContent = `${done} analysed`;
+  }
+}
+
+async function runBulkResumeAnalysis(candidateIds, job) {
+  const pending = candidateIds.filter(id => !resumeAnalysisCache[id]);
+  if (pending.length === 0) {
+    showPremiumToast('All candidates already analysed.', 'info');
+    return;
+  }
+  showPremiumToast(`Analysing ${pending.length} candidate${pending.length > 1 ? 's' : ''}…`, 'info');
+  let done = 0;
+  for (const cid of pending) {
+    try {
+      const ok = await runResumeAnalysis(cid, job);
+      if (ok === true) done++;
+    } catch {
+      showPremiumToast(`Failed to analyse candidate ${cid}, continuing…`, 'error');
+    }
+  }
+  showPremiumToast(`Bulk analysis complete: ${done}/${pending.length} succeeded.`, done === pending.length ? 'success' : 'info');
+}
+
+function toggleResumeCriteriaEdit(job) {
+  const section = document.querySelector('.ra-config-section');
+  if (!section) return;
+
+  const isEditing = section.classList.contains('editing');
+  if (isEditing) {
+    // Save mode
+    section.classList.remove('editing');
+    const criteria = { mustHave: [], redFlags: [], goodToHave: [], goodToHaveMinMatch: 1 };
+    section.querySelectorAll('.ra-criteria-group.must-have .ra-criteria-edit-input').forEach(input => {
+      if (input.value.trim()) criteria.mustHave.push(input.value.trim());
+    });
+    section.querySelectorAll('.ra-criteria-group.red-flags .ra-criteria-edit-input').forEach(input => {
+      if (input.value.trim()) criteria.redFlags.push(input.value.trim());
+    });
+    section.querySelectorAll('.ra-criteria-group.good-to-have .ra-criteria-edit-input').forEach(input => {
+      if (input.value.trim()) criteria.goodToHave.push(input.value.trim());
+    });
+    const minMatch = section.querySelector('.ra-min-match-input');
+    if (minMatch) criteria.goodToHaveMinMatch = parseInt(minMatch.value) || 1;
+
+    job.resumeCriteria = criteria;
+    saveStateToLocalStorage();
+    showPremiumToast('Resume criteria saved.', 'success');
+
+    // Re-render by triggering the pane render
+    const resumeList = document.getElementById('list-stage-resume');
+    if (resumeList) {
+      const jobCandidates = AppState.candidates.filter(c => {
+        const jTitle = c.jobApplied;
+        return jTitle === job.roleName || jTitle === job.cardName;
+      });
+      const resumeCands = jobCandidates.filter(c => c.status === 'Resume');
+      // trigger full re-render by calling renderJobDetailPanes
+      if (typeof renderJobDetailPanes === 'function') renderJobDetailPanes(job);
+    }
+    return;
+  }
+
+  // Enter edit mode
+  section.classList.add('editing');
+  const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [], goodToHaveMinMatch: 1 };
+
+  const editBtn = document.getElementById('btn-ra-edit-criteria');
+  if (editBtn) {
+    editBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Save';
+  }
+
+  // Transform criteria items into editable inputs
+  section.querySelectorAll('.ra-criteria-items').forEach(itemsContainer => {
+    const group = itemsContainer.closest('.ra-criteria-group');
+    const groupType = group.classList.contains('must-have') ? 'mustHave' : group.classList.contains('red-flags') ? 'redFlags' : 'goodToHave';
+    const items = criteria[groupType] || [];
+
+    itemsContainer.innerHTML = items.map((item, i) => `
+      <div class="ra-criteria-item-edit">
+        <span class="ra-criteria-num ${group.classList[1]}">${i + 1}</span>
+        <input type="text" class="ra-criteria-edit-input" value="${item}" />
+        <button class="btn-ra-remove-criteria" data-group="${groupType}" data-idx="${i}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    `).join('') + `
+      <button class="btn-ra-add-criteria" data-group="${groupType}">+ Add Criterion</button>
+    `;
+
+    // Add button handlers
+    itemsContainer.querySelectorAll('.btn-ra-remove-criteria').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.closest('.ra-criteria-item-edit').remove();
+        // Re-number
+        itemsContainer.querySelectorAll('.ra-criteria-num').forEach((num, idx) => {
+          num.textContent = idx + 1;
+        });
+      });
+    });
+
+    itemsContainer.querySelector('.btn-ra-add-criteria')?.addEventListener('click', () => {
+      const addBtn = itemsContainer.querySelector('.btn-ra-add-criteria');
+      const newItem = document.createElement('div');
+      newItem.className = 'ra-criteria-item-edit';
+      const count = itemsContainer.querySelectorAll('.ra-criteria-item-edit').length + 1;
+      newItem.innerHTML = `
+        <span class="ra-criteria-num ${group.classList[1]}">${count}</span>
+        <input type="text" class="ra-criteria-edit-input" value="" placeholder="Enter criterion..." />
+        <button class="btn-ra-remove-criteria">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      `;
+      itemsContainer.insertBefore(newItem, addBtn);
+      newItem.querySelector('.btn-ra-remove-criteria').addEventListener('click', () => {
+        newItem.remove();
+        itemsContainer.querySelectorAll('.ra-criteria-num').forEach((num, idx) => { num.textContent = idx + 1; });
+      });
+      newItem.querySelector('input').focus();
+    });
+  });
+
+  // Make min match editable
+  const minMatchEl = section.querySelector('.ra-criteria-min-match');
+  if (minMatchEl) {
+    const currentMin = criteria.goodToHaveMinMatch || 1;
+    const totalGood = criteria.goodToHave.length;
+    minMatchEl.innerHTML = `Minimum match: <input type="number" class="ra-min-match-input" value="${currentMin}" min="1" max="${totalGood}" style="width:40px;background:rgba(0,0,0,0.2);border:1px solid var(--glass-border);border-radius:4px;color:var(--color-text-primary);text-align:center;padding:2px;font-size:0.78rem;" /> out of ${totalGood} criteria`;
+  }
+}
+
+function openScheduleModal(candidateName, mode, callback) {
+  const existing = document.getElementById('schedule-modal-overlay');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'schedule-modal-overlay';
+  overlay.className = 'schedule-modal-overlay';
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  const dateStr = tomorrow.toISOString().split('T')[0];
+  overlay.innerHTML = `
+    <div class="schedule-modal">
+      <h3>${mode === 'reschedule' ? 'Reschedule' : 'Schedule'} Interview — ${candidateName}</h3>
+      <div class="schedule-form-group">
+        <label>Date</label>
+        <input type="date" id="sched-date" value="${dateStr}" />
+      </div>
+      <div class="schedule-form-group">
+        <label>Time</label>
+        <input type="time" id="sched-time" value="10:00" />
+      </div>
+      <div class="schedule-form-group">
+        <label>Duration</label>
+        <select id="sched-duration" style="padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--glass-border);border-radius:8px;color:var(--color-text-primary);font-size:0.82rem;outline:none;">
+          <option value="15">15 minutes</option>
+          <option value="30" selected>30 minutes</option>
+          <option value="45">45 minutes</option>
+          <option value="60">60 minutes</option>
+        </select>
+      </div>
+      <div class="schedule-modal-actions">
+        <button class="btn-schedule-cancel" id="sched-cancel">Cancel</button>
+        <button class="btn-schedule-confirm" id="sched-confirm">Confirm</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.getElementById('sched-cancel').addEventListener('click', () => overlay.remove());
+  document.getElementById('sched-confirm').addEventListener('click', () => {
+    const date = document.getElementById('sched-date').value;
+    const time = document.getElementById('sched-time').value;
+    overlay.remove();
+    if (callback) callback(date, time);
+    showPremiumToast(`Interview ${mode === 'reschedule' ? 'rescheduled' : 'scheduled'} for ${candidateName} on ${date} at ${time}.`, 'success');
+    soundEngine.playChime([523.25, 659.25], 0.15, 0.08);
+  });
+}
+
+function buildFilterDropdown(chip, type, candidates, stageKey) {
+  if (chip._filterDropdown) { chip._filterDropdown.remove(); chip._filterDropdown = null; chip.classList.remove('active-filter'); return; }
+  document.querySelectorAll('.stage-filter-dropdown').forEach(d => d.remove());
+  document.querySelectorAll('.filter-chip.active-filter').forEach(c => { c.classList.remove('active-filter'); c._filterDropdown = null; });
+
+  const dd = document.createElement('div');
+  dd.className = 'stage-filter-dropdown';
+  dd.addEventListener('click', e => e.stopPropagation());
+
+  const filters = AppState.stageFilters[stageKey];
+
+  if (type === 'interviewStatus') {
+    const statuses = ['Completed', 'Incomplete', 'Evaluating', 'Attempting', 'Not Started', 'Slot Missed'];
+    const counts = {};
+    statuses.forEach(s => { counts[s] = candidates.filter(c => c.interviewStatus === s).length; });
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Interview Status" /></div>
+      <div class="sfd-items">${statuses.map(s => `<label class="sfd-item"><input type="checkbox" value="${s}" ${filters.interviewStatus.includes(s) ? 'checked' : ''} /><span class="sfd-item-label">${s}</span><span class="sfd-item-count">${counts[s]}</span></label>`).join('')}</div>
+      <div class="sfd-footer"><button class="sfd-clear-btn">Clear filters</button></div>`;
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+      filters.interviewStatus = [...dd.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+      if (activeJob) renderJobDetailPanes(activeJob);
+    }));
+    dd.querySelector('.sfd-clear-btn').addEventListener('click', () => { filters.interviewStatus = []; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'cheatProb') {
+    const levels = ['High', 'Medium', 'Low'];
+    const counts = {};
+    levels.forEach(l => { counts[l] = candidates.filter(c => c.cheatProbability === l).length; });
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cheat Probability" /></div>
+      <div class="sfd-items">${levels.map(l => `<label class="sfd-item"><input type="checkbox" value="${l}" ${filters.cheatProb.includes(l) ? 'checked' : ''} /><span class="sfd-item-label">${l}</span><span class="sfd-item-count">${counts[l]}</span></label>`).join('')}</div>
+      <div class="sfd-footer"><button class="sfd-clear-btn">Clear filters</button></div>`;
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+      filters.cheatProb = [...dd.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob);
+    }));
+    dd.querySelector('.sfd-clear-btn').addEventListener('click', () => { filters.cheatProb = []; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'recruiterScreening') {
+    const vals = ['Good fit', 'Moderate fit', 'Poor fit'];
+    const counts = {};
+    vals.forEach(v => { counts[v] = candidates.filter(c => c.recruiterScreening === v).length; });
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Recruiter Screening" /></div>
+      <div class="sfd-items">${vals.map(v => `<label class="sfd-item"><input type="checkbox" value="${v}" ${filters.recruiterScreening.includes(v) ? 'checked' : ''} /><span class="sfd-item-label">${v}</span><span class="sfd-item-count">${counts[v]}</span></label>`).join('')}</div>
+      <div class="sfd-footer"><button class="sfd-clear-btn">Clear filters</button></div>`;
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+      filters.recruiterScreening = [...dd.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob);
+    }));
+    dd.querySelector('.sfd-clear-btn').addEventListener('click', () => { filters.recruiterScreening = []; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'interviewScore') {
+    dd.innerHTML = `
+      <div class="sfd-range-row">
+        <label>Interview score</label>
+        <input type="number" class="sfd-range-input" id="sfd-score-min" value="${filters.scoreMin ?? 0}" min="0" max="100" />
+        <span class="sfd-range-sep">to</span>
+        <input type="number" class="sfd-range-input" id="sfd-score-max" value="${filters.scoreMax ?? 100}" min="0" max="100" />
+      </div>
+      <div class="sfd-actions-row">
+        <button class="sfd-btn-clear">Clear</button>
+        <button class="sfd-btn-apply">Apply</button>
+      </div>`;
+    dd.querySelector('.sfd-btn-apply').addEventListener('click', () => {
+      filters.scoreMin = parseInt(dd.querySelector('#sfd-score-min').value) || 0;
+      filters.scoreMax = parseInt(dd.querySelector('#sfd-score-max').value) || 100;
+      const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob);
+    });
+    dd.querySelector('.sfd-btn-clear').addEventListener('click', () => { filters.scoreMin = null; filters.scoreMax = null; const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId); if (activeJob) renderJobDetailPanes(activeJob); });
+  } else if (type === 'actions') {
+    const acts = ['Shortlisted', 'Rejected', 'Waitlisted', 'Panel Shortlisted', 'Panel Rejected', 'Panel Waitlisted', 'Pending Action'];
+    dd.innerHTML = `
+      <div class="sfd-search"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Actions" /></div>
+      <div class="sfd-items">${acts.map(a => `<label class="sfd-item"><input type="checkbox" value="${a}" /><span class="sfd-item-label">${a}</span><span class="sfd-item-count">0</span></label>`).join('')}</div>`;
+  }
+
+  const rect = chip.getBoundingClientRect();
+  dd.style.left = rect.left + 'px';
+  dd.style.top = (rect.bottom + 4) + 'px';
+  document.body.appendChild(dd);
+  chip.classList.add('active-filter');
+  chip._filterDropdown = dd;
+
+  const closeOnScroll = () => { dd.remove(); chip.classList.remove('active-filter'); chip._filterDropdown = null; };
+  const mainContent = chip.closest('.main-content');
+  if (mainContent) mainContent.addEventListener('scroll', closeOnScroll, { once: true });
+}
+
+function applyStageFilters(candidates, stageKey) {
+  const f = AppState.stageFilters[stageKey];
+  if (!f) return candidates;
+  let filtered = candidates;
+  if (f.interviewStatus.length > 0) filtered = filtered.filter(c => f.interviewStatus.includes(c.interviewStatus));
+  if (f.cheatProb.length > 0) filtered = filtered.filter(c => f.cheatProb.includes(c.cheatProbability));
+  if (f.recruiterScreening.length > 0) filtered = filtered.filter(c => f.recruiterScreening.includes(c.recruiterScreening));
+  if (f.scoreMin != null) filtered = filtered.filter(c => c.interviewScore != null && c.interviewScore >= f.scoreMin);
+  if (f.scoreMax != null) filtered = filtered.filter(c => c.interviewScore != null && c.interviewScore <= f.scoreMax);
+  return filtered;
+}
+
+function hasActiveFilters(stageKey) {
+  const f = AppState.stageFilters[stageKey];
+  return f && (f.interviewStatus.length > 0 || f.cheatProb.length > 0 || f.recruiterScreening.length > 0 || f.scoreMin != null || f.scoreMax != null);
+}
+
+function renderJobDetailPanes(job) {
+  const searchVal = document.getElementById('jd-candidate-search').value.trim().toLowerCase();
+  
+  const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(c => {
+    const matchesJob = c.jobApplied === job.roleName || c.jobApplied === job.cardName;
+    if (!matchesJob) return false;
+    if (searchVal) {
+      return c.name.toLowerCase().includes(searchVal) || c.email.toLowerCase().includes(searchVal);
+    }
+    return true;
+  });
+
+  // 1. Resume pane — criteria config + candidates table
+  const resumeList = document.getElementById('list-stage-resume');
+  if (resumeList) {
+    const resumeCands = jobCandidates.filter(c => c.status === 'Resume');
+    const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [], goodToHaveMinMatch: 1 };
+
+    const criteriaHTML = `
+      <div class="ra-config-section">
+        <div class="ra-config-header">
+          <div class="ra-config-header-left">
+            <h3 class="ra-config-title">Resume Analysis</h3>
+            <p class="ra-config-subtitle">Parameters created based on your requirements — feel free to edit them</p>
+          </div>
+          <button class="btn-ra-edit-criteria" id="btn-ra-edit-criteria">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit
+          </button>
+        </div>
+
+        <div class="ra-criteria-group must-have">
+          <div class="ra-criteria-group-header">
+            <span class="ra-criteria-icon must-have">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </span>
+            <div>
+              <h4 class="ra-criteria-group-title must-have">Must Have</h4>
+              <p class="ra-criteria-group-desc">Candidates meeting these criteria will be shortlisted; others waitlisted for review</p>
+            </div>
+          </div>
+          <div class="ra-criteria-items">
+            ${criteria.mustHave.map((item, i) => `
+              <div class="ra-criteria-item must-have">
+                <span class="ra-criteria-num must-have">${i + 1}</span>
+                <span class="ra-criteria-text">${item}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="ra-criteria-divider">
+          <span class="ra-criteria-divider-text">AND</span>
+        </div>
+
+        <div class="ra-criteria-group red-flags">
+          <div class="ra-criteria-group-header">
+            <span class="ra-criteria-icon red-flags">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+            <div>
+              <h4 class="ra-criteria-group-title red-flags">Should Not Have (Red Flags)</h4>
+              <p class="ra-criteria-group-desc">Candidates with no red flags will be shortlisted; others waitlisted for review</p>
+            </div>
+          </div>
+          <div class="ra-criteria-items">
+            ${criteria.redFlags.map((item, i) => `
+              <div class="ra-criteria-item red-flags">
+                <span class="ra-criteria-num red-flags">${i + 1}</span>
+                <span class="ra-criteria-text">${item}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="ra-criteria-divider">
+          <span class="ra-criteria-divider-text">AND</span>
+        </div>
+
+        <div class="ra-criteria-group good-to-have">
+          <div class="ra-criteria-group-header">
+            <span class="ra-criteria-icon good-to-have">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <div>
+              <h4 class="ra-criteria-group-title good-to-have">Good To Have</h4>
+              <p class="ra-criteria-group-desc">Candidates meeting the threshold will be shortlisted; others waitlisted for review.</p>
+            </div>
+          </div>
+          <div class="ra-criteria-min-match">Minimum match: ${criteria.goodToHaveMinMatch} out of ${criteria.goodToHave.length} criteria</div>
+          <div class="ra-criteria-items">
+            ${criteria.goodToHave.map((item, i) => `
+              <div class="ra-criteria-item good-to-have">
+                <span class="ra-criteria-num good-to-have">${i + 1}</span>
+                <span class="ra-criteria-text">${item}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="ra-candidates-section">
+        <div class="ra-candidates-header">
+          <h3 class="ra-candidates-title">Candidates in Resume Analysis</h3>
+          <span class="ra-candidates-count">${resumeCands.length} candidate${resumeCands.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="jd-stage-candidates-list" id="list-stage-resume-candidates"></div>
+      </div>
+    `;
+
+    resumeList.innerHTML = criteriaHTML;
+    resumeList.querySelector('.ra-config-section')?.remove();
+    resumeList.insertAdjacentHTML('afterbegin', `
+      <div class="ra-flow-redirect">
+        <div>
+          <h3 class="ra-candidates-title">Resume Analysis Candidates</h3>
+          <p class="ra-flow-redirect-copy">Shortlist rules live in Job Flow so setup and evaluation stay separated.</p>
+        </div>
+        <button class="btn-jd-ghost" id="btn-resume-edit-flow">Edit Rules in Job Flow</button>
+      </div>
+    `);
+    document.getElementById('btn-resume-edit-flow')?.addEventListener('click', () => {
+      openJobFlowView(job.id);
+      requestAnimationFrame(() => {
+        document.querySelector('.jf-stage-card[data-stage="resumeAnalysis"]')?.click();
+      });
+    });
+
+    const resumeCandContainer = document.getElementById('list-stage-resume-candidates');
+    if (resumeCandContainer) {
+      if (resumeCands.length === 0) {
+        resumeCandContainer.innerHTML = `
+          <div class="jd-empty-pane">
+            <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            <p>No candidates in resume analysis stage yet</p>
+          </div>
+        `;
+      } else {
+        renderResumeStagePaneForJob(resumeCands, job, resumeCandContainer);
+      }
+    }
+
+    // Edit criteria button
+    const editBtn = document.getElementById('btn-ra-edit-criteria');
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        toggleResumeCriteriaEdit(job);
+      });
+    }
+  }
+
+  // 2. Screening pane
+  const screeningList = document.getElementById('list-stage-screening');
+  if (screeningList) {
+    const screeningCands = jobCandidates.filter(c => c.status === 'Screening');
+    if (screeningCands.length === 0) {
+      screeningList.innerHTML = `
+        <div class="jd-empty-pane">
+          <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+          <p>Recruiter Screening — No candidates in this stage</p>
+        </div>
+      `;
+    } else {
+      const statusIcon = (status) => {
+        if (status === 'Completed') return '<span class="status-chip completed"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Completed</span>';
+        if (status === 'Incomplete') return '<span class="status-chip incomplete"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg> Incomplete</span>';
+        if (status === 'Slot Missed') return '<span class="status-chip slot-missed"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg> Slot Missed</span>';
+        return '<span class="status-chip">—</span>';
+      };
+
+      const allScreeningCands = screeningCands;
+      const displayScreeningCands = applyStageFilters(screeningCands, 'screening');
+      const sf = AppState.stageFilters.screening;
+      screeningList.innerHTML = `
+        <div class="stage-table-container">
+          <div class="stage-table-filters">
+            <span class="filter-chip" data-filter="interviewStatus" data-stage="screening">${sf.interviewStatus.length ? '⊗' : '⊕'} Interview Status ${sf.interviewStatus.length ? `<span class="filter-chip-val">${sf.interviewStatus.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="cheatProb" data-stage="screening">${sf.cheatProb.length ? '⊗' : '⊕'} Cheat Probability ${sf.cheatProb.length ? `<span class="filter-chip-val">${sf.cheatProb.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="recruiterScreening" data-stage="screening">⊕ Recruiter Screening ${sf.recruiterScreening.length ? `<span class="filter-chip-val">${sf.recruiterScreening.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="interviewScore" data-stage="screening">⊕ Interview Score</span>
+            ${hasActiveFilters('screening') ? '<button class="btn-filter-reset" data-stage="screening">✕ Reset</button>' : ''}
+            <div class="stage-table-actions-bar">
+              <button class="btn-bulk-actions">Bulk Actions <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+              <button class="btn-columns-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg> Columns</button>
+              <button class="btn-export-table"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Export</button>
+            </div>
+          </div>
+          <table class="stage-data-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" class="table-checkbox-all" /></th>
+                <th>Candidate</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Screening</th>
+                <th>Score <span class="sort-arrows">⇅</span></th>
+                <th>Report</th>
+                <th>Source</th>
+                <th>Attempted <span class="sort-arrows">⇅</span></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${displayScreeningCands.length === 0 ? '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
+              ${displayScreeningCands.map(c => {
+                const initials = c.name.split(' ').map(n=>n[0]).join('');
+                const hasReport = c.interviewStatus === 'Incomplete' || c.interviewStatus === 'Completed';
+                const sourceIcon = c.source === 'Direct Link' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>';
+                const actionLabel = c.interviewStatus === 'Slot Missed' ? 'Reschedule' : 'Schedule';
+                const actionClass = c.interviewStatus === 'Slot Missed' ? 'btn-reschedule' : 'btn-schedule';
+                return `
+                  <tr data-candidate-id="${c.id}">
+                    <td><input type="checkbox" class="table-checkbox-row" /></td>
+                    <td>
+                      <div class="table-candidate-cell">
+                        <span class="cand-name-link">${c.name} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
+                        <button class="btn-remarks">Remarks</button>
+                        <span class="cand-email-sub">${c.email}</span>
+                      </div>
+                    </td>
+                    <td>${c.phone || '—'}</td>
+                    <td>${statusIcon(c.interviewStatus)}</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>${hasReport ? `<a href="#" class="report-link" data-cand-id="${c.id}">Report <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : '—'}</td>
+                    <td><span class="source-badge">${sourceIcon} ${c.source || '—'}</span></td>
+                    <td>${c.attemptedAt || '—'}</td>
+                    <td><button class="${actionClass}" data-candidate-id="${c.id}">${c.interviewStatus === 'Slot Missed' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> ' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg> '}${actionLabel}</button></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+          <div class="stage-table-footer">
+            <span class="table-selection-info">0 of ${displayScreeningCands.length} row(s) selected.</span>
+            <div class="table-pagination">
+              <span>Rows per page</span>
+              <select class="rows-per-page"><option value="10">10</option><option value="25" selected>25</option><option value="50">50</option><option value="100">100</option></select>
+              <span>Page 1 of 1</span>
+              <div class="pagination-btns">
+                <button disabled>«</button><button disabled>‹</button><button disabled>›</button><button disabled>»</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // 3. Functional pane
+  const functionalList = document.getElementById('list-stage-functional');
+  if (functionalList) {
+    const functionalCands = jobCandidates.filter(c => c.status === 'Functional');
+    if (functionalCands.length === 0) {
+      functionalList.innerHTML = `
+        <div class="jd-empty-pane">
+          <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+          <p>Functional Interview — No candidates in this stage</p>
+        </div>
+      `;
+    } else {
+      const cheatColor = (prob) => {
+        if (prob === 'Low') return 'cheat-low';
+        if (prob === 'Medium') return 'cheat-medium';
+        if (prob === 'High') return 'cheat-high';
+        return '';
+      };
+      const scoreColor = (score) => {
+        if (score == null) return '';
+        if (score >= 80) return 'score-green';
+        if (score >= 60) return 'score-yellow';
+        return 'score-red';
+      };
+      const screeningBadge = (val) => {
+        if (!val) return '—';
+        const cls = val === 'Good fit' ? 'fit-good' : val === 'Moderate fit' ? 'fit-moderate' : 'fit-poor';
+        return `<span class="screening-fit-badge ${cls}">${val}</span>`;
+      };
+
+      const allFunctionalCands = functionalCands;
+      const displayFunctionalCands = applyStageFilters(functionalCands, 'functional');
+      const ff = AppState.stageFilters.functional;
+      functionalList.innerHTML = `
+        <div class="stage-table-container">
+          <div class="stage-table-filters">
+            <span class="filter-chip" data-filter="interviewStatus" data-stage="functional">${ff.interviewStatus.length ? '⊗' : '⊕'} Interview Status ${ff.interviewStatus.length ? `<span class="filter-chip-val">${ff.interviewStatus.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="cheatProb" data-stage="functional">${ff.cheatProb.length ? '⊗' : '⊕'} Cheat Probability ${ff.cheatProb.length ? `<span class="filter-chip-val">${ff.cheatProb.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="interviewScore" data-stage="functional">⊕ Interview Score</span>
+            <span class="filter-chip" data-filter="recruiterScreening" data-stage="functional">⊕ Recruiter Screening ${ff.recruiterScreening.length ? `<span class="filter-chip-val">${ff.recruiterScreening.join(', ')}</span>` : ''}</span>
+            <span class="filter-chip" data-filter="actions" data-stage="functional">⊕ Actions</span>
+            ${hasActiveFilters('functional') ? '<button class="btn-filter-reset" data-stage="functional">✕ Reset</button>' : ''}
+            <div class="stage-table-actions-bar">
+              <button class="btn-bulk-actions">Bulk Reschedule <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+              <button class="btn-columns-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg> Columns</button>
+              <button class="btn-export-table"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Export</button>
+            </div>
+          </div>
+          <table class="stage-data-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" class="table-checkbox-all" /></th>
+                <th>Candidate</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Report</th>
+                <th>Score <span class="sort-arrows">⇅</span></th>
+                <th>Cheat <span class="sort-arrows">⇅</span></th>
+                <th>Source</th>
+                <th>Screening</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${displayFunctionalCands.length === 0 ? '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--color-text-faint);">No candidates match the current filters. Try resetting or adjusting them.</td></tr>' : ''}
+              ${displayFunctionalCands.map(c => {
+                const initials = c.name.split(' ').map(n=>n[0]).join('');
+                const sourceIcon = c.source === 'Direct Link' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>';
+                return `
+                  <tr data-candidate-id="${c.id}">
+                    <td><input type="checkbox" class="table-checkbox-row" /></td>
+                    <td>
+                      <div class="table-candidate-cell">
+                        <span class="cand-name-link">${c.name} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
+                        <button class="btn-remarks">Remarks</button>
+                        <span class="cand-email-sub">${c.email}</span>
+                      </div>
+                    </td>
+                    <td>${c.phone || '—'}</td>
+                    <td><span class="status-chip completed"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Completed</span></td>
+                    <td><a href="#" class="report-link report-new" data-cand-id="${c.id}">Report <span class="new-badge">New</span> <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a></td>
+                    <td><span class="interview-score-dot ${scoreColor(c.interviewScore)}"></span> ${c.interviewScore != null ? c.interviewScore : '—'}</td>
+                    <td><span class="cheat-prob-badge ${cheatColor(c.cheatProbability)}">${c.cheatProbability ? '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg> ' + c.cheatProbability : '—'}</span></td>
+                    <td><span class="source-badge">${sourceIcon} ${c.source || '—'}</span></td>
+                    <td>${screeningBadge(c.recruiterScreening)}</td>
+                    <td>
+                      <select class="action-select-status">
+                        <option value="">Select Sta...</option>
+                        <option value="advance">Advance</option>
+                        <option value="reject">Reject</option>
+                        <option value="hold">Hold</option>
+                      </select>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+          <div class="stage-table-footer">
+            <span class="table-selection-info">0 of ${displayFunctionalCands.length} row(s) selected.</span>
+            <div class="table-pagination">
+              <span>Rows per page</span>
+              <select class="rows-per-page"><option value="10">10</option><option value="25" selected>25</option><option value="50">50</option><option value="100">100</option></select>
+              <span>Page 1 of 1</span>
+              <div class="pagination-btns">
+                <button disabled>«</button><button disabled>‹</button><button disabled>›</button><button disabled>»</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // 4. Deep Analysis pane
+  const analysisList = document.getElementById('list-stage-analysis');
+  if (analysisList) {
+    renderDeepAnalysisPane(job, analysisList);
+  }
+
+  // Bind actions
+  const pane = document.getElementById('view-job-detail');
+  if (pane) {
+    pane.querySelectorAll('.subtab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.parentElement.getAttribute('data-cand-id');
+        const tabName = btn.getAttribute('data-tab');
+        
+        // Stop audio playing if swapping tabs
+        stopActiveCardPlayer();
+        
+        activeCandidateSubTabs[candId] = tabName;
+        soundEngine.playClick();
+        renderJobDetailPanes(job);
+      });
+    });
+
+    pane.querySelectorAll('.btn-stage-reject').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.getAttribute('data-candidate-id');
+        updateCandidateStatus(candId, 'Rejected');
+      });
+    });
+    
+    pane.querySelectorAll('.btn-stage-advance').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.getAttribute('data-candidate-id');
+        const nextStage = btn.getAttribute('data-next-stage');
+        updateCandidateStatus(candId, nextStage);
+      });
+    });
+
+    pane.querySelectorAll('.btn-player-play').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const candId = btn.getAttribute('data-play-id');
+        toggleCardPlayer(candId);
+      });
+    });
+
+    pane.querySelectorAll('.report-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const candId = link.getAttribute('data-cand-id');
+        openReportDrawerForCandidate(candId);
+      });
+    });
+
+    pane.querySelectorAll('.table-checkbox-all').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const table = cb.closest('table');
+        const rows = table.querySelectorAll('.table-checkbox-row');
+        rows.forEach(r => { r.checked = cb.checked; });
+        const info = cb.closest('.stage-table-container').querySelector('.table-selection-info');
+        if (info) info.textContent = `${cb.checked ? rows.length : 0} of ${rows.length} row(s) selected.`;
+        soundEngine.playClick();
+      });
+    });
+
+    pane.querySelectorAll('.table-checkbox-row').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const table = cb.closest('table');
+        const rows = table.querySelectorAll('.table-checkbox-row');
+        const checked = table.querySelectorAll('.table-checkbox-row:checked').length;
+        const info = cb.closest('.stage-table-container').querySelector('.table-selection-info');
+        if (info) info.textContent = `${checked} of ${rows.length} row(s) selected.`;
+      });
+    });
+
+    const jobCands = AppState.candidates.filter(c => c.jobApplied === job.roleName || c.jobApplied === job.cardName);
+    const stageStatusMap = { screening: 'Screening', functional: 'Functional' };
+    pane.querySelectorAll('.filter-chip[data-filter]').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundEngine.playClick();
+        const filterType = chip.getAttribute('data-filter');
+        const stageKey = chip.getAttribute('data-stage');
+        const stageStatus = stageStatusMap[stageKey];
+        const stageCands = stageStatus ? jobCands.filter(c => c.status === stageStatus) : jobCands;
+        buildFilterDropdown(chip, filterType, stageCands, stageKey);
+      });
+    });
+
+    pane.querySelectorAll('.btn-filter-reset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        soundEngine.playClick();
+        const stageKey = btn.getAttribute('data-stage');
+        if (stageKey && AppState.stageFilters[stageKey]) {
+          AppState.stageFilters[stageKey] = { interviewStatus: [], cheatProb: [], recruiterScreening: [], scoreMin: null, scoreMax: null, actions: [] };
+          renderJobDetailPanes(job);
+        }
+      });
+    });
+
+    pane.querySelectorAll('.btn-bulk-actions').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundEngine.playClick();
+        const existing = btn.parentElement.querySelector('.bulk-actions-dropdown');
+        if (existing) { existing.remove(); return; }
+        document.querySelectorAll('.bulk-actions-dropdown').forEach(d => d.remove());
+
+        const container = btn.closest('.stage-table-container');
+        const checked = container?.querySelectorAll('.table-checkbox-row:checked') || [];
+
+        const getSelected = () => {
+          const ids = [], names = [];
+          checked.forEach(cb => {
+            const row = cb.closest('tr');
+            const cid = row?.getAttribute('data-candidate-id');
+            const name = row?.querySelector('.cand-name-link')?.textContent?.trim();
+            if (cid) ids.push(cid);
+            if (name) names.push(name);
+          });
+          return { ids, names };
+        };
+
+        const dd = document.createElement('div');
+        dd.className = 'bulk-actions-dropdown';
+        dd.innerHTML = `
+          <button class="bulk-dd-item" data-action="advance"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg> Advance</button>
+          <button class="bulk-dd-item" data-action="reject"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Reject</button>
+          <button class="bulk-dd-item" data-action="schedule"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg> Schedule</button>
+          <button class="bulk-dd-item" data-action="reschedule"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> Reschedule</button>
+          <button class="bulk-dd-item" data-action="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Export</button>`;
+        dd.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const item = ev.target.closest('.bulk-dd-item');
+          if (!item) return;
+          const action = item.getAttribute('data-action');
+          const { ids, names } = getSelected();
+          if (ids.length === 0 && action !== 'export') {
+            showPremiumToast("Select candidates using checkboxes first.", "info");
+            dd.remove();
+            return;
+          }
+          const label = names.length <= 3 ? names.join(', ') : `${names.slice(0, 2).join(', ')} +${names.length - 2} more`;
+          if (action === 'advance') {
+            const stages = ['Resume', 'Screening', 'Functional', 'Hired'];
+            ids.forEach(cid => {
+              const cand = AppState.candidates.find(c => c.id === cid);
+              if (cand) {
+                const idx = stages.indexOf(cand.status);
+                if (idx < stages.length - 1) {
+                  const next = stages[idx + 1];
+                  cand.status = next;
+                  if ((next === 'Screening' || next === 'Functional') && cand.interviewStatus == null) {
+                    cand.interviewStatus = 'Not Started';
+                  }
+                }
+              }
+            });
+            saveStateToLocalStorage();
+            renderJobDetailPanes(job);
+            showPremiumToast(`Advanced ${ids.length} candidate(s) to next stage.`, 'success');
+          } else if (action === 'reject') {
+            ids.forEach(cid => {
+              const cand = AppState.candidates.find(c => c.id === cid);
+              if (cand) cand.status = 'Rejected';
+            });
+            saveStateToLocalStorage();
+            renderJobDetailPanes(job);
+            showPremiumToast(`Rejected ${ids.length} candidate(s).`, 'success');
+          } else if (action === 'schedule' || action === 'reschedule') {
+            openScheduleModal(label, action, (date, time) => {
+              ids.forEach(cid => {
+                const cand = AppState.candidates.find(c => c.id === cid);
+                if (cand) {
+                  cand.attemptedAt = `${date} ${time}`;
+                  cand.interviewStatus = action === 'reschedule' ? 'Incomplete' : 'Not Started';
+                }
+              });
+              saveStateToLocalStorage();
+              renderJobDetailPanes(job);
+              showPremiumToast(`${action === 'schedule' ? 'Scheduled' : 'Rescheduled'} ${ids.length} candidate(s) to ${date} at ${time}.`, 'success');
+            });
+          } else if (action === 'export') {
+            triggerExcelExport('candidates');
+          }
+          dd.remove();
+        });
+        btn.style.position = 'relative';
+        btn.appendChild(dd);
+        const closeDD = (ev) => { if (!dd.contains(ev.target) && ev.target !== btn) { dd.remove(); document.removeEventListener('click', closeDD); } };
+        setTimeout(() => document.addEventListener('click', closeDD), 0);
+      });
+    });
+
+    pane.querySelectorAll('.btn-export-table').forEach(btn => {
+      btn.addEventListener('click', () => {
+        soundEngine.playClick();
+        triggerExcelExport('candidates');
+      });
+    });
+
+    pane.querySelectorAll('.btn-reschedule, .btn-schedule').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundEngine.playClick();
+        const name = btn.closest('tr')?.querySelector('.cand-name-link')?.textContent?.trim() || 'Candidate';
+        const mode = btn.classList.contains('btn-reschedule') ? 'reschedule' : 'schedule';
+        const candId = btn.getAttribute('data-candidate-id');
+        openScheduleModal(name, mode, (date, time) => {
+          const cand = AppState.candidates.find(c => c.id === candId);
+          if (cand) {
+            cand.interviewStatus = mode === 'reschedule' ? 'Incomplete' : 'Not Started';
+            cand.attemptedAt = `${date} ${time}`;
+            saveStateToLocalStorage();
+            renderJobDetailPanes(job);
+          }
+        });
+      });
+    });
+
+    pane.querySelectorAll('.action-select-status').forEach(sel => {
+      sel.addEventListener('change', () => {
+        soundEngine.playClick();
+        const candId = sel.getAttribute('data-cand-id');
+        const newVal = sel.value;
+        if (candId && newVal) {
+          const cand = AppState.candidates.find(c => c.id === candId);
+          if (cand) {
+            if (newVal === 'advance') updateCandidateStatus(candId, 'Hired');
+            else if (newVal === 'reject') updateCandidateStatus(candId, 'Rejected');
+            else showPremiumToast(`${cand.name} placed on hold.`, 'info');
+          }
+        }
+      });
+    });
+
+    pane.querySelectorAll('.stage-table-container').forEach(container => {
+      const tbody = container.querySelector('tbody');
+      const rppSelect = container.querySelector('.rows-per-page');
+      const pageInfo = container.querySelector('.table-pagination span:nth-child(3)');
+      const selInfo = container.querySelector('.table-selection-info');
+      const pagBtns = container.querySelectorAll('.pagination-btns button');
+      if (!tbody || !rppSelect) return;
+      let currentPage = 1;
+      const allRows = Array.from(tbody.querySelectorAll('tr'));
+      function paginate() {
+        const perPage = parseInt(rppSelect.value) || 25;
+        const totalRows = allRows.length;
+        const totalPages = Math.max(1, Math.ceil(totalRows / perPage));
+        if (currentPage > totalPages) currentPage = totalPages;
+        const start = (currentPage - 1) * perPage;
+        const end = start + perPage;
+        allRows.forEach((row, i) => { row.style.display = (i >= start && i < end) ? '' : 'none'; });
+        if (pageInfo) pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        if (selInfo) selInfo.textContent = `0 of ${Math.min(perPage, totalRows - start)} row(s) selected.`;
+        if (pagBtns.length === 4) {
+          pagBtns[0].disabled = currentPage <= 1; pagBtns[1].disabled = currentPage <= 1;
+          pagBtns[2].disabled = currentPage >= totalPages; pagBtns[3].disabled = currentPage >= totalPages;
+        }
+      }
+      paginate();
+      rppSelect.addEventListener('change', () => { currentPage = 1; paginate(); });
+      if (pagBtns.length === 4) {
+        pagBtns[0].addEventListener('click', () => { currentPage = 1; paginate(); });
+        pagBtns[1].addEventListener('click', () => { currentPage = Math.max(1, currentPage - 1); paginate(); });
+        pagBtns[2].addEventListener('click', () => { const tp = Math.max(1, Math.ceil(allRows.length / (parseInt(rppSelect.value)||25))); currentPage = Math.min(tp, currentPage + 1); paginate(); });
+        pagBtns[3].addEventListener('click', () => { currentPage = Math.max(1, Math.ceil(allRows.length / (parseInt(rppSelect.value)||25))); paginate(); });
+      }
+    });
+  }
+  renderQuestionsPane(job);
+}
+
+function updateCandidateStatus(candId, newStatus) {
+  const candidate = AppState.candidates.find(c => c.id === candId);
+  if (!candidate) return;
+  
+  const oldStatus = candidate.status;
+  candidate.status = newStatus;
+
+  if ((newStatus === 'Screening' || newStatus === 'Functional') && candidate.interviewStatus == null) {
+    candidate.interviewStatus = 'Not Started';
+  }
+
+  if (newStatus === 'Rejected') {
+    showPremiumToast(`${candidate.name} has been rejected from the pipeline.`, 'success');
+    soundEngine.playChime([392, 293.66], 0.2, 0.1);
+  } else if (newStatus === 'Hired') {
+    showPremiumToast(`Congratulations! ${candidate.name} has been marked as Hired.`, 'success');
+    soundEngine.playChime([523.25, 659.25, 783.99, 1046.50], 0.25, 0.08);
+  } else {
+    showPremiumToast(`${candidate.name} advanced to ${newStatus}.`, 'success');
+    soundEngine.playChime([329.63, 440.00, 523.25], 0.2, 0.08);
+  }
+  
+  recalculateJobPipelines();
+  updateSummaryMetrics();
+  renderAnalyticsTable();
+  
+  const activeJob = AppState.jobs.find(j => j.id === AppState.activeJobId);
+  if (activeJob) {
+    document.getElementById('jd-count-screening').textContent = activeJob.pipeline.screening;
+    const funcLabel = activeJob.pipeline.screening > 0
+      ? `${activeJob.pipeline.functional} of ${activeJob.pipeline.screening}`
+      : activeJob.pipeline.functional;
+    document.getElementById('jd-count-functional').textContent = funcLabel;
+    
+    renderFunnelStages(activeJob);
+    renderFunnelInsights(activeJob);
+    
+    const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
+      c => c.jobApplied === activeJob.roleName || c.jobApplied === activeJob.cardName
+    );
+    drawFunnelSVG(activeJob, jobCandidates);
+    drawScoreDistributionSVG(activeJob, jobCandidates);
+
+    renderJobDetailPanes(activeJob);
+  }
+  
+  if (document.getElementById('jobs-board-container') && document.getElementById('jobs-board-container').style.display !== 'none') {
+    renderKanbanBoard();
+  } else {
+    renderJobCards();
+  }
+}
 
 function stopActiveCardPlayer() {
   if (activeCardInterval) {
