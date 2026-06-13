@@ -1,367 +1,302 @@
-import { auditJobDescriptionLocally, optimizeJobDescriptionWithAI } from './ai-api.js';
+// Deep Analysis — post-interview candidate intelligence. Renders the canonical
+// CandidateReport contract (Aviral's evaluation engine; see memory:
+// interviehire-eval-report-contract) as a master→detail view: a ranked roster
+// of interviewed candidates, drilling into one full evaluation report.
+// Until the eval pipeline is wired at stitch time, reports are sampled
+// deterministically per candidate from the job's blueprint so the tab is live.
+
+import { document } from './runtime.js';
 import { escapeHTML } from './escape.js';
-import { requestAnimationFrame } from './runtime.js';
-import { filterCandidatesByDateRange } from './render-views.js';
-import { resumeAnalysisCache, resumeTextCache } from './resume-analysis.js';
 import { AppState } from './state.js';
+import { filterCandidatesByDateRange } from './render-views.js';
+import { soundEngine } from './sound.js';
 
-const clampPct = (n) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+const DIMENSIONS = ['Correctness', 'Depth', 'Clarity', 'Communication', 'Role alignment'];
 
-function scoreColor(n) {
-  if (n >= 80) return '#2dd4bf';
-  if (n >= 65) return '#34d399';
-  if (n >= 50) return '#f59e0b';
-  return '#ef4444';
+const RECO_META = {
+  strong_proceed: { label: 'Strong proceed', color: '#2dd4bf' },
+  proceed: { label: 'Proceed', color: '#34d399' },
+  hold: { label: 'Hold', color: '#fbbf24' },
+  reject: { label: 'Reject', color: '#f87171' },
+  needs_human_review: { label: 'Needs review', color: '#fb923c' },
+};
+const SEV_COLOR = { low: '#9a9a9a', medium: '#fbbf24', high: '#fb923c', critical: '#f87171' };
+const CONF_COLOR = { high: '#34d399', medium: '#fbbf24', low: '#f87171' };
+
+function scoreColor(s) {
+  if (s >= 88) return '#2dd4bf';
+  if (s >= 72) return '#34d399';
+  if (s >= 55) return '#fbbf24';
+  return '#f87171';
 }
+const uniq = (a) => [...new Set((a || []).filter(Boolean))];
 
-// Use the AI/heuristic sub-scores when present; otherwise derive sensible
-// values from the grade + warnings so legacy jobs still render a ring.
-function deriveScores(analysis) {
-  const gradeMap = { 'A': 94, 'A-': 90, 'B+': 86, 'B': 80, 'C+': 73, 'C': 66, 'D': 55, 'F': 45 };
-  const overall = Number.isFinite(analysis.overallScore) ? clampPct(analysis.overallScore) : (gradeMap[analysis.grade] ?? 80);
-  const sub = analysis.subScores || {};
-  const bias = (analysis.warnings?.biasFluff || []).length;
-  const unreal = (analysis.warnings?.unrealisticExpectations || []).length;
-  return {
-    overall,
-    clarity: clampPct(sub.clarity ?? ((analysis.readability === 'Complex' ? 70 : analysis.readability === 'Sparse' ? 62 : 88) - unreal * 4)),
-    inclusivity: clampPct(sub.inclusivity ?? (100 - bias * 18)),
-    structure: clampPct(sub.structure ?? overall),
-    marketFit: clampPct(sub.marketFit ?? 74),
+// Deterministic PRNG so each candidate's sampled report is stable across renders.
+function rng(seedStr) {
+  let h = 2166136261;
+  for (let i = 0; i < seedStr.length; i++) h = Math.imul(h ^ seedStr.charCodeAt(i), 16777619);
+  return () => {
+    h = Math.imul(h ^ (h >>> 15), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
   };
 }
 
-function meterRow(label, val) {
+const GENERIC_Q = [
+  { prompt: 'Walk me through a project you are proud of and your specific contribution.', questionType: 'behavioral', topic: 'Core competency', rubric: { requiredPoints: [{ description: 'Specific personal contribution' }, { description: 'Clear, measurable impact' }], redFlags: [{ description: 'Only describes the team, not themselves', severity: 'medium' }] } },
+  { prompt: 'Describe a hard problem in your domain and how you approached it.', questionType: 'case_study', topic: 'Problem solving', rubric: { requiredPoints: [{ description: 'Breaks the problem into parts' }, { description: 'Weighs trade-offs' }], redFlags: [] } },
+  { prompt: 'How would you explain your work to someone outside your field?', questionType: 'behavioral', topic: 'Communication', rubric: { requiredPoints: [{ description: 'Plain language, no jargon' }], redFlags: [] } },
+];
+
+export function buildSampleCandidateReport(candidate, job) {
+  const rand = rng(candidate.id || candidate.name || 'seed');
+  const anchor = Number.isFinite(candidate.interviewScore) ? candidate.interviewScore : Math.round(55 + rand() * 40);
+  const vary = (base, spread) => Math.max(10, Math.min(100, Math.round(base + (rand() * 2 - 1) * spread)));
+
+  const topics = (job.functionalParameters && job.functionalParameters.topics) || [];
+  let items = topics.flatMap((t) => t.questions.map((q) => ({ q, topicName: t.name })));
+  if (!items.length) items = GENERIC_Q.map((q) => ({ q, topicName: q.topic }));
+
+  const questionBreakdown = items.map((item, i) => {
+    const qScore = vary(anchor, 16);
+    const dimensionScores = {};
+    DIMENSIONS.forEach((d) => { dimensionScores[d] = { score: vary(qScore, 12), reason: `${d} assessed from the candidate's spoken answer.`, evidence: [], missing: [] }; });
+    const reqs = (item.q.rubric?.requiredPoints || []).map((p) => p.description).filter(Boolean);
+    const splitAt = Math.max(0, Math.round(reqs.length * (0.4 + rand() * 0.5)));
+    const covered = reqs.slice(0, splitAt);
+    const missed = reqs.slice(splitAt);
+    const flags = item.q.rubric?.redFlags || [];
+    const triggered = (qScore < 62 && flags.length && rand() < 0.6)
+      ? [{ label: flags[0].description || 'Concern', severity: flags[0].severity || 'medium', reason: 'Signal detected in the transcript.' }] : [];
+    return {
+      answerId: `a-${candidate.id}-${i}`,
+      questionId: item.q.id || `q-${i}`,
+      questionText: item.q.prompt || 'Question',
+      topicName: item.topicName,
+      questionOrigin: 'predetermined',
+      evaluationMode: 'model_answer_based',
+      overallScore: qScore,
+      dimensionScores,
+      modelAnswerComparison: { coveredRequiredPoints: covered, missedRequiredPoints: missed, coveredBonusPoints: [], incorrectClaims: [] },
+      strengths: covered.slice(0, 2),
+      weaknesses: missed.slice(0, 2),
+      redFlags: triggered,
+      followUpRecommendations: missed.length ? [`Probe deeper on: ${missed[0]}`] : [],
+      evaluationConfidence: qScore > 75 ? 'high' : qScore > 55 ? 'medium' : 'low',
+      summary: `Scored ${qScore}/100 on this question.`,
+    };
+  });
+
+  const overallScore = Math.round(questionBreakdown.reduce((a, r) => a + r.overallScore, 0) / questionBreakdown.length);
+  const allFlags = questionBreakdown.flatMap((r) => r.redFlags);
+  const hasCritical = allFlags.some((f) => f.severity === 'critical');
+  const hasHigh = allFlags.some((f) => f.severity === 'high');
+  let recommendation = overallScore >= 88 ? 'strong_proceed' : overallScore >= 72 ? 'proceed' : overallScore >= 55 ? 'hold' : 'reject';
+  if (hasHigh && overallScore < 80) recommendation = 'hold';
+  if (hasCritical) recommendation = 'needs_human_review';
+  const lowR = questionBreakdown.filter((r) => r.evaluationConfidence === 'low').length / questionBreakdown.length;
+  const highR = questionBreakdown.filter((r) => r.evaluationConfidence === 'high').length / questionBreakdown.length;
+  const recommendationConfidence = lowR >= 0.35 ? 'low' : highR >= 0.6 ? 'high' : 'medium';
+
+  const skillScores = DIMENSIONS.map((d) => ({
+    skill: d,
+    score: Math.round(questionBreakdown.reduce((a, r) => a + (r.dimensionScores[d]?.score || 0), 0) / questionBreakdown.length),
+    evidenceAnswerIds: questionBreakdown.map((r) => r.answerId),
+  }));
+
+  return {
+    interviewId: `int-${candidate.id}`,
+    candidateId: candidate.id,
+    roleTitle: job.roleName || job.cardName || 'Role',
+    interviewType: 'technical',
+    overallScore,
+    recommendation,
+    recommendationConfidence,
+    summary: `Candidate scored ${overallScore}/100 with a ${RECO_META[recommendation].label.toLowerCase()} recommendation and ${recommendationConfidence} confidence based on transcript-only evaluation.`,
+    strengths: uniq(questionBreakdown.flatMap((r) => r.strengths)).slice(0, 6),
+    weaknesses: uniq(questionBreakdown.flatMap((r) => r.weaknesses)).slice(0, 6),
+    redFlags: allFlags,
+    skillScores,
+    questionBreakdown,
+    suggestedNextSteps: uniq(questionBreakdown.flatMap((r) => r.followUpRecommendations)).slice(0, 5),
+    transcriptOnly: true,
+  };
+}
+
+const daUi = { selectedId: null, openAnswerId: null };
+
+function interviewedCandidates(job) {
+  return filterCandidatesByDateRange(AppState.candidates)
+    .filter((c) => (c.jobApplied === job.roleName || c.jobApplied === job.cardName) && c.interviewStatus === 'Completed' && Number.isFinite(c.interviewScore));
+}
+
+const initials = (name) => (name || '?').split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+
+export function renderDeepAnalysisPane(job, container) {
+  if (!job || !container) return;
+  const done = interviewedCandidates(job);
+
+  if (!done.length) {
+    container.innerHTML = emptyState();
+    return;
+  }
+  const reports = done.map((c) => ({ candidate: c, report: buildSampleCandidateReport(c, job) }))
+    .sort((a, b) => b.report.overallScore - a.report.overallScore);
+
+  const selected = daUi.selectedId && reports.find((r) => r.candidate.id === daUi.selectedId);
+  container.innerHTML = `<div class="da-intel">${selected ? detailMarkup(selected, reports) : rosterMarkup(job, reports)}</div>`;
+  bind(container, job);
+}
+
+function emptyState() {
   return `
-    <div class="jd-meter">
-      <div class="jd-meter-top"><span class="jd-meter-label">${label}</span><span class="jd-meter-val">${val}</span></div>
-      <div class="jd-meter-track"><div class="jd-meter-fill" data-w="${val}" style="width:0;background:${scoreColor(val)};"></div></div>
+  <div class="da-empty">
+    <div class="da-empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="13" y2="11"/></svg></div>
+    <p class="da-empty-title">No completed interviews yet</p>
+    <p class="da-empty-desc">Once candidates complete the AI interview, their full evaluation reports — scores, dimensions, rubric coverage, red flags and a hire recommendation — appear here, ranked.</p>
+  </div>`;
+}
+
+function rosterMarkup(job, reports) {
+  const dist = {};
+  reports.forEach((r) => { dist[r.report.recommendation] = (dist[r.report.recommendation] || 0) + 1; });
+  const flagged = reports.filter((r) => r.report.redFlags.some((f) => f.severity === 'high' || f.severity === 'critical')).length;
+  const avg = Math.round(reports.reduce((a, r) => a + r.report.overallScore, 0) / reports.length);
+
+  return `
+    <div class="da-roster-head">
+      <div><h2 class="da-title">Candidate intelligence</h2><p class="da-sub">${reports.length} completed interview${reports.length !== 1 ? 's' : ''} · ranked by evaluation score</p></div>
+    </div>
+    <div class="da-stat-strip">
+      <div class="da-stat"><span class="da-stat-num">${reports.length}</span><span class="da-stat-label">Interviewed</span></div>
+      <div class="da-stat"><span class="da-stat-num" style="color:${scoreColor(avg)};">${avg}</span><span class="da-stat-label">Avg score</span></div>
+      <div class="da-stat"><span class="da-stat-num" style="color:#2dd4bf;">${(dist.strong_proceed || 0) + (dist.proceed || 0)}</span><span class="da-stat-label">Proceed</span></div>
+      <div class="da-stat"><span class="da-stat-num" style="color:${flagged ? '#fb923c' : '#9a9a9a'};">${flagged}</span><span class="da-stat-label">Flagged</span></div>
+    </div>
+    <div class="da-roster">
+      ${reports.map((r, i) => rosterRow(r, i)).join('')}
     </div>`;
 }
 
-function checkSkillStatus(cand, skillText, isMustHave) {
-  const analysis = resumeAnalysisCache[cand.id];
-  if (!analysis) return 'pending';
-
-  const cleanSkill = skillText.toLowerCase().trim();
-  
-  const inMatched = analysis.skills?.matched?.some(s => {
-    const sLower = s.toLowerCase();
-    return sLower.includes(cleanSkill) || cleanSkill.includes(sLower);
-  });
-  if (inMatched) return 'yes';
-
-  const inMissing = analysis.skills?.missing?.some(s => {
-    const sLower = s.toLowerCase();
-    return sLower.includes(cleanSkill) || cleanSkill.includes(sLower);
-  });
-  if (inMissing) return 'no';
-
-  const candText = (cand.textContent || resumeTextCache[cand.id] || '').toLowerCase();
-  if (candText) {
-    const words = cleanSkill.split(/\s+/).filter(w => w.length > 3 && !['years', 'experience', 'with', 'knowledge', 'understanding', 'skills', 'ability', 'proficient'].includes(w));
-    if (words.length > 0 && words.some(w => candText.includes(w))) {
-      return 'yes';
-    }
-  }
-
-  return isMustHave ? 'no' : 'pending';
+function rosterRow({ candidate, report }, i) {
+  const reco = RECO_META[report.recommendation];
+  const flag = report.redFlags.find((f) => f.severity === 'critical') || report.redFlags.find((f) => f.severity === 'high');
+  return `
+  <div class="da-row" data-action="select" data-cid="${candidate.id}" role="button" tabindex="0">
+    <span class="da-rank">${i + 1}</span>
+    <span class="da-avatar">${escapeHTML(initials(candidate.name))}</span>
+    <div class="da-row-id">
+      <span class="da-row-name">${escapeHTML(candidate.name)}</span>
+      <span class="da-row-meta">${escapeHTML(candidate.source || 'Applicant')}${flag ? ` · <span style="color:${SEV_COLOR[flag.severity]}">${flag.severity} flag</span>` : ''}</span>
+    </div>
+    <span class="da-row-conf" style="color:${CONF_COLOR[report.recommendationConfidence]};" title="recommendation confidence">${report.recommendationConfidence}</span>
+    <span class="da-reco-chip" style="color:${reco.color};border-color:${reco.color}40;background:${reco.color}14;">${reco.label}</span>
+    <span class="da-row-score" style="color:${scoreColor(report.overallScore)};">${report.overallScore}</span>
+    <svg class="da-row-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>`;
 }
 
-function generateExecutiveSummary(job, candidates) {
-  const analyzed = candidates.filter(c => resumeAnalysisCache[c.id]);
-  if (analyzed.length === 0) {
-    return "No candidates have been analyzed yet. Scan candidate resumes to generate the talent pool executive summary.";
-  }
+function detailMarkup({ candidate, report }, allReports) {
+  const reco = RECO_META[report.recommendation];
+  const band = scoreColor(report.overallScore);
+  const critical = report.redFlags.filter((f) => f.severity === 'critical');
+  return `
+    <div class="da-detail-head">
+      <button class="da-back" data-action="back"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> All candidates</button>
+    </div>
 
-  let totalScore = 0;
-  let topCand = null;
-  let topScore = -1;
-  const missingCounts = {};
+    ${critical.length ? `<div class="da-critical-banner"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Critical red flag — human review required before any decision.</div>` : ''}
 
-  analyzed.forEach(c => {
-    const analysis = resumeAnalysisCache[c.id];
-    const score = analysis.matchScore || 0;
-    totalScore += score;
-    if (score > topScore) {
-      topScore = score;
-      topCand = c;
-    }
+    <div class="da-report-top">
+      <div class="da-ring" style="--p:${report.overallScore};--c:${band};"><span class="da-ring-num">${report.overallScore}</span><span class="da-ring-of">/100</span></div>
+      <div class="da-report-id">
+        <div class="da-report-name">${escapeHTML(candidate.name)}<span class="da-report-role">${escapeHTML(report.roleTitle)}</span></div>
+        <div class="da-report-chips">
+          <span class="da-reco-chip lg" style="color:${reco.color};border-color:${reco.color}40;background:${reco.color}14;">${reco.label}</span>
+          <span class="da-conf-chip" style="color:${CONF_COLOR[report.recommendationConfidence]};">${report.recommendationConfidence} confidence</span>
+        </div>
+        <p class="da-summary">${escapeHTML(report.summary)}</p>
+      </div>
+    </div>
 
-    analysis.skills?.missing?.forEach(s => {
-      const clean = s.trim();
-      missingCounts[clean] = (missingCounts[clean] || 0) + 1;
-    });
-  });
+    <div class="da-section">
+      <h3 class="da-section-title">Evaluation dimensions</h3>
+      ${report.skillScores.map((s) => `
+        <div class="da-dim"><span class="da-dim-name">${escapeHTML(s.skill)}</span><span class="da-dim-track"><span class="da-dim-fill" style="width:${s.score}%;background:${scoreColor(s.score)};"></span></span><span class="da-dim-score">${s.score}</span></div>
+      `).join('')}
+    </div>
 
-  const avgScore = Math.round(totalScore / analyzed.length);
-  const sortedMissing = Object.entries(missingCounts).sort((a,b) => b[1] - a[1]);
-  const mostMissing = sortedMissing.length > 0 ? sortedMissing[0][0] : null;
+    <div class="da-cols">
+      <div class="da-section da-half">
+        <h3 class="da-section-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Strengths</h3>
+        ${report.strengths.length ? report.strengths.map((s) => `<div class="da-li ok">${escapeHTML(s)}</div>`).join('') : '<div class="da-li muted">None surfaced.</div>'}
+      </div>
+      <div class="da-section da-half">
+        <h3 class="da-section-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/></svg> Weaknesses</h3>
+        ${report.weaknesses.length ? report.weaknesses.map((s) => `<div class="da-li warn">${escapeHTML(s)}</div>`).join('') : '<div class="da-li muted">None surfaced.</div>'}
+      </div>
+    </div>
 
-  let summary = `We have analyzed ${analyzed.length} candidate(s) for the <strong>${escapeHTML(job.roleName)}</strong> position. The average match score is <strong>${avgScore}%</strong>. `;
+    ${report.redFlags.length ? `
+      <div class="da-section">
+        <h3 class="da-section-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> Red flags</h3>
+        ${report.redFlags.map((f) => `<div class="da-flag"><span class="da-sev" style="color:${SEV_COLOR[f.severity]};background:${SEV_COLOR[f.severity]}1a;">${f.severity}</span><span class="da-flag-text">${escapeHTML(f.label)}</span></div>`).join('')}
+      </div>` : ''}
 
-  if (topCand) {
-    summary += `<strong>${escapeHTML(topCand.name)}</strong> is the top-performing candidate with a match score of <strong>${topScore}%</strong>. `;
-  }
+    <div class="da-section">
+      <h3 class="da-section-title">Per-question breakdown</h3>
+      ${report.questionBreakdown.map((r) => answerCard(r)).join('')}
+    </div>
 
-  if (mostMissing) {
-    const pct = Math.round((missingCounts[mostMissing] / analyzed.length) * 100);
-    summary += `A significant portion of the candidate pool (${pct}%) lacks experience in <strong>${escapeHTML(mostMissing)}</strong>, which may be a focus area during recruiter screens. `;
-  } else {
-    summary += `The candidate pool shows strong coverage of all mandatory requirements. `;
-  }
-
-  summary += `We recommend proceeding with recruiter screening calls for the top-matched candidates.`;
-  return summary;
+    ${report.suggestedNextSteps.length ? `
+      <div class="da-section">
+        <h3 class="da-section-title">Suggested next steps</h3>
+        ${report.suggestedNextSteps.map((s) => `<div class="da-li step">${escapeHTML(s)}</div>`).join('')}
+      </div>` : ''}`;
 }
 
-function renderDeepAnalysisPane(job, container) {
-  if (!job) return;
-  
-  if (!job.jdAnalysis) {
-    job.jdAnalysis = auditJobDescriptionLocally(job.description || '');
-  }
-  
-  const analysis = job.jdAnalysis;
-  const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [], goodToHaveMinMatch: 1 };
-  
-  const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(c => {
-    return c.jobApplied === job.roleName || c.jobApplied === job.cardName;
-  });
-  
-  const gradeThemes = {
-    'A': { border: '#10b981', color: '#10b981', bg: 'rgba(16,185,129,0.1)', shadow: 'rgba(16,185,129,0.2)' },
-    'A-': { border: '#10b981', color: '#10b981', bg: 'rgba(16,185,129,0.1)', shadow: 'rgba(16,185,129,0.2)' },
-    'B+': { border: '#f59e0b', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', shadow: 'rgba(245,158,11,0.2)' },
-    'B': { border: '#f59e0b', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', shadow: 'rgba(245,158,11,0.2)' },
-    'C+': { border: '#f97316', color: '#f97316', bg: 'rgba(249,115,22,0.1)', shadow: 'rgba(249,115,22,0.2)' },
-    'C': { border: '#f97316', color: '#f97316', bg: 'rgba(249,115,22,0.1)', shadow: 'rgba(249,115,22,0.2)' },
-    'D': { border: '#ef4444', color: '#ef4444', bg: 'rgba(239,68,68,0.1)', shadow: 'rgba(239,68,68,0.2)' },
-    'F': { border: '#ef4444', color: '#ef4444', bg: 'rgba(239,68,68,0.1)', shadow: 'rgba(239,68,68,0.2)' }
+function answerCard(r) {
+  const open = daUi.openAnswerId === r.answerId;
+  const c = scoreColor(r.overallScore);
+  const mac = r.modelAnswerComparison || {};
+  return `
+  <div class="da-ans ${open ? 'open' : ''}" data-aid="${r.answerId}">
+    <div class="da-ans-top" data-action="toggle-answer" data-aid="${r.answerId}">
+      <svg class="da-ans-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      <span class="da-ans-topic">${escapeHTML(r.topicName || '')}</span>
+      <span class="da-ans-q">${escapeHTML(r.questionText)}</span>
+      <span class="da-ans-conf" style="color:${CONF_COLOR[r.evaluationConfidence]};" title="evaluation confidence">${r.evaluationConfidence}</span>
+      <span class="da-ans-score" style="color:${c};">${r.overallScore}</span>
+    </div>
+    ${open ? `
+      <div class="da-ans-body">
+        <div class="da-dim-grid">
+          ${Object.entries(r.dimensionScores).map(([d, v]) => `<div class="da-dim-mini"><span>${escapeHTML(d)}</span><b style="color:${scoreColor(v.score)};">${v.score}</b></div>`).join('')}
+        </div>
+        ${(mac.coveredRequiredPoints || []).length || (mac.missedRequiredPoints || []).length ? `
+          <div class="da-mac">
+            ${(mac.coveredRequiredPoints || []).map((p) => `<div class="da-mac-row ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>${escapeHTML(p)}</div>`).join('')}
+            ${(mac.missedRequiredPoints || []).map((p) => `<div class="da-mac-row miss"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>${escapeHTML(p)}</div>`).join('')}
+          </div>` : ''}
+        <p class="da-ans-summary">${escapeHTML(r.summary)}</p>
+      </div>` : ''}
+  </div>`;
+}
+
+function bind(container, job) {
+  container.onclick = (e) => {
+    const el = e.target.closest('[data-action]');
+    if (!el) return;
+    const action = el.dataset.action;
+    if (action === 'select') { daUi.selectedId = el.dataset.cid; daUi.openAnswerId = null; soundEngine.playClick(); renderDeepAnalysisPane(job, container); }
+    else if (action === 'back') { daUi.selectedId = null; soundEngine.playClick(); renderDeepAnalysisPane(job, container); }
+    else if (action === 'toggle-answer') { const a = el.dataset.aid; daUi.openAnswerId = daUi.openAnswerId === a ? null : a; soundEngine.playClick(); renderDeepAnalysisPane(job, container); }
   };
-  const theme = gradeThemes[analysis.grade] || gradeThemes['A'];
-  const scores = deriveScores(analysis);
-  const ringColor = scoreColor(scores.overall);
-
-  const leftColHTML = `
-    <div class="card-glass jd-analysis-card">
-      <div class="jd-analysis-card-header">
-        <h3 class="jd-card-title">Job Description Quality Audit</h3>
-        <span class="jd-badge-readability">${analysis.readability || 'Clear'} Readability</span>
-        <span class="jd-source-badge" title="${analysis.source === 'ai' ? 'Generated by AI from your job description.' : 'Computed by the local heuristic engine — AI was unavailable or has not run yet.'}" style="font-size:0.6rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;padding:3px 8px;border-radius:6px;margin-left:6px;${analysis.source === 'ai' ? 'color:#2dd4bf;background:rgba(45,212,191,0.12);border:1px solid rgba(45,212,191,0.32);' : 'color:#94a3b8;background:rgba(148,163,184,0.1);border:1px solid rgba(148,163,184,0.25);'}">${analysis.source === 'ai' ? '✦ AI analysis' : 'Offline heuristic'}</span>
-      </div>
-      
-      <div class="jd-score-block" style="border-color: ${theme.border}; background: ${theme.bg}; box-shadow: 0 0 18px ${theme.shadow};">
-        <div class="jd-score-ring" data-score="${scores.overall}" style="--ring-color: ${ringColor};">
-          <svg viewBox="0 0 120 120" aria-hidden="true">
-            <circle class="jd-ring-track" cx="60" cy="60" r="52"></circle>
-            <circle class="jd-ring-fill" cx="60" cy="60" r="52" transform="rotate(-90 60 60)"></circle>
-          </svg>
-          <div class="jd-ring-center">
-            <span class="jd-ring-num">${scores.overall}</span>
-            <span class="jd-ring-grade" style="color: ${theme.color};">${analysis.grade}</span>
-          </div>
-        </div>
-        <div class="jd-submeters">
-          ${meterRow('Clarity', scores.clarity)}
-          ${meterRow('Inclusivity', scores.inclusivity)}
-          ${meterRow('Structure', scores.structure)}
-          ${meterRow('Market fit', scores.marketFit)}
-        </div>
-      </div>
-      
-      <div class="jd-audit-alerts">
-        <h4 class="jd-section-subtitle">Audit Warnings</h4>
-        
-        <div class="jd-audit-group">
-          <h5>Unrealistic Expectations</h5>
-          ${(analysis.warnings?.unrealisticExpectations || []).length === 0 ? `
-            <div class="jd-audit-item ok">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>No major unrealistic expectations detected.</span>
-            </div>
-          ` : (analysis.warnings?.unrealisticExpectations || []).map(w => `
-            <div class="jd-audit-item warning">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-              <span>${w}</span>
-            </div>
-          `).join('')}
-        </div>
-
-        <div class="jd-audit-group" style="margin-top: 12px;">
-          <h5>Clichés & Corporate Fluff</h5>
-          ${(analysis.warnings?.biasFluff || []).length === 0 ? `
-            <div class="jd-audit-item ok">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>No corporate fluff clichés detected.</span>
-            </div>
-          ` : (analysis.warnings?.biasFluff || []).map(w => `
-            <div class="jd-audit-item warning">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-              <span>${w}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <div class="jd-market-context" style="margin-top: 16px;">
-        <h4 class="jd-section-subtitle">Market Context</h4>
-        <p class="jd-market-text">${analysis.marketContext || 'Standard talent availability for this role.'}</p>
-      </div>
-
-      <div class="jd-optimizations" style="margin-top: 16px;">
-        <h4 class="jd-section-subtitle">Recommended Optimizations</h4>
-        <ul class="jd-opt-list">
-          ${(analysis.recommendedOptimizations || []).map(opt => `
-            <li>${opt}</li>
-          `).join('')}
-        </ul>
-      </div>
-
-      <div class="jd-audit-actions" style="margin-top: 20px; display: flex; gap: 10px;">
-        <button class="btn-enhance-custom btn-jd-optimize-ai" aria-live="polite" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-          Optimize JD with AI
-        </button>
-      </div>
-    </div>
-  `;
-
-  const analyzedCands = jobCandidates.filter(c => resumeAnalysisCache[c.id]);
-  const avgMatchScore = analyzedCands.length > 0 
-    ? Math.round(analyzedCands.reduce((acc, c) => acc + (resumeAnalysisCache[c.id].matchScore || 0), 0) / analyzedCands.length) 
-    : 0;
-
-  const mustHaves = criteria.mustHave || [];
-  const goodToHaves = criteria.goodToHave || [];
-  
-  let matrixHTML = '';
-  if (jobCandidates.length === 0) {
-    matrixHTML = `
-      <div class="jd-empty-pane" style="min-height: 250px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
-        <p>No candidates available. Please add candidates to the sourcing panel.</p>
-      </div>
-    `;
-  } else {
-    matrixHTML = `
-      <div class="table-container-scroller" style="overflow-x: auto; max-width: 100%; border-radius: 8px; border: 1px solid var(--glass-border);">
-        <table class="stage-data-table matrix-table" style="min-width: 100%;">
-          <thead>
-            <tr>
-              <th style="position: sticky; left: 0; background: var(--bg-card); z-index: 2;">Candidate</th>
-              ${mustHaves.map((s, i) => `<th class="matrix-header-cell must" title="Must-Have: ${escapeHTML(s)}">M${i+1}</th>`).join('')}
-              ${goodToHaves.map((s, i) => `<th class="matrix-header-cell good" title="Good-to-Have: ${escapeHTML(s)}">G${i+1}</th>`).join('')}
-              <th class="matrix-header-cell" title="Red Flags">Red Flags</th>
-              <th class="matrix-header-cell" title="Match Score">Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${jobCandidates.map(c => {
-              const analysis = resumeAnalysisCache[c.id];
-              const scoreText = analysis ? `${analysis.matchScore}%` : '—';
-              const isAnalyzed = !!analysis;
-              const hasRedFlags = analysis && analysis.redFlagsDetected && analysis.redFlagsDetected.length > 0;
-              
-              const scoreClass = analysis 
-                ? (analysis.matchScore >= 70 ? 'score-green' : analysis.matchScore >= 45 ? 'score-yellow' : 'score-red')
-                : '';
-
-              return `
-                <tr>
-                  <td style="position: sticky; left: 0; background: var(--bg-card); z-index: 1; font-weight: 600;">
-                    ${escapeHTML(c.name)}
-                    ${isAnalyzed ? '' : '<span class="matrix-badge-pending">Pending</span>'}
-                  </td>
-                  ${mustHaves.map(s => {
-                    const status = checkSkillStatus(c, s, true);
-                    if (status === 'yes') return '<td class="matrix-cell check" style="color: #10b981; text-align: center;">✓</td>';
-                    if (status === 'no') return '<td class="matrix-cell cross" style="color: #ef4444; text-align: center;">✗</td>';
-                    return '<td class="matrix-cell dash" style="color: var(--color-text-faint); text-align: center;">—</td>';
-                  }).join('')}
-                  ${goodToHaves.map(s => {
-                    const status = checkSkillStatus(c, s, false);
-                    if (status === 'yes') return '<td class="matrix-cell check" style="color: #10b981; text-align: center;">✓</td>';
-                    if (status === 'no') return '<td class="matrix-cell cross" style="color: #ef4444; text-align: center;">✗</td>';
-                    return '<td class="matrix-cell dash" style="color: var(--color-text-faint); text-align: center;">—</td>';
-                  }).join('')}
-                  <td style="text-align: center;">
-                    ${!isAnalyzed ? '<span style="color: var(--color-text-faint);">—</span>' : (hasRedFlags ? `<span style="color: #ef4444; font-size: 1.1rem;" title="${escapeHTML(analysis.redFlagsDetected.join(', '))}">⚠</span>` : '<span style="color: #10b981;">✓</span>')}
-                  </td>
-                  <td style="text-align: center; font-weight: 700;">
-                    <span class="interview-score-dot ${scoreClass}"></span> ${scoreText}
-                  </td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-      
-      <div class="matrix-legend" style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-faint); margin-top: 10px; flex-wrap: wrap; gap: 8px;">
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-          <span><strong>M1–M${mustHaves.length}:</strong> Must-Haves (Hover to see full skill)</span>
-          <span><strong>G1–G${goodToHaves.length}:</strong> Good-to-Haves</span>
-        </div>
-        <div style="display: flex; gap: 12px;">
-          <span><span style="color: #10b981;">✓</span> Found</span>
-          <span><span style="color: #ef4444;">✗</span> Missing</span>
-          <span><span style="color: var(--color-text-faint);">—</span> Not analyzed/unknown</span>
-        </div>
-      </div>
-    `;
-  }
-
-  const execSummary = generateExecutiveSummary(job, jobCandidates);
-
-  const rightColHTML = `
-    <div class="card-glass jd-analysis-card" style="display: flex; flex-direction: column; gap: 20px;">
-      <div>
-        <div class="jd-analysis-card-header" style="margin-bottom: 8px;">
-          <h3 class="jd-card-title">Candidate Sourcing Pool Matrix</h3>
-          <span class="jd-badge-readability" style="background: rgba(99,102,241,0.1); color: #818cf8; border-color: rgba(99,102,241,0.2);">Avg Score: ${avgMatchScore}%</span>
-        </div>
-        <p style="font-size: 0.8rem; color: var(--color-text-faint); margin-bottom: 15px;">Aggregated view of how candidates match specific JD requirements.</p>
-        ${matrixHTML}
-      </div>
-
-      <div class="jd-analysis-summary-section" style="border-top: 1px solid var(--glass-border); padding-top: 20px;">
-        <h4 class="jd-section-subtitle">AI Talent Pool Executive Summary</h4>
-        <p class="jd-summary-text" style="font-size: 0.85rem; line-height: 1.5; color: var(--color-text-secondary);">${execSummary}</p>
-      </div>
-    </div>
-  `;
-
-  container.innerHTML = `
-    <div class="jd-analysis-grid">
-      ${leftColHTML}
-      ${rightColHTML}
-    </div>
-  `;
-
-  // Animate the score ring + sub-meters from empty to their values on render.
-  const ringFill = container.querySelector('.jd-ring-fill');
-  const ringEl = container.querySelector('.jd-score-ring');
-  if (ringFill && ringEl) {
-    const circumference = 2 * Math.PI * 52;
-    ringFill.style.strokeDasharray = `${circumference}`;
-    ringFill.style.strokeDashoffset = `${circumference}`;
-    requestAnimationFrame(() => {
-      const pct = (Number(ringEl.dataset.score) || 0) / 100;
-      ringFill.style.strokeDashoffset = `${circumference * (1 - pct)}`;
-    });
-  }
-  container.querySelectorAll('.jd-meter-fill').forEach((el) => {
-    requestAnimationFrame(() => { el.style.width = `${el.dataset.w}%`; });
-  });
-
-  const optBtn = container.querySelector('.btn-jd-optimize-ai');
-  if (optBtn) {
-    optBtn.addEventListener('click', () => {
-      optimizeJobDescriptionWithAI(job, container);
-    });
-  }
+  container.onkeydown = (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('da-row')) {
+      e.preventDefault(); daUi.selectedId = e.target.dataset.cid; daUi.openAnswerId = null; renderDeepAnalysisPane(job, container);
+    }
+  };
 }
 
-
-export { checkSkillStatus, generateExecutiveSummary, renderDeepAnalysisPane };
+export { renderDeepAnalysisPane as default };

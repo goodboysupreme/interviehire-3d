@@ -9,6 +9,7 @@ import { renderJobCards } from './render-views.js';
 import { soundEngine } from './sound.js';
 import { navigateToSourcing, showPremiumToast } from './sourcing.js';
 import { AppState } from './state.js';
+import { ensureFunctionalBlueprint, computeCalibration } from './blueprint-engine.js';
 
 // ==========================================
 // JOB FLOW PIPELINE VIEW
@@ -220,7 +221,7 @@ function openJobFlowView(jobId, showAddCandidates = false) {
       careerPage: { enabled: true, listed: true },
       resumeAnalysis: { enabled: !!job.resumeCriteria },
       recruiterScreening: { enabled: false },
-      functionalInterview: { enabled: job.questions && job.questions.length > 0 }
+      functionalInterview: { enabled: !!((job.functionalParameters && job.functionalParameters.topics && job.functionalParameters.topics.length) || (job.questions && job.questions.length > 0)) }
     };
   }
 
@@ -308,8 +309,10 @@ function renderJobFlowPipeline(job) {
 
   const cfg = job.pipelineConfig;
   const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [] };
-  const questionCount = job.questions ? job.questions.length : 0;
-  const totalDuration = questionCount * 3;
+  const fnBlueprint = ensureFunctionalBlueprint(job);
+  const fnCal = computeCalibration(fnBlueprint);
+  const questionCount = fnCal.questionCount;
+  const totalDuration = fnCal.totalMinutes;
 
   const stages = [
     {
@@ -958,157 +961,50 @@ function renderScreeningConfig(job, panel) {
 }
 
 function renderFunctionalConfig(job, panel) {
-  const questions = job.questions || [];
-  const totalDuration = questions.length * 3;
-
-  // Group questions by type
-  const groups = {};
-  questions.forEach(q => {
-    const key = q.type || 'technical';
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(q);
-  });
+  const fb = ensureFunctionalBlueprint(job);
+  const cal = computeCalibration(fb);
+  const topics = fb.topics || [];
 
   panel.innerHTML = `
     <div class="jf-config-header">
       <div class="jf-config-header-left">
         <h2 class="jf-config-title">Functional Interview</h2>
-        <p class="jf-config-subtitle">AI conducts domain-specific interviews using adaptive questioning and skill frameworks</p>
+        <p class="jf-config-subtitle">The AI avatar conducts this round from the blueprint you author in Question Studio</p>
       </div>
       <div class="jf-config-header-actions">
-        <span class="jf-stat-pill"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ${questions.length} Questions</span>
-        <span class="jf-stat-pill"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${totalDuration} Minutes</span>
+        <span class="jf-stat-pill"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg> ${cal.questionCount} Questions</span>
+        <span class="jf-stat-pill"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${cal.totalMinutes} Minutes</span>
+        <span class="jf-stat-pill"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 5-3.5 7.5-8.5 9C7.5 19.5 4 17 4 12V5l8.5-3L21 5z"/></svg> ${cal.rubricCoverage}% rubric-ready</span>
       </div>
     </div>
 
-    <div class="jf-screening-tabs">
-      <button class="jf-tab active">Interview Structure</button>
-      <button class="jf-tab">Test Interview</button>
-      <button class="jf-tab">Settings</button>
-    </div>
-
-    <div class="jf-interview-structure">
-      <div class="jf-structure-item intro">
-        <span class="jf-structure-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
-        <span class="jf-structure-name">Introduction</span>
-        <span class="jf-structure-expand"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
-      </div>
-
-      ${Object.entries(groups).map(([type, qs]) => {
-        const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
-        const typeColor = type === 'technical' ? '#38bdf8' : type === 'behavioral' ? '#a855f7' : type === 'situational' ? '#34d399' : '#fbbf24';
-        const avgDiff = qs[0]?.difficulty || 'intermediate';
-        const diffLabel = avgDiff.charAt(0).toUpperCase() + avgDiff.slice(1);
-        return `
-          <div class="jf-structure-item">
-            <span class="jf-structure-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${typeColor}" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
-            <span class="jf-structure-name">${typeLabel} Questions</span>
-            <div class="jf-structure-badges">
-              <span class="jf-badge" style="color:${typeColor};border-color:${typeColor}30;background:${typeColor}10">${typeLabel}</span>
-              <span class="jf-badge">${qs.length} Question${qs.length !== 1 ? 's' : ''}</span>
-              <span class="jf-badge">${diffLabel}</span>
-            </div>
-            <span class="jf-structure-expand"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+    ${topics.length ? `
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
+        ${topics.map(t => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:var(--color-surface-2);border:1px solid var(--glass-border);border-radius:10px;">
+            <span style="font-size:0.85rem;font-weight:600;">${escapeHTML(t.name)}</span>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--color-text-muted);">${escapeHTML(t.type)} · ${escapeHTML(t.difficulty)} · ${t.questions.length} Q${t.questions.length !== 1 ? 's' : ''}</span>
           </div>
-        `;
-      }).join('')}
+        `).join('')}
+      </div>
+    ` : `
+      <div style="margin-top:16px;padding:24px;text-align:center;color:var(--color-text-muted);font-size:0.8rem;background:var(--color-surface-2);border:1px solid var(--glass-border);border-radius:12px;">No questions yet. Open Question Studio to generate a rubric-graded interview blueprint.</div>
+    `}
 
-      <div class="jf-structure-item coding">
-        <span class="jf-structure-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
-        <span class="jf-structure-name">Coding Question Pool</span>
-        <div class="jf-structure-badges">
-          <span class="jf-badge coding">DSA</span>
-          <span class="jf-badge">3 Follow ups</span>
-          <span class="jf-badge">Medium</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="jf-section" style="margin-top:16px;">
-      <div class="jf-section-header">
-        <h3 class="jf-section-title" style="display:flex;align-items:center;gap:8px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          Edit Questions
-        </h3>
-      </div>
-      <div class="jf-questions-edit-list" id="jf-questions-list">
-        ${questions.map((q, i) => {
-          const typeColor = q.type === 'technical' ? '#38bdf8' : q.type === 'behavioral' ? '#a855f7' : q.type === 'situational' ? '#34d399' : '#fbbf24';
-          return `
-            <div class="jf-question-edit-row" data-qi="${i}">
-              <span class="jf-qe-num">${i + 1}</span>
-              <span class="jf-badge" style="color:${typeColor};border-color:${typeColor}30;background:${typeColor}10;font-size:0.65rem;">${(q.type || 'technical').charAt(0).toUpperCase() + (q.type || 'technical').slice(1)}</span>
-              <input type="text" class="jf-edit-input jf-qe-text" value="${(q.question || q.text || '').replace(/"/g, '&quot;')}" data-qi="${i}" />
-              <select class="jf-edit-input jf-qe-diff" data-qi="${i}" style="width:110px;">
-                ${DIFFICULTY_LEVELS.map(d => `<option ${q.difficulty === d || (d === 'intermediate' && !q.difficulty) ? 'selected' : ''}>${d}</option>`).join('')}
-              </select>
-              <button class="btn-jf-remove-field jf-qe-delete" data-qi="${i}" title="Delete question">×</button>
-            </div>
-          `;
-        }).join('')}
-      </div>
-      <div style="display:flex;gap:8px;margin-top:10px;">
-        <button class="btn-jf-primary" id="btn-fi-add-question" style="flex:1;">+ Add Question</button>
-        <button class="btn-jf-primary" id="btn-fi-save-questions" style="flex:1;background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#34d399;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-          Save Questions
-        </button>
-      </div>
-    </div>
+    <button class="btn-jf-primary" id="btn-open-studio" style="margin-top:16px;width:100%;display:inline-flex;align-items:center;justify-content:center;gap:7px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      Open Question Studio
+    </button>
   `;
 
-  panel.querySelectorAll('.jf-qe-delete').forEach(btn => {
-    btn.addEventListener('click', () => {
-      btn.closest('.jf-question-edit-row').remove();
-      panel.querySelectorAll('.jf-qe-num').forEach((num, i) => { num.textContent = i + 1; });
-    });
-  });
-
-  document.getElementById('btn-fi-add-question')?.addEventListener('click', () => {
-    const list = document.getElementById('jf-questions-list');
-    const idx = list.querySelectorAll('.jf-question-edit-row').length;
-    const row = document.createElement('div');
-    row.className = 'jf-question-edit-row';
-    row.dataset.qi = idx;
-    row.innerHTML = `
-      <span class="jf-qe-num">${idx + 1}</span>
-      <span class="jf-badge" style="color:#38bdf8;border-color:#38bdf830;background:#38bdf810;font-size:0.65rem;">Technical</span>
-      <input type="text" class="jf-edit-input jf-qe-text" value="" data-qi="${idx}" placeholder="Enter question..." />
-      <select class="jf-edit-input jf-qe-diff" data-qi="${idx}" style="width:110px;">
-        ${DIFFICULTY_LEVELS.map(d => `<option ${d === 'intermediate' ? 'selected' : ''}>${d}</option>`).join('')}
-      </select>
-      <button class="btn-jf-remove-field jf-qe-delete" data-qi="${idx}" title="Delete question">×</button>
-    `;
-    list.appendChild(row);
-    row.querySelector('.jf-qe-delete').addEventListener('click', () => {
-      row.remove();
-      list.querySelectorAll('.jf-qe-num').forEach((num, i) => { num.textContent = i + 1; });
-    });
-    row.querySelector('input').focus();
-  });
-
-  document.getElementById('btn-fi-save-questions')?.addEventListener('click', () => {
-    const newQuestions = [];
-    panel.querySelectorAll('.jf-question-edit-row').forEach(row => {
-      const text = row.querySelector('.jf-qe-text')?.value.trim();
-      if (!text) return;
-      const qi = parseInt(row.dataset.qi);
-      const existing = questions[qi] || {};
-      newQuestions.push({
-        ...existing,
-        question: text,
-        difficulty: row.querySelector('.jf-qe-diff')?.value || 'intermediate',
-        type: existing.type || 'technical'
-      });
-    });
-    job.questions = newQuestions;
-    saveStateToLocalStorage();
-    showPremiumToast(`${newQuestions.length} questions saved.`, 'success');
-    renderFunctionalConfig(job, panel);
-    renderJobFlowPipeline(job);
+  document.getElementById('btn-open-studio')?.addEventListener('click', () => {
+    navigateToJobDetail(job.id);
+    setTimeout(() => {
+      const tab = document.querySelector('.jd-tab[data-jd-tab="questions"]');
+      if (tab) tab.click();
+    }, 60);
   });
 }
-
 function renderFunnelStages(job) {
   const container = document.getElementById('jd-funnel-stages');
   if (!container) return;

@@ -1,6 +1,5 @@
 import { document, signal, setTimeout, clearTimeout } from './runtime.js';
 import { reviewJdRewrite } from './jd-rewrite.js';
-import { renderDeepAnalysisPane } from './deep-analysis.js';
 import { generateQuestionsLocally } from './questions.js';
 import { soundEngine } from './sound.js';
 import { showPremiumToast } from './sourcing.js';
@@ -528,8 +527,6 @@ Specifically:
 
     await enrichJobWithAI(job, job.description);
 
-    renderDeepAnalysisPane(job, container);
-
     const rawDesc = document.getElementById('jd-raw-description');
     if (rawDesc) rawDesc.value = job.description;
 
@@ -540,7 +537,6 @@ Specifically:
     cleanText = cleanText.replace(/\b(?:rockstar|ninja|guru|ninja developer|wear many hats)\b/gi, 'professional');
     job.description = cleanText;
     await enrichJobWithAI(job, job.description);
-    renderDeepAnalysisPane(job, container);
     showPremiumToast("Local optimization applied (API unavailable).", "info");
   } finally {
     btn.disabled = false;
