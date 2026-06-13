@@ -3,7 +3,9 @@ import { callDeepSeekAPI, sanitizeJSONResponse, saveStateToLocalStorage } from '
 import { renderJobDetailPanes } from './job-detail-panes.js';
 import { appendTerminalLog } from './kanban-swarm.js';
 import { openReportDrawerForCandidate } from './report.js';
+import { prepareResumeForAnalysis } from './resume-prep.js';
 import { computeWeightedScore, getScoringConfig, recommendationFromScore } from './scoring-config.js';
+import { annotateConfidence, displayName, isBlindMode, redactResumeText } from './screening-integrity.js';
 import { soundEngine } from './sound.js';
 import { extractResumeIdentity, showPremiumToast } from './sourcing.js';
 import { AppState } from './state.js';
@@ -64,11 +66,30 @@ function generateAutoResumeAnalysis(candidateName) {
   };
 }
 
+function escAttr(value = '') {
+  return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function confidenceChipHTML(result) {
+  if (!result || !result.confidence) return '';
+  const { band, score, reasons } = result.confidence;
+  const tip = Array.isArray(reasons) && reasons.length ? reasons.join(' · ') : '';
+  return `<span class="ra-conf-chip ${band.toLowerCase()}" title="${escAttr(tip)}">${band} confidence · ${score}%</span>`;
+}
+
+function reviewFlagHTML(result) {
+  if (!result || !result.needsReview) return '';
+  const tip = (result.reviewReasons || []).join(' · ');
+  return `<span class="ra-review-flag" title="${escAttr(tip)}">⚑ Review</span>`;
+}
+
 function renderResumeStagePaneForJob(candidates, job, container) {
   // Hydrate the in-memory cache from analyses persisted on candidates
   candidates.forEach(c => {
     if (!resumeAnalysisCache[c.id] && c.resumeAnalysis) resumeAnalysisCache[c.id] = c.resumeAnalysis;
   });
+
+  const blind = isBlindMode(job);
 
   const getMatchClass = (score) => {
     if (score >= 75) return 'high';
@@ -94,6 +115,12 @@ function renderResumeStagePaneForJob(candidates, job, container) {
           <span class="ra-toolbar-stat pending">${pendingCount} pending</span>
         </div>
         <div class="ra-toolbar-right">
+          <button class="ra-blind-toggle ${blind ? 'on' : ''}" id="btn-ra-blind" aria-pressed="${blind}" title="Blind screening — hide name, contact details and school, and redact them before scoring so the result reflects substance, not pedigree">
+            ${blind
+              ? '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+              : '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'}
+            <span>Blind ${blind ? 'on' : 'off'}</span>
+          </button>
           ${pendingCount > 0 ? `<button class="btn-ra-analyse-all" id="btn-ra-analyse-all">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             Analyse All (${pendingCount})
@@ -124,13 +151,17 @@ function renderResumeStagePaneForJob(candidates, job, container) {
                   <td><input type="checkbox" class="table-checkbox-row" /></td>
                   <td>
                     <div class="table-candidate-cell">
-                      <span class="cand-name-link">${c.name}</span>
-                      <span class="cand-email-sub">${c.email}</span>
+                      <span class="cand-name-link">${blind ? '<span class="ra-blind-lock" title="Identity hidden in blind mode">🔒</span> ' : ''}${displayName(c, job)}</span>
+                      <span class="cand-email-sub">${blind ? 'Identity hidden' : c.email}</span>
                       ${isAnalysed && cached.summary ? `<span class="ra-summary-preview">${cached.summary.slice(0, 90)}${cached.summary.length > 90 ? '…' : ''}</span>` : ''}
                     </div>
                   </td>
                   <td>
-                    <span class="ra-match-pill ${matchClass}">${isAnalysed ? score + '%' : '—'}</span>
+                    <div class="ra-match-cell">
+                      <span class="ra-match-pill ${matchClass}">${isAnalysed ? score + '%' : '—'}</span>
+                      ${isAnalysed ? confidenceChipHTML(cached) : ''}
+                      ${isAnalysed ? reviewFlagHTML(cached) : ''}
+                    </div>
                   </td>
                   <td>
                     ${isAnalysed ? getRecBadge(cached.recommendation) : '<span class="ra-status-badge pending">Pending</span>'}
@@ -178,6 +209,15 @@ function renderResumeStagePaneForJob(candidates, job, container) {
       </div>
     </div>
   `;
+
+  const blindToggle = container.querySelector('#btn-ra-blind');
+  blindToggle?.addEventListener('click', () => {
+    job.blindMode = !job.blindMode;
+    saveStateToLocalStorage();
+    soundEngine.playClick();
+    showPremiumToast(job.blindMode ? 'Blind screening on — names, contact and school hidden.' : 'Blind screening off.', job.blindMode ? 'success' : 'info');
+    renderResumeStagePaneForJob(candidates, job, container);
+  });
 
   bindResumeAnalysisEvents(job);
 }
@@ -425,7 +465,7 @@ function applyGatesAndScore(result, config, criteria) {
   result.analysedAt = new Date().toISOString();
 }
 
-function normalizeDeepResult(result, config, criteria) {
+function normalizeDeepResult(result, config, criteria, resumeText = '') {
   const dims = result.dimensions && typeof result.dimensions === 'object' ? result.dimensions : {};
   ['mustHave', 'niceToHave', 'projects', 'experience', 'education', 'custom'].forEach(k => {
     if (!dims[k] || typeof dims[k] !== 'object') dims[k] = { score: 0, evidence: '' };
@@ -468,6 +508,7 @@ function normalizeDeepResult(result, config, criteria) {
   })).filter(v => v.criterion);
 
   applyGatesAndScore(result, config, criteria);
+  annotateConfidence(result, config, resumeText);
   return result;
 }
 
@@ -629,7 +670,7 @@ function buildLocalDeepAnalysis(resumeText, job, config, criteria) {
     recommendationBullets: [],
     recommendationReason: '',
   };
-  normalizeDeepResult(result, config, criteria);
+  normalizeDeepResult(result, config, criteria, resumeText);
   return result;
 }
 
@@ -652,6 +693,15 @@ async function runResumeAnalysis(cid, job) {
   const criteria = job.resumeCriteria || { mustHave: [], redFlags: [], goodToHave: [] };
   const config = getScoringConfig(job);
   const criteriaBlock = buildCriteriaBlock(criteria, config);
+
+  // Blind screening: strip identity/pedigree signals before the model sees them
+  let analysisText = resumeText;
+  if (isBlindMode(job)) {
+    const identity = resumeIdentityCache[cid] || extractResumeIdentity(resumeText, candidate?.name || '');
+    const { text, total } = redactResumeText(resumeText, identity);
+    analysisText = text;
+    appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> <span style="color: #93c5fd;">Blind mode on — redacted ${total} identity signal${total === 1 ? '' : 's'} before scoring.</span>`);
+  }
 
   appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Initiated deep resume analysis for <strong>${candidate ? candidate.name : cid}</strong>...`);
   appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Scoring ${criteria.mustHave.length + criteria.goodToHave.length + config.customCriteria.length} criteria across 6 weighted dimensions for <strong>${job.roleName}</strong>...`);
@@ -699,12 +749,17 @@ Respond ONLY with valid JSON, no markdown fences:
   "recommendationReason": "1 sentence"
 }`;
 
+  const prepared = prepareResumeForAnalysis(analysisText);
+  if (prepared.truncated) {
+    appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Long resume — prioritised experience, projects, skills & education${prepared.droppedSections.length ? `; set aside ${prepared.droppedSections.length} low-signal section(s)` : ''}.`);
+  }
+
   const userMsg = `JOB: ${job.cardName} (${job.roleName})
 Experience Required: ${job.experienceBand}
 Description: ${job.description || '(Not provided)'}${criteriaBlock}
 
 --- CANDIDATE RESUME ---
-${resumeText.slice(0, 5000)}`;
+${prepared.text}`;
 
   let result;
   try {
@@ -714,12 +769,14 @@ ${resumeText.slice(0, 5000)}`;
     );
     result = JSON.parse(sanitizeJSONResponse(raw));
     result.engine = 'deepseek';
-    normalizeDeepResult(result, config, criteria);
+    result.blind = isBlindMode(job);
+    normalizeDeepResult(result, config, criteria, resumeText);
   } catch (err) {
     console.warn('AI analysis failed, using local deep-scan engine:', err);
     appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> <span style="color: #f59e0b;">DeepSeek API offline. Engaging local deep-scan engine...</span>`);
     try {
-      result = buildLocalDeepAnalysis(resumeText, job, config, criteria);
+      result = buildLocalDeepAnalysis(analysisText, job, config, criteria);
+      result.blind = isBlindMode(job);
     } catch (fallbackErr) {
       console.error('Fallback analysis failed:', fallbackErr);
       showPremiumToast('Analysis failed — please try again.', 'error');
@@ -761,7 +818,7 @@ function renderAnalysisResult(cid, result) {
     }
   }
   if (tds[2]) {
-    tds[2].innerHTML = `<span class="ra-match-pill ${matchClass}">${result.matchScore}%</span>`;
+    tds[2].innerHTML = `<div class="ra-match-cell"><span class="ra-match-pill ${matchClass}">${result.matchScore}%</span>${confidenceChipHTML(result)}${reviewFlagHTML(result)}</div>`;
   }
   if (tds[3]) {
     const recCls = result.recommendation === 'Advance' ? 'high' : result.recommendation === 'Hold' ? 'medium' : 'low';

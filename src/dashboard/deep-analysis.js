@@ -1,6 +1,9 @@
-import { auditJobDescriptionLocally, optimizeJobDescriptionWithAI } from './ai-api.js';
+import { auditJobDescriptionLocally, optimizeJobDescriptionWithAI, saveStateToLocalStorage } from './ai-api.js';
+import { buildShortlist, openComparisonOverlay } from './candidate-compare.js';
 import { filterCandidatesByDateRange } from './render-views.js';
 import { resumeAnalysisCache, resumeTextCache } from './resume-analysis.js';
+import { displayName, isBlindMode } from './screening-integrity.js';
+import { showPremiumToast } from './sourcing.js';
 import { AppState } from './state.js';
 
 function checkSkillStatus(cand, skillText, isMustHave) {
@@ -196,7 +199,16 @@ function renderDeepAnalysisPane(job, container) {
       </div>
     `;
   } else {
+    const defaultShortlistN = job.shortlistSize || Math.min(3, analyzedCands.length || 1);
     matrixHTML = `
+      <div class="da-compare-toolbar">
+        <button class="da-cmp-btn" id="da-compare-btn" disabled>Compare selected (0)</button>
+        <div class="da-shortlist-control">
+          <span>Auto-shortlist top</span>
+          <input type="number" id="da-shortlist-n" min="1" max="${Math.max(1, analyzedCands.length)}" value="${defaultShortlistN}" ${analyzedCands.length ? '' : 'disabled'} />
+          <button class="da-cmp-btn primary" id="da-shortlist-btn" ${analyzedCands.length ? '' : 'disabled'}>Build shortlist</button>
+        </div>
+      </div>
       <div class="table-container-scroller" style="overflow-x: auto; max-width: 100%; border-radius: 8px; border: 1px solid var(--glass-border);">
         <table class="stage-data-table matrix-table" style="min-width: 100%;">
           <thead>
@@ -206,6 +218,8 @@ function renderDeepAnalysisPane(job, container) {
               ${goodToHaves.map((s, i) => `<th class="matrix-header-cell good" title="Good-to-Have: ${s}">G${i+1}</th>`).join('')}
               <th class="matrix-header-cell" title="Red Flags">Red Flags</th>
               <th class="matrix-header-cell" title="Match Score">Score</th>
+              <th class="matrix-header-cell" title="Analysis confidence">Conf</th>
+              <th class="matrix-header-cell" title="Shortlisted">★</th>
             </tr>
           </thead>
           <tbody>
@@ -219,10 +233,14 @@ function renderDeepAnalysisPane(job, container) {
                 ? (analysis.matchScore >= 70 ? 'score-green' : analysis.matchScore >= 45 ? 'score-yellow' : 'score-red')
                 : '';
 
+              const conf = analysis && analysis.confidence;
               return `
-                <tr>
+                <tr class="${c.shortlisted ? 'da-row-shortlisted' : ''}">
                   <td style="position: sticky; left: 0; background: var(--bg-card); z-index: 1; font-weight: 600;">
-                    ${c.name}
+                    <label class="da-cand-label">
+                      ${isAnalyzed ? `<input type="checkbox" class="da-row-check" data-cid="${c.id}" />` : '<span class="da-check-spacer"></span>'}
+                      <span>${displayName(c, job)}</span>
+                    </label>
                     ${isAnalyzed ? '' : '<span class="matrix-badge-pending">Pending</span>'}
                   </td>
                   ${mustHaves.map(s => {
@@ -242,6 +260,12 @@ function renderDeepAnalysisPane(job, container) {
                   </td>
                   <td style="text-align: center; font-weight: 700;">
                     <span class="interview-score-dot ${scoreClass}"></span> ${scoreText}
+                  </td>
+                  <td style="text-align: center;">
+                    ${conf ? `<span class="da-conf-pill ${conf.band.toLowerCase()}" title="${conf.reasons ? conf.reasons.join(' · ').replace(/"/g, '&quot;') : ''}">${conf.band}${analysis.needsReview ? ' ⚑' : ''}</span>` : '<span style="color: var(--color-text-faint);">—</span>'}
+                  </td>
+                  <td style="text-align: center;">
+                    ${isAnalyzed ? `<button class="da-star ${c.shortlisted ? 'on' : ''}" data-cid="${c.id}" title="${c.shortlisted ? 'Shortlisted — click to remove' : 'Add to shortlist'}">${c.shortlisted ? '★' : '☆'}</button>` : '<span style="color: var(--color-text-faint);">—</span>'}
                   </td>
                 </tr>
               `;
@@ -297,6 +321,36 @@ function renderDeepAnalysisPane(job, container) {
       optimizeJobDescriptionWithAI(job, container);
     });
   }
+
+  // Comparison + shortlist controls
+  const selectedCids = () => [...container.querySelectorAll('.da-row-check:checked')].map(cb => cb.dataset.cid);
+  const compareBtn = container.querySelector('#da-compare-btn');
+  const refreshCompareBtn = () => {
+    if (!compareBtn) return;
+    const n = selectedCids().length;
+    compareBtn.textContent = `Compare selected (${n})`;
+    compareBtn.disabled = n < 2;
+  };
+  container.querySelectorAll('.da-row-check').forEach(cb => cb.addEventListener('change', refreshCompareBtn));
+  compareBtn?.addEventListener('click', () => openComparisonOverlay(job, selectedCids()));
+
+  container.querySelector('#da-shortlist-btn')?.addEventListener('click', () => {
+    const input = container.querySelector('#da-shortlist-n');
+    const n = Math.max(1, parseInt(input?.value, 10) || 3);
+    const { shortlisted } = buildShortlist(job, jobCandidates, n);
+    showPremiumToast(`Shortlisted top ${shortlisted.size} candidate${shortlisted.size === 1 ? '' : 's'}.`, 'success');
+    renderDeepAnalysisPane(job, container);
+  });
+
+  container.querySelectorAll('.da-star').forEach(star => {
+    star.addEventListener('click', () => {
+      const cand = AppState.candidates.find(c => c.id === star.dataset.cid);
+      if (!cand) return;
+      cand.shortlisted = !cand.shortlisted;
+      saveStateToLocalStorage();
+      renderDeepAnalysisPane(job, container);
+    });
+  });
 }
 
 
