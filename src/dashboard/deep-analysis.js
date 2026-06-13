@@ -10,6 +10,7 @@ import { escapeHTML } from './escape.js';
 import { AppState } from './state.js';
 import { filterCandidatesByDateRange } from './render-views.js';
 import { soundEngine } from './sound.js';
+import { isApiMode, apiFetchCandidateReport } from './api.js';
 
 const DIMENSIONS = ['Correctness', 'Depth', 'Clarity', 'Communication', 'Role alignment'];
 
@@ -125,6 +126,9 @@ export function buildSampleCandidateReport(candidate, job) {
 
 const daUi = { selectedId: null, openAnswerId: null };
 
+// Live (api mode) report cache: candidateId -> { state:'loading'|'ready'|'pending'|'error', report?, error? }.
+const liveReports = new Map();
+
 function interviewedCandidates(job) {
   return filterCandidatesByDateRange(AppState.candidates)
     .filter((c) => (c.jobApplied === job.roleName || c.jobApplied === job.cardName) && c.interviewStatus === 'Completed' && Number.isFinite(c.interviewScore));
@@ -134,12 +138,13 @@ const initials = (name) => (name || '?').split(/\s+/).map((w) => w[0]).slice(0, 
 
 export function renderDeepAnalysisPane(job, container) {
   if (!job || !container) return;
-  const done = interviewedCandidates(job);
+  // API mode pulls real CandidateReports from the backend — honest empty/pending
+  // until the eval engine scores an interview (no sample fabrication).
+  if (isApiMode() && job._backend) return renderLive(job, container);
 
-  if (!done.length) {
-    container.innerHTML = emptyState();
-    return;
-  }
+  const done = interviewedCandidates(job);
+  if (!done.length) { container.innerHTML = emptyState(false); return; }
+
   const reports = done.map((c) => ({ candidate: c, report: buildSampleCandidateReport(c, job) }))
     .sort((a, b) => b.report.overallScore - a.report.overallScore);
 
@@ -148,12 +153,62 @@ export function renderDeepAnalysisPane(job, container) {
   bind(container, job);
 }
 
-function emptyState() {
+// ── Live path (real backend) ──────────────────────────────────────────────────
+const recoFromScore = (s) => (s >= 88 ? 'strong_proceed' : s >= 72 ? 'proceed' : s >= 55 ? 'hold' : 'reject');
+// Roster entries only need score + recommendation; the full report is fetched on
+// drill-in. interviewScore is the backend's functional_score (real, not sampled).
+function liveRosterEntry(c) {
+  const s = Math.round(c.interviewScore);
+  return { candidate: c, report: { overallScore: s, recommendation: recoFromScore(s), recommendationConfidence: 'medium', redFlags: [] } };
+}
+
+function renderLive(job, container) {
+  const done = interviewedCandidates(job).map(liveRosterEntry).sort((a, b) => b.report.overallScore - a.report.overallScore);
+  if (!done.length) { container.innerHTML = `<div class="da-intel">${emptyState(true)}</div>`; return; }
+
+  const sel = daUi.selectedId && done.find((r) => r.candidate.id === daUi.selectedId);
+  if (!sel) { container.innerHTML = `<div class="da-intel">${rosterMarkup(job, done)}</div>`; bind(container, job); return; }
+
+  const entry = liveReports.get(sel.candidate.id);
+  if (!entry) {
+    liveReports.set(sel.candidate.id, { state: 'loading' });
+    apiFetchCandidateReport(sel.candidate.id)
+      .then((rep) => liveReports.set(sel.candidate.id, rep && Array.isArray(rep.questionBreakdown) ? { state: 'ready', report: rep } : { state: 'pending' }))
+      .catch((e) => liveReports.set(sel.candidate.id, { state: 'error', error: (e && e.message) || '' }))
+      .finally(() => { if (daUi.selectedId === sel.candidate.id && AppState.activeJobId === job.id) renderDeepAnalysisPane(job, container); });
+    container.innerHTML = `<div class="da-intel">${liveDetailShell(sel.candidate, 'loading')}</div>`;
+    bind(container, job); return;
+  }
+  container.innerHTML = `<div class="da-intel">${entry.state === 'ready'
+    ? detailMarkup({ candidate: sel.candidate, report: entry.report }, done)
+    : liveDetailShell(sel.candidate, entry.state, entry.error)}</div>`;
+  bind(container, job);
+}
+
+function liveDetailShell(candidate, state, error) {
+  const msg = state === 'loading'
+    ? ['Loading evaluation…', 'Fetching this candidate’s report from the live backend.']
+    : state === 'error'
+      ? ['Couldn’t load the report', error || 'The backend did not return an evaluation.']
+      : ['Evaluation pending', 'This interview hasn’t been scored yet. The full report — dimensions, rubric coverage, red flags and a recommendation — appears here once the evaluation engine processes the transcript.'];
+  return `
+    <div class="da-detail-head"><button class="da-back" data-action="back"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> All candidates</button></div>
+    <div class="da-pending ${state === 'loading' ? 'is-loading' : ''}">
+      <div class="da-pending-name">${escapeHTML(candidate.name)}</div>
+      <div class="da-pending-state">${escapeHTML(msg[0])}</div>
+      <div class="da-pending-desc">${escapeHTML(msg[1])}</div>
+    </div>`;
+}
+
+function emptyState(apiMode) {
+  const desc = apiMode
+    ? 'No candidate has completed the AI interview for this role yet. Once an interview is completed and scored by the evaluation engine, the full report — scores, dimensions, rubric coverage, red flags and a hire recommendation — appears here, ranked.'
+    : 'Once candidates complete the AI interview, their full evaluation reports — scores, dimensions, rubric coverage, red flags and a hire recommendation — appear here, ranked.';
   return `
   <div class="da-empty">
     <div class="da-empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="13" y2="11"/></svg></div>
     <p class="da-empty-title">No completed interviews yet</p>
-    <p class="da-empty-desc">Once candidates complete the AI interview, their full evaluation reports — scores, dimensions, rubric coverage, red flags and a hire recommendation — appear here, ranked.</p>
+    <p class="da-empty-desc">${desc}</p>
   </div>`;
 }
 

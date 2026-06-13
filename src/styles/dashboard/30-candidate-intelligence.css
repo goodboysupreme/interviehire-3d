@@ -12,6 +12,15 @@
 .da-empty-title { font-family: var(--font-display); font-size: 1rem; font-weight: 600; }
 .da-empty-desc { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 6px; max-width: 440px; margin-inline: auto; line-height: 1.55; }
 
+/* ── live report: loading / pending / error ── */
+.da-pending { margin-top: 14px; padding: 40px 24px; text-align: center; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; }
+.da-pending-name { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; color: var(--color-text); }
+.da-pending-state { font-size: 0.85rem; font-weight: 600; color: var(--color-gold); margin-top: 8px; }
+.da-pending.is-loading .da-pending-state { color: var(--color-text-muted); }
+.da-pending-desc { font-size: 0.78rem; color: var(--color-text-muted); margin-top: 8px; max-width: 420px; margin-inline: auto; line-height: 1.55; }
+.da-pending.is-loading { animation: da-pulse 1.4s ease-in-out infinite; }
+@keyframes da-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+
 /* ── roster ── */
 .da-roster-head { display: flex; align-items: flex-start; justify-content: space-between; }
 .da-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; letter-spacing: -.01em; }

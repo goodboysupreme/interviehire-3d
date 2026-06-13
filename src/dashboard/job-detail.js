@@ -6,6 +6,8 @@ import { navigateToTab } from './navigation.js';
 import { filterCandidatesByDateRange } from './render-views.js';
 import { soundEngine } from './sound.js';
 import { AppState } from './state.js';
+import { isApiMode, apiFetchApplicants } from './api.js';
+import { showPremiumToast } from './sourcing.js';
 
 // ==========================================
 // JOB DETAIL VIEW
@@ -89,7 +91,40 @@ function navigateToJobDetail(jobId) {
     drawScoreDistributionSVG(job, jobCandidates);
   });
 
+  hydrateBackendApplicants(job);
+
   soundEngine.playChime([440.00, 523.25, 659.25], 0.12, 0.08);
+}
+
+// In api mode a job's applicants live in the backend, not localStorage. Fetch
+// them on open, tag each to this job so the existing name-based candidate
+// filters match, merge into AppState, and re-render. Fire-and-forget: panes
+// render immediately (empty) then fill in when the fetch lands. Inert otherwise.
+async function hydrateBackendApplicants(job) {
+  if (!isApiMode() || !job._backend) return;
+  let applicants;
+  try {
+    applicants = await apiFetchApplicants(job.id, 'resume');
+  } catch (e) {
+    showPremiumToast(`Couldn't load candidates: ${(e && e.message) || 'backend error'}`, 'error');
+    return;
+  }
+  applicants.forEach((c) => { c.jobApplied = job.roleName; c.jobId = job.id; });
+  const others = (AppState.candidates || []).filter((c) => c.jobId !== job.id);
+  AppState.candidates = [...others, ...applicants];
+
+  // Only refresh if the user is still viewing this job.
+  if (AppState.activeJobId !== job.id) return;
+  renderFunnelStages(job);
+  renderFunnelInsights(job);
+  renderJobDetailPanes(job);
+  const jobCandidates = filterCandidatesByDateRange(AppState.candidates).filter(
+    (c) => c.jobApplied === job.roleName || c.jobApplied === job.cardName,
+  );
+  requestAnimationFrame(() => {
+    drawFunnelSVG(job, jobCandidates);
+    drawScoreDistributionSVG(job, jobCandidates);
+  });
 }
 
 
