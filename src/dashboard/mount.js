@@ -2,6 +2,7 @@ import { document, window, requestAnimationFrame, setTimeout } from './runtime.j
 import { EXPERIENCE_BANDS_PROMPT } from './constants.js';
 import { escapeHTML } from './escape.js';
 import { callDeepSeekAPI, enrichJobWithAI, loadStateFromLocalStorage, parseAIJson, saveStateToLocalStorage } from './ai-api.js';
+import { bootstrapApiData } from './api-bootstrap.js';
 import { reviewJdRewrite } from './jd-rewrite.js';
 import { initCrystalAnimations } from './animations.js';
 import { drawFunnelSVG, drawScoreDistributionSVG } from './funnel-charts.js';
@@ -24,6 +25,9 @@ import { AppState, generateJobId } from './state.js';
 function initMountBindings() {
   // Load state from localStorage on startup
   loadStateFromLocalStorage();
+
+  // In api mode, hydrate jobs from the live backend (re-renders when ready).
+  bootstrapApiData();
 
   // Sidebar Collapse Toggle
   const toggleSidebarBtn = document.getElementById('btn-toggle-sidebar');
