@@ -238,6 +238,8 @@ Return ONLY valid JSON with this exact structure:
     ]}
   ],
   "jdAnalysis": {
+    "overallScore": "integer 0-100, overall job-description quality",
+    "subScores": { "clarity": "0-100 integer", "inclusivity": "0-100 integer (free of biased/exclusionary/ageist language)", "structure": "0-100 integer (clear sections, scannable)", "marketFit": "0-100 integer (realistic asks for the talent market)" },
     "grade": "Letter grade (A, B+, B, C, D) representing job description quality",
     "readability": "Readability evaluation (e.g. Clear, Complex, Dense)",
     "warnings": {
@@ -459,6 +461,14 @@ function auditJobDescriptionLocally(jdText) {
     readability = 'Sparse';
   }
 
+  const clampPct = (n) => Math.max(0, Math.min(100, Math.round(n)));
+  const subScores = {
+    clarity: clampPct(95 - (readability === 'Complex' ? 22 : readability === 'Sparse' ? 16 : 0) - warnings.unrealisticExpectations.length * 4),
+    inclusivity: clampPct(100 - warnings.biasFluff.length * 18),
+    structure: clampPct(92 - (bulletCount < 3 ? 24 : 0) - (charCount < 400 ? 16 : charCount > 4000 ? 12 : 0)),
+    marketFit: clampPct(78 - warnings.unrealisticExpectations.length * 6)
+  };
+
   if (recommendedOptimizations.length === 0) {
     recommendedOptimizations.push("Maintain current clear structure and precise criteria.");
     recommendedOptimizations.push("Ensure compensation brackets are discussed early in screening.");
@@ -467,6 +477,8 @@ function auditJobDescriptionLocally(jdText) {
   return {
     grade,
     readability,
+    overallScore: clampPct(score),
+    subScores,
     warnings,
     marketContext: "Moderate talent supply. Most candidates with these technical keywords are actively sourced in the market.",
     recommendedOptimizations,
