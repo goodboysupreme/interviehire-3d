@@ -77,10 +77,11 @@ export async function apiFetchApplicants(jobId, tab = 'functional') {
   const list = Array.isArray(data) ? data : (data?.applicants || data?.data || []);
   return list.map(mapApplicantOutToCandidate);
 }
-// Deep Analysis source: returns a CandidateReport (or null if not evaluated yet).
+// Deep Analysis source: the full canonical CandidateReport, or null until the
+// engine has scored the interview (Deep Analysis then shows its pending state).
 export async function apiFetchCandidateReport(applicantId) {
-  const data = await request(`/jobs/applicants/${applicantId}/functional-vetting`);
-  return mapVettingToCandidateReport(data);
+  const data = await request(`/jobs/applicants/${applicantId}/functional-report`);
+  return mapFullReportToCandidateReport(data);
 }
 
 // ── Mappers: backend (snake_case) ⇄ dashboard (camelCase) ──────────────────
@@ -199,13 +200,13 @@ function mapApplicantOutToCandidate(a = {}) {
   };
 }
 
-// Backend functional-vetting → canonical CandidateReport. Passes through if the
-// backend already returns the rich shape; null if there's no evaluation yet
-// (Deep Analysis then falls back to its sample report).
-function mapVettingToCandidateReport(data) {
+// Backend functional-report → canonical CandidateReport. The engine's stored
+// evaluation already matches the dashboard's Deep Analysis shape, so a real
+// report (with questionBreakdown) passes straight through; otherwise null so
+// Deep Analysis shows its honest pending/empty state (no sample fabrication).
+function mapFullReportToCandidateReport(data) {
   if (!data) return null;
-  const ev = data.evaluation || data.report || data;
-  if (!ev || typeof ev !== 'object') return null;
-  if (Array.isArray(ev.questionBreakdown)) return ev; // already a CandidateReport
-  return { _partial: true, raw: ev };
+  const report = data.report;
+  if (data.evaluated && report && Array.isArray(report.questionBreakdown)) return report;
+  return null;
 }
