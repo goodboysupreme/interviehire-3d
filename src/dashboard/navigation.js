@@ -1,5 +1,6 @@
 import { document, setTimeout } from './runtime.js';
 import { escapeHTML } from './escape.js';
+import { EXPERIENCE_BANDS_PROMPT } from './constants.js';
 import { callDeepSeekAPI, enrichJobWithAI, sanitizeJSONResponse, saveStateToLocalStorage } from './ai-api.js';
 import { openJobFlowView, toggleHeaderElementsForJobFlow } from './job-flow.js';
 import { renderKanbanBoard, resetWaveformAudio, startSwarmLogs } from './kanban-swarm.js';
@@ -214,7 +215,7 @@ Based on the conversation so far, determine if you have enough information to cr
 3. A brief description of responsibilities
 
 If you have all three, respond ONLY with this JSON (no extra text):
-{"ready":true,"roleName":"...","cardName":"...","experienceBand":"one of: Upto 2 Years | 1-4 Years | 3-6 Years | 5+ Years","description":"2-3 sentence professional job description"}
+{"ready":true,"roleName":"...","cardName":"...","experienceBand":"one of: ${EXPERIENCE_BANDS_PROMPT}","description":"2-3 sentence professional job description"}
 
 If you need more info, respond ONLY with this JSON (no extra text):
 {"ready":false,"message":"your warm 1-2 sentence follow-up question"}`;
@@ -235,7 +236,7 @@ If you need more info, respond ONLY with this JSON (no extra text):
         roleName: parsed.roleName,
         cardName: parsed.cardName || parsed.roleName,
         created: new Date().toLocaleString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
-        status: 'published',
+        status: 'draft',
         customJobId: '-',
         experienceBand: parsed.experienceBand || 'Upto 2 Years',
         createdBy: 'Devasri',

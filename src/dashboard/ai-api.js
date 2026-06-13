@@ -251,7 +251,11 @@ Rules:
 - Tailor every question specifically to the role described
 - Use ids: q-gen-1 through q-gen-5`;
 
-  const truncatedJD = descriptionText.slice(0, 2500);
+  const JD_ANALYSIS_LIMIT = 6000;
+  const truncatedJD = descriptionText.slice(0, JD_ANALYSIS_LIMIT);
+  if (descriptionText.length > JD_ANALYSIS_LIMIT) {
+    showPremiumToast(`Long job description — analysing the first ${JD_ANALYSIS_LIMIT.toLocaleString()} characters.`, 'info');
+  }
 
   const [criteriaResult, questionsResult] = await Promise.allSettled([
     callDeepSeekAPI([
@@ -272,7 +276,8 @@ Rules:
           mustHave: parsed.resumeCriteria.mustHave || [],
           redFlags: parsed.resumeCriteria.redFlags || [],
           goodToHave: parsed.resumeCriteria.goodToHave || [],
-          goodToHaveMinMatch: parsed.resumeCriteria.goodToHaveMinMatch || 1
+          goodToHaveMinMatch: parsed.resumeCriteria.goodToHaveMinMatch || 1,
+          source: 'ai'
         };
       }
       if (parsed.screeningParams && Array.isArray(parsed.screeningParams)) {
@@ -280,6 +285,7 @@ Rules:
       }
       if (parsed.jdAnalysis) {
         job.jdAnalysis = parsed.jdAnalysis;
+        job.jdAnalysis.source = 'ai';
       } else {
         job.jdAnalysis = auditJobDescriptionLocally(descriptionText);
       }
@@ -294,7 +300,8 @@ Rules:
         mustHave: ["Relevant experience in this domain", "Excellent verbal and written communication", "Core technical competency"],
         redFlags: ["Frequent unexplained job hopping", "Lack of relevant functional background"],
         goodToHave: ["Professional certifications", "Advanced degree or specialization"],
-        goodToHaveMinMatch: 1
+        goodToHaveMinMatch: 1,
+        source: 'offline'
       };
     }
     if (!job.screeningParams) {
@@ -314,15 +321,19 @@ Rules:
       const parsed = JSON.parse(sanitizeJSONResponse(questionsResult.value));
       if (parsed.questions && Array.isArray(parsed.questions)) {
         job.questions = parsed.questions;
+        job.questionsSource = 'ai';
       } else {
         job.questions = generateQuestionsLocally(job);
+        job.questionsSource = 'offline';
       }
     } catch (e) {
       console.error('Failed to parse questions response:', e);
       job.questions = generateQuestionsLocally(job);
+      job.questionsSource = 'offline';
     }
   } else {
     job.questions = generateQuestionsLocally(job);
+    job.questionsSource = 'offline';
   }
 
   if (!job.pipelineConfig) {
@@ -435,7 +446,8 @@ function auditJobDescriptionLocally(jdText) {
     readability,
     warnings,
     marketContext: "Moderate talent supply. Most candidates with these technical keywords are actively sourced in the market.",
-    recommendedOptimizations
+    recommendedOptimizations,
+    source: 'offline'
   };
 }
 

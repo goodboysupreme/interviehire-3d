@@ -761,18 +761,18 @@ export const html = `
                 <textarea id="create-jd-paste" class="create-jd-paste-area" placeholder="Paste your job description here..." style="display:none;"></textarea>
 
                 <!-- Drop zone -->
-                <div class="jd-dropzone" id="jd-dropzone">
+                <div class="jd-dropzone" id="jd-dropzone" role="button" tabindex="0" aria-label="Upload a job description file — PDF, DOCX, or TXT">
                   <input type="file" id="jd-file-input" accept=".pdf,.docx,.txt" style="display:none;" />
                   <div class="dropzone-icon-wrap">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"></polyline><line x1="12" y1="12" x2="12" y2="21"></line><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path></svg>
                   </div>
                   <p class="dropzone-title">Drag and drop your file here</p>
-                  <p class="dropzone-sub">Supported Formats: .pdf &amp; .docx</p>
+                  <p class="dropzone-sub">Supported Formats: .pdf, .docx &amp; .txt</p>
                   <div class="dropzone-file-preview" id="dropzone-file-preview" style="display:none;"></div>
                 </div>
 
                 <div class="create-job-footer">
-                  <button class="btn-create-continue" id="btn-create-job-continue">
+                  <button class="btn-create-continue" id="btn-create-job-continue" aria-live="polite">
                     Continue
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                   </button>
@@ -1401,10 +1401,13 @@ export const html = `
             <div class="form-group">
               <label for="job-experience-input">Experience Band</label>
               <select id="job-experience-input">
-                <option value="Upto 2 Years">Upto 2 Years</option>
+                <option value="Fresher">Fresher</option>
+                <option value="Upto 2 Years" selected>Upto 2 Years</option>
                 <option value="1-4 Years">1-4 Years</option>
                 <option value="3-6 Years">3-6 Years</option>
-                <option value="5+ Years">5+ Years</option>
+                <option value="5-10 Years">5-10 Years</option>
+                <option value="8-15 Years">8-15 Years</option>
+                <option value="10+ Years">10+ Years</option>
               </select>
             </div>
             <div class="form-group">

@@ -1,4 +1,5 @@
 import { document, window, requestAnimationFrame, setTimeout } from './runtime.js';
+import { EXPERIENCE_BANDS_PROMPT } from './constants.js';
 import { escapeHTML } from './escape.js';
 import { callDeepSeekAPI, enrichJobWithAI, loadStateFromLocalStorage, sanitizeJSONResponse, saveStateToLocalStorage } from './ai-api.js';
 import { initCrystalAnimations } from './animations.js';
@@ -520,9 +521,9 @@ function initMountBindings() {
   // 1. Create Job Card Submission
   const createJobForm = document.getElementById('form-create-job');
   if (createJobForm) {
-    createJobForm.addEventListener('submit', (e) => {
+    createJobForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       const cardName = document.getElementById('job-title-input').value;
       const roleName = document.getElementById('job-role-input').value;
       const expBand = document.getElementById('job-experience-input').value;
@@ -602,13 +603,33 @@ function initMountBindings() {
 
       AppState.jobs.push(newJob);
       saveStateToLocalStorage();
-      
+
+      // Enrich with AI so the manual path yields the same reviewable draft
+      // (criteria, questions, JD grade) as the upload and Lina paths.
+      const submitBtn = createJobForm.querySelector('button[type="submit"]') || e.submitter;
+      const origBtnHTML = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.setAttribute('aria-live', 'polite');
+        submitBtn.innerHTML = 'Generating interview pipeline…';
+      }
+
+      if (description) {
+        try {
+          await enrichJobWithAI(newJob, description);
+        } catch (err) {
+          console.error('Manual job enrichment failed:', err);
+        }
+      }
+
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = origBtnHTML; }
+
       // Close Drawer panel and reset form
       closeDrawers();
       createJobForm.reset();
       showPremiumToast(`Created job card "${roleName}" as Draft.`, "success");
       soundEngine.playChime([261.63, 329.63, 392.00, 523.25], 0.2, 0.08); // Melodic confirmation chime
-      
+
       // Open Job Flow config view for the new draft job
       openJobFlowView(newJob.id, true);
     });
@@ -1018,6 +1039,9 @@ function initMountBindings() {
 
   if (jdDropzone) {
     jdDropzone.addEventListener('click', () => jdFileInput?.click());
+    jdDropzone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jdFileInput?.click(); }
+    });
     jdDropzone.addEventListener('dragover', (e) => { e.preventDefault(); jdDropzone.classList.add('drag-over'); });
     jdDropzone.addEventListener('dragleave', () => jdDropzone.classList.remove('drag-over'));
     jdDropzone.addEventListener('drop', (e) => {
@@ -1081,7 +1105,7 @@ function initMountBindings() {
 
       const systemPrompt = `You are a job description parser. Extract structured job info from the provided text.
 Return ONLY valid JSON:
-{"roleName":"exact job title","cardName":"job title + brief context","experienceBand":"one of: Upto 2 Years | 1-4 Years | 3-6 Years | 5+ Years | 8+ Years","description":"clean 2-3 sentence professional job description"}`;
+{"roleName":"exact job title","cardName":"job title + brief context","experienceBand":"one of: ${EXPERIENCE_BANDS_PROMPT}","description":"clean 2-3 sentence professional job description"}`;
 
       try {
         const response = await callDeepSeekAPI([

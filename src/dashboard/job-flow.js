@@ -1,5 +1,6 @@
 import { document, setTimeout } from './runtime.js';
 import { escapeHTML } from './escape.js';
+import { EXPERIENCE_BANDS, DIFFICULTY_LEVELS } from './constants.js';
 import { saveStateToLocalStorage } from './ai-api.js';
 import { navigateToJobDetail } from './job-detail.js';
 import { recalculateJobPipelines } from './kanban-swarm.js';
@@ -570,7 +571,7 @@ function renderCareerPageConfig(job, panel) {
           <div class="jf-edit-field">
             <label class="jf-edit-label">Experience Band</label>
             <select class="jf-edit-input" id="cp-edit-exp">
-              ${['Fresher', 'Upto 2 Years', '1-4 Years', '3-6 Years', '5-10 Years', '8-15 Years', '10+ Years'].map(o =>
+              ${EXPERIENCE_BANDS.map(o =>
                 `<option ${(job.experienceBand || '') === o ? 'selected' : ''}>${o}</option>`
               ).join('')}
             </select>
@@ -1037,11 +1038,9 @@ function renderFunctionalConfig(job, panel) {
             <div class="jf-question-edit-row" data-qi="${i}">
               <span class="jf-qe-num">${i + 1}</span>
               <span class="jf-badge" style="color:${typeColor};border-color:${typeColor}30;background:${typeColor}10;font-size:0.65rem;">${(q.type || 'technical').charAt(0).toUpperCase() + (q.type || 'technical').slice(1)}</span>
-              <input type="text" class="jf-edit-input jf-qe-text" value="${(q.text || q.question || '').replace(/"/g, '&quot;')}" data-qi="${i}" />
+              <input type="text" class="jf-edit-input jf-qe-text" value="${(q.question || q.text || '').replace(/"/g, '&quot;')}" data-qi="${i}" />
               <select class="jf-edit-input jf-qe-diff" data-qi="${i}" style="width:110px;">
-                <option ${q.difficulty === 'easy' ? 'selected' : ''}>easy</option>
-                <option ${q.difficulty === 'intermediate' || !q.difficulty ? 'selected' : ''}>intermediate</option>
-                <option ${q.difficulty === 'hard' ? 'selected' : ''}>hard</option>
+                ${DIFFICULTY_LEVELS.map(d => `<option ${q.difficulty === d || (d === 'intermediate' && !q.difficulty) ? 'selected' : ''}>${d}</option>`).join('')}
               </select>
               <button class="btn-jf-remove-field jf-qe-delete" data-qi="${i}" title="Delete question">×</button>
             </div>
@@ -1076,7 +1075,7 @@ function renderFunctionalConfig(job, panel) {
       <span class="jf-badge" style="color:#38bdf8;border-color:#38bdf830;background:#38bdf810;font-size:0.65rem;">Technical</span>
       <input type="text" class="jf-edit-input jf-qe-text" value="" data-qi="${idx}" placeholder="Enter question..." />
       <select class="jf-edit-input jf-qe-diff" data-qi="${idx}" style="width:110px;">
-        <option>easy</option><option selected>intermediate</option><option>hard</option>
+        ${DIFFICULTY_LEVELS.map(d => `<option ${d === 'intermediate' ? 'selected' : ''}>${d}</option>`).join('')}
       </select>
       <button class="btn-jf-remove-field jf-qe-delete" data-qi="${idx}" title="Delete question">×</button>
     `;
@@ -1097,7 +1096,6 @@ function renderFunctionalConfig(job, panel) {
       const existing = questions[qi] || {};
       newQuestions.push({
         ...existing,
-        text: text,
         question: text,
         difficulty: row.querySelector('.jf-qe-diff')?.value || 'intermediate',
         type: existing.type || 'technical'
