@@ -1,4 +1,5 @@
-import { document, window, requestAnimationFrame } from './runtime.js';
+import { document, window, requestAnimationFrame, setTimeout, setInterval, clearInterval } from './runtime.js';
+import { escapeHTML } from './escape.js';
 import { navigateToJobDetail } from './job-detail.js';
 import { appendTerminalLog, recalculateJobPipelines, renderKanbanBoard } from './kanban-swarm.js';
 import { navigateToTab, openDrawer } from './navigation.js';
@@ -502,7 +503,7 @@ function switchSourcingTab(tab) {
 
 // === CSV Intake Logic ===
 function downloadCsvTemplate() {
-  const csvContent = "Name,Email,Phone\\nJohn Doe,john.doe@example.com,+15550192834\\nJane Smith,jane.smith@example.com,\\nAditya Rana,aditya@IntervieHire.com,+919988776655";
+  const csvContent = "Name,Email,Phone\nJohn Doe,john.doe@example.com,+15550192834\nJane Smith,jane.smith@example.com,\nAditya Rana,aditya@IntervieHire.com,+919988776655";
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -531,7 +532,7 @@ function parseCsvFile(file) {
 }
 
 function processCsvText(text) {
-  const lines = text.split(/\\r?\\n/);
+  const lines = text.split(/\r?\n/);
   if (lines.length === 0) return;
 
   const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
@@ -580,9 +581,9 @@ function renderCsvPreview() {
   countSpan.textContent = csvParsedCandidates.length;
   tbody.innerHTML = csvParsedCandidates.map(cand => `
     <tr>
-      <td><strong>${cand.name}</strong></td>
-      <td>${cand.email}</td>
-      <td>${cand.phone || '-'}</td>
+      <td><strong>${escapeHTML(cand.name)}</strong></td>
+      <td>${escapeHTML(cand.email)}</td>
+      <td>${cand.phone ? escapeHTML(cand.phone) : '-'}</td>
       <td><span class="upload-file-status-badge done">Ready to Sync</span></td>
     </tr>
   `).join('');
@@ -606,7 +607,7 @@ function importCsvCandidates() {
   });
 
   soundEngine.playChime([392.00, 523.25, 659.25], 0.2, 0.08);
-  showPremiumToast(`Successfully imported \${csvParsedCandidates.length} candidate(s) into "\${activeJob.roleName}".`, "success");
+  showPremiumToast(`Successfully imported ${csvParsedCandidates.length} candidate(s) into "${escapeHTML(activeJob.roleName)}".`, "success");
 
   // Reset
   csvParsedCandidates = [];
@@ -794,7 +795,7 @@ function importResumesCandidates() {
   });
 
   soundEngine.playChime([392.00, 523.25, 659.25], 0.2, 0.08);
-  showPremiumToast(`Imported \${uploadedFiles.length} candidate(s) — running AI analysis...`, "success");
+  showPremiumToast(`Imported ${uploadedFiles.length} candidate(s) — running AI analysis...`, "success");
 
   uploadedFiles = [];
   document.getElementById('resumes-preview-box').style.display = 'none';
@@ -986,7 +987,7 @@ function addCandidateToManualQueue() {
 
   if (!name || !email) return;
 
-  const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     showPremiumToast("Please enter a valid email address.", "error");
     return;
@@ -1035,10 +1036,10 @@ function renderManualQueue() {
   container.innerHTML = sourcingQueue.map((cand, idx) => `
     <li class="queue-item">
       <div class="queue-item-details">
-        <span class="queue-item-name">\${cand.name}</span>
-        <span class="queue-item-email">\${cand.email} \${cand.phone ? ' · ' + cand.phone : ''}</span>
+        <span class="queue-item-name">${escapeHTML(cand.name)}</span>
+        <span class="queue-item-email">${escapeHTML(cand.email)} ${cand.phone ? ' · ' + escapeHTML(cand.phone) : ''}</span>
       </div>
-      <button class="btn-remove-queue" onclick="removeCandidateFromQueue(\${idx})" title="Remove">
+      <button class="btn-remove-queue" onclick="removeCandidateFromQueue(${idx})" title="Remove">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </li>
@@ -1056,7 +1057,7 @@ function importManualQueue() {
   });
 
   soundEngine.playChime([392.00, 523.25, 659.25], 0.2, 0.08);
-  showPremiumToast(`Successfully imported \${sourcingQueue.length} candidate(s) into "\${activeJob.roleName}".`, "success");
+  showPremiumToast(`Successfully imported ${sourcingQueue.length} candidate(s) into "${escapeHTML(activeJob.roleName)}".`, "success");
 
   sourcingQueue = [];
   renderManualQueue();
@@ -1094,7 +1095,7 @@ function addCandidateToAppState(name, email, phone, job, resumeText) {
   const hours = now.getHours();
   const ampm = hours >= 12 ? 'PM' : 'AM';
   const formatHour = hours % 12 || 12;
-  const dateStr = `\${now.getDate().toString().padStart(2, '0')} \${months[now.getMonth()]} \${now.getFullYear()}, \${formatHour.toString().padStart(2, '0')}:\${now.getMinutes().toString().padStart(2, '0')} \${ampm}`;
+  const dateStr = `${now.getDate().toString().padStart(2, '0')} ${months[now.getMonth()]} ${now.getFullYear()}, ${formatHour.toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${ampm}`;
 
   const status = currentSourcingMode === 'analyse' ? 'Resume' : 'Screening';
   const score = '—';
@@ -1127,7 +1128,7 @@ function showPremiumToast(message, type = 'success') {
   }
   
   const toast = document.createElement('div');
-  toast.className = `toast-notification \${type}`;
+  toast.className = `toast-notification ${type}`;
   
   let iconSvg = '';
   if (type === 'success') {
@@ -1137,8 +1138,8 @@ function showPremiumToast(message, type = 'success') {
   }
   
   toast.innerHTML = `
-    <span class="toast-icon">\${iconSvg}</span>
-    <span class="toast-message">\${message}</span>
+    <span class="toast-icon">${iconSvg}</span>
+    <span class="toast-message">${escapeHTML(message)}</span>
   `;
   
   document.body.appendChild(toast);

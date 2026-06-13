@@ -1,4 +1,5 @@
 import { document } from './runtime.js';
+import { escapeHTML } from './escape.js';
 import { drawFunnelSVG, drawScoreDistributionSVG } from './funnel-charts.js';
 import { navigateToJobDetail } from './job-detail.js';
 import { renderJobDetailPanes, updateCandidateStatus } from './job-detail-panes.js';
@@ -69,13 +70,13 @@ function renderJobCards() {
     card.innerHTML = `
       <div class="job-card-header">
         <div class="job-card-title-area">
-          <h3 class="job-title">${cardName}</h3>
-          <span class="job-meta-pill">Role: ${roleName}</span>
+          <h3 class="job-title">${escapeHTML(cardName)}</h3>
+          <span class="job-meta-pill">Role: ${escapeHTML(roleName)}</span>
         </div>
         <div class="job-card-header-actions">
           <span class="status-badge ${status}">
             <span class="status-badge-dot"></span>
-            ${status.charAt(0).toUpperCase() + status.slice(1)}
+            ${escapeHTML(status.charAt(0).toUpperCase() + status.slice(1))}
           </span>
           <button class="btn-job-kebab" data-job-id="${jobId}" onclick="event.stopPropagation(); toggleJobKebab(this);" title="Job actions" aria-label="Job actions">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
@@ -360,23 +361,23 @@ function renderAnalyticsTable() {
         cellsHtml += `
           <td>
             <div class="user-cell">
-              <div class="user-avatar-mini">${c.name.split(' ').map(n => n[0]).join('')}</div>
+              <div class="user-avatar-mini">${escapeHTML(c.name.split(' ').map(n => n[0]).join(''))}</div>
               <div class="user-details">
-                <span style="font-weight: 600;">${c.name}</span>
-                <span class="user-email-mini">${c.email}</span>
+                <span style="font-weight: 600;">${escapeHTML(c.name)}</span>
+                <span class="user-email-mini">${escapeHTML(c.email)}</span>
               </div>
             </div>
           </td>
         `;
       }
-      if (visible.includes('jobApplied')) cellsHtml += `<td>${c.jobApplied}</td>`;
+      if (visible.includes('jobApplied')) cellsHtml += `<td>${escapeHTML(c.jobApplied)}</td>`;
       if (visible.includes('registeredOn')) cellsHtml += `<td class="cell-mono">${c.registeredOn}</td>`;
       if (visible.includes('status')) {
         cellsHtml += `
           <td>
             <span class="badge-role ${c.status === 'Screening' ? 'recruiter' : 'interviewer'}">
               <span class="badge-role-icon"></span>
-              ${c.status}
+              ${escapeHTML(c.status)}
             </span>
           </td>
         `;

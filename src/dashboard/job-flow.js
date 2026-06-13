@@ -1,4 +1,5 @@
-import { document } from './runtime.js';
+import { document, setTimeout } from './runtime.js';
+import { escapeHTML } from './escape.js';
 import { saveStateToLocalStorage } from './ai-api.js';
 import { navigateToJobDetail } from './job-detail.js';
 import { recalculateJobPipelines } from './kanban-swarm.js';
@@ -411,15 +412,6 @@ function renderJobFlowConfig(job, stageKey) {
       renderFunctionalConfig(job, panel);
       break;
   }
-}
-
-function escapeHTML(value = '') {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
 }
 
 function getVerboseJobDescription(job) {

@@ -1,4 +1,5 @@
-import { document, requestAnimationFrame } from './runtime.js';
+import { document, requestAnimationFrame, setTimeout } from './runtime.js';
+import { escapeHTML } from './escape.js';
 import { saveStateToLocalStorage } from './ai-api.js';
 import { renderDeepAnalysisPane } from './deep-analysis.js';
 import { drawFunnelSVG, drawScoreDistributionSVG } from './funnel-charts.js';
@@ -235,12 +236,12 @@ function renderJobDetailPanes(job) {
                     <td><input type="checkbox" class="table-checkbox-row" /></td>
                     <td>
                       <div class="table-candidate-cell">
-                        <span class="cand-name-link">${c.name} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
+                        <span class="cand-name-link">${escapeHTML(c.name)} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
                         <button class="btn-remarks">Remarks</button>
-                        <span class="cand-email-sub">${c.email}</span>
+                        <span class="cand-email-sub">${escapeHTML(c.email)}</span>
                       </div>
                     </td>
-                    <td>${c.phone || '—'}</td>
+                    <td>${c.phone ? escapeHTML(c.phone) : '—'}</td>
                     <td>${statusIcon(c.interviewStatus)}</td>
                     <td>—</td>
                     <td>—</td>
@@ -342,12 +343,12 @@ function renderJobDetailPanes(job) {
                     <td><input type="checkbox" class="table-checkbox-row" /></td>
                     <td>
                       <div class="table-candidate-cell">
-                        <span class="cand-name-link">${c.name} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
+                        <span class="cand-name-link">${escapeHTML(c.name)} <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></span>
                         <button class="btn-remarks">Remarks</button>
-                        <span class="cand-email-sub">${c.email}</span>
+                        <span class="cand-email-sub">${escapeHTML(c.email)}</span>
                       </div>
                     </td>
-                    <td>${c.phone || '—'}</td>
+                    <td>${c.phone ? escapeHTML(c.phone) : '—'}</td>
                     <td><span class="status-chip completed"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Completed</span></td>
                     <td><a href="#" class="report-link report-new" data-cand-id="${c.id}">Report <span class="new-badge">New</span> <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a></td>
                     <td><span class="interview-score-dot ${scoreColor(c.interviewScore)}"></span> ${c.interviewScore != null ? c.interviewScore : '—'}</td>

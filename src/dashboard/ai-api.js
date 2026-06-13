@@ -1,4 +1,4 @@
-import { document, signal } from './runtime.js';
+import { document, signal, setTimeout, clearTimeout } from './runtime.js';
 import { renderDeepAnalysisPane } from './deep-analysis.js';
 import { generateQuestionsLocally } from './questions.js';
 import { soundEngine } from './sound.js';

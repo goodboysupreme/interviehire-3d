@@ -1,4 +1,4 @@
-import { document, requestAnimationFrame } from './runtime.js';
+import { document, requestAnimationFrame, setTimeout } from './runtime.js';
 import { callDeepSeekAPI, saveStateToLocalStorage } from './ai-api.js';
 import { navigateToJobDetail } from './job-detail.js';
 import { escapeHTML, toggleHeaderElementsForJobFlow } from './job-flow.js';

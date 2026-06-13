@@ -1,4 +1,5 @@
-import { document, window, requestAnimationFrame } from './runtime.js';
+import { document, window, requestAnimationFrame, setTimeout } from './runtime.js';
+import { escapeHTML } from './escape.js';
 import { callDeepSeekAPI, enrichJobWithAI, loadStateFromLocalStorage, sanitizeJSONResponse, saveStateToLocalStorage } from './ai-api.js';
 import { initCrystalAnimations } from './animations.js';
 import { drawFunnelSVG, drawScoreDistributionSVG } from './funnel-charts.js';
@@ -302,7 +303,7 @@ function initMountBindings() {
   function renderEditJobTags() {
     const list = document.getElementById('modal-edit-tags-list');
     list.innerHTML = editJobModalTags.map((tag, i) =>
-      `<span class="modal-tag">${tag}<button class="modal-tag-remove" data-idx="${i}">×</button></span>`
+      `<span class="modal-tag">${escapeHTML(tag)}<button class="modal-tag-remove" data-idx="${i}">×</button></span>`
     ).join('');
     list.querySelectorAll('.modal-tag-remove').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -644,7 +645,7 @@ function initMountBindings() {
   });
 
   // 3. Settings Forms (Mock updates with inline alerts)
-  document.getElementById('career-settings-form').addEventListener('submit', (e) => {
+  document.getElementById('career-settings-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     soundEngine.playChime([523.25], 0.15);
     const domainName = document.getElementById('career-subdomain').value;
@@ -697,7 +698,7 @@ function initMountBindings() {
   }
 
   // I. Exports Buttons Bindings
-  document.getElementById('btn-export-jobs').addEventListener('click', () => {
+  document.getElementById('btn-export-jobs')?.addEventListener('click', () => {
     if (AppState.analyticsSubtab === 'jobs-data') {
       triggerExcelExport('jobs');
     } else {
@@ -705,12 +706,12 @@ function initMountBindings() {
     }
   });
 
-  document.getElementById('btn-export-team').addEventListener('click', () => {
+  document.getElementById('btn-export-team')?.addEventListener('click', () => {
     triggerExcelExport('team');
   });
 
   // Columns toggles buttons actions
-  document.getElementById('btn-columns-toggle').addEventListener('click', (e) => {
+  document.getElementById('btn-columns-toggle')?.addEventListener('click', (e) => {
     e.stopPropagation();
     soundEngine.playClick();
     const pop = document.getElementById('pop-columns-toggle');
@@ -727,7 +728,7 @@ function initMountBindings() {
       pop.style.display = 'flex';
     }
   });
-  document.getElementById('btn-columns-team').addEventListener('click', (e) => {
+  document.getElementById('btn-columns-team')?.addEventListener('click', (e) => {
     e.stopPropagation();
     soundEngine.playClick();
     const pop = document.getElementById('pop-columns-team');

@@ -1,4 +1,5 @@
 import { document } from './runtime.js';
+import { escapeHTML } from './escape.js';
 import { callDeepSeekAPI, sanitizeJSONResponse, saveStateToLocalStorage } from './ai-api.js';
 import { renderJobDetailPanes } from './job-detail-panes.js';
 import { appendTerminalLog } from './kanban-swarm.js';
@@ -80,7 +81,7 @@ function renderResumeStagePaneForJob(candidates, job, container) {
   const getRecBadge = (rec) => {
     if (!rec) return '';
     const cls = rec === 'Advance' ? 'high' : rec === 'Hold' ? 'medium' : 'low';
-    return `<span class="ra-rec-badge ${cls}">${rec}</span>`;
+    return `<span class="ra-rec-badge ${cls}">${escapeHTML(rec)}</span>`;
   };
 
   const pendingCount = candidates.filter(c => !resumeAnalysisCache[c.id]).length;
@@ -124,9 +125,9 @@ function renderResumeStagePaneForJob(candidates, job, container) {
                   <td><input type="checkbox" class="table-checkbox-row" /></td>
                   <td>
                     <div class="table-candidate-cell">
-                      <span class="cand-name-link">${c.name}</span>
-                      <span class="cand-email-sub">${c.email}</span>
-                      ${isAnalysed && cached.summary ? `<span class="ra-summary-preview">${cached.summary.slice(0, 90)}${cached.summary.length > 90 ? '…' : ''}</span>` : ''}
+                      <span class="cand-name-link">${escapeHTML(c.name)}</span>
+                      <span class="cand-email-sub">${escapeHTML(c.email)}</span>
+                      ${isAnalysed && cached.summary ? `<span class="ra-summary-preview">${escapeHTML(cached.summary.slice(0, 90))}${cached.summary.length > 90 ? '…' : ''}</span>` : ''}
                     </div>
                   </td>
                   <td>
@@ -653,8 +654,8 @@ async function runResumeAnalysis(cid, job) {
   const config = getScoringConfig(job);
   const criteriaBlock = buildCriteriaBlock(criteria, config);
 
-  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Initiated deep resume analysis for <strong>${candidate ? candidate.name : cid}</strong>...`);
-  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Scoring ${criteria.mustHave.length + criteria.goodToHave.length + config.customCriteria.length} criteria across 6 weighted dimensions for <strong>${job.roleName}</strong>...`);
+  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Initiated deep resume analysis for <strong>${candidate ? escapeHTML(candidate.name) : cid}</strong>...`);
+  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Scoring ${criteria.mustHave.length + criteria.goodToHave.length + config.customCriteria.length} criteria across 6 weighted dimensions for <strong>${escapeHTML(job.roleName)}</strong>...`);
 
   const systemPrompt = `You are Lina, an expert recruiting analyst for IntervieHire. You perform rigorous, evidence-first resume screening FOR RECRUITERS — they need to understand exactly how this candidate's real work history maps to THEIR role.
 
@@ -737,7 +738,7 @@ ${resumeText.slice(0, 5000)}`;
   }
   renderAnalysisResult(cid, result);
   showPremiumToast(result.engine === 'local' ? 'Resume analysed (local engine).' : 'Deep resume analysis complete.', 'success');
-  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> <strong>${candidate ? candidate.name : cid}</strong> scored <strong style="color: #10b981;">${result.matchScore}/100</strong> (weighted) → <strong>${result.recommendation}</strong>.`, result.recommendation === 'Advance' ? 'font-gold' : '');
+  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> <strong>${candidate ? escapeHTML(candidate.name) : cid}</strong> scored <strong style="color: #10b981;">${result.matchScore}/100</strong> (weighted) → <strong>${escapeHTML(result.recommendation)}</strong>.`, result.recommendation === 'Advance' ? 'font-gold' : '');
   return true;
 }
 
@@ -765,7 +766,7 @@ function renderAnalysisResult(cid, result) {
   }
   if (tds[3]) {
     const recCls = result.recommendation === 'Advance' ? 'high' : result.recommendation === 'Hold' ? 'medium' : 'low';
-    tds[3].innerHTML = `<span class="ra-rec-badge ${recCls}">${result.recommendation}</span>`;
+    tds[3].innerHTML = `<span class="ra-rec-badge ${recCls}">${escapeHTML(result.recommendation)}</span>`;
   }
   if (tds[4]) {
     tds[4].innerHTML = `<div class="ra-input-cell">

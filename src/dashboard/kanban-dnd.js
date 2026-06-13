@@ -1,4 +1,4 @@
-import { document } from './runtime.js';
+import { document, setInterval, clearInterval } from './runtime.js';
 import { recalculateJobPipelines, renderKanbanBoard } from './kanban-swarm.js';
 import { renderAnalyticsTable, renderTeamTable, updateSummaryMetrics } from './render-views.js';
 import { soundEngine } from './sound.js';

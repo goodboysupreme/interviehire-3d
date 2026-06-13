@@ -1,4 +1,5 @@
-import { document } from './runtime.js';
+import { document, setTimeout } from './runtime.js';
+import { escapeHTML } from './escape.js';
 import { callDeepSeekAPI, enrichJobWithAI, sanitizeJSONResponse, saveStateToLocalStorage } from './ai-api.js';
 import { openJobFlowView, toggleHeaderElementsForJobFlow } from './job-flow.js';
 import { renderKanbanBoard, resetWaveformAudio, startSwarmLogs } from './kanban-swarm.js';
@@ -180,11 +181,11 @@ function appendAriaMessage(text, sender) {
 
   if (sender === 'user') {
     row.className = 'aria-msg aria-msg-from-user';
-    row.innerHTML = `<div class="aria-msg-bubble">${text}</div>`;
+    row.innerHTML = `<div class="aria-msg-bubble">${escapeHTML(text)}</div>`;
   } else {
     row.innerHTML = `
       <div class="aria-msg-avatar">A</div>
-      <div class="aria-msg-bubble">${isTyping ? '<span class="dot-flash">●&nbsp;●&nbsp;●</span>' : text}</div>`;
+      <div class="aria-msg-bubble">${isTyping ? '<span class="dot-flash">●&nbsp;●&nbsp;●</span>' : escapeHTML(text)}</div>`;
   }
 
   container.appendChild(row);

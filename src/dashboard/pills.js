@@ -1,4 +1,4 @@
-import { document, window, MutationObserver } from './runtime.js';
+import { document, window, MutationObserver, setTimeout, clearTimeout } from './runtime.js';
 import { drawFunnelSVG, drawScoreDistributionSVG } from './funnel-charts.js';
 import { filterCandidatesByDateRange } from './render-views.js';
 import { AppState } from './state.js';

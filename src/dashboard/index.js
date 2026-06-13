@@ -1,4 +1,4 @@
-import { initRuntime, disposeRuntime } from './runtime.js';
+import { initRuntime, disposeRuntime, setTimeout } from './runtime.js';
 import { AppState } from './state.js';
 import { navigateToJobDetail } from './job-detail.js';
 import { openReportDrawerForCandidate } from './report.js';

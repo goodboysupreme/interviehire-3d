@@ -1,4 +1,5 @@
 import { auditJobDescriptionLocally, optimizeJobDescriptionWithAI } from './ai-api.js';
+import { escapeHTML } from './escape.js';
 import { filterCandidatesByDateRange } from './render-views.js';
 import { resumeAnalysisCache, resumeTextCache } from './resume-analysis.js';
 import { AppState } from './state.js';
@@ -62,15 +63,15 @@ function generateExecutiveSummary(job, candidates) {
   const sortedMissing = Object.entries(missingCounts).sort((a,b) => b[1] - a[1]);
   const mostMissing = sortedMissing.length > 0 ? sortedMissing[0][0] : null;
 
-  let summary = `We have analyzed ${analyzed.length} candidate(s) for the <strong>${job.roleName}</strong> position. The average match score is <strong>${avgScore}%</strong>. `;
-  
+  let summary = `We have analyzed ${analyzed.length} candidate(s) for the <strong>${escapeHTML(job.roleName)}</strong> position. The average match score is <strong>${avgScore}%</strong>. `;
+
   if (topCand) {
-    summary += `<strong>${topCand.name}</strong> is the top-performing candidate with a match score of <strong>${topScore}%</strong>. `;
+    summary += `<strong>${escapeHTML(topCand.name)}</strong> is the top-performing candidate with a match score of <strong>${topScore}%</strong>. `;
   }
 
   if (mostMissing) {
     const pct = Math.round((missingCounts[mostMissing] / analyzed.length) * 100);
-    summary += `A significant portion of the candidate pool (${pct}%) lacks experience in <strong>${mostMissing}</strong>, which may be a focus area during recruiter screens. `;
+    summary += `A significant portion of the candidate pool (${pct}%) lacks experience in <strong>${escapeHTML(mostMissing)}</strong>, which may be a focus area during recruiter screens. `;
   } else {
     summary += `The candidate pool shows strong coverage of all mandatory requirements. `;
   }
@@ -202,8 +203,8 @@ function renderDeepAnalysisPane(job, container) {
           <thead>
             <tr>
               <th style="position: sticky; left: 0; background: var(--bg-card); z-index: 2;">Candidate</th>
-              ${mustHaves.map((s, i) => `<th class="matrix-header-cell must" title="Must-Have: ${s}">M${i+1}</th>`).join('')}
-              ${goodToHaves.map((s, i) => `<th class="matrix-header-cell good" title="Good-to-Have: ${s}">G${i+1}</th>`).join('')}
+              ${mustHaves.map((s, i) => `<th class="matrix-header-cell must" title="Must-Have: ${escapeHTML(s)}">M${i+1}</th>`).join('')}
+              ${goodToHaves.map((s, i) => `<th class="matrix-header-cell good" title="Good-to-Have: ${escapeHTML(s)}">G${i+1}</th>`).join('')}
               <th class="matrix-header-cell" title="Red Flags">Red Flags</th>
               <th class="matrix-header-cell" title="Match Score">Score</th>
             </tr>
@@ -222,7 +223,7 @@ function renderDeepAnalysisPane(job, container) {
               return `
                 <tr>
                   <td style="position: sticky; left: 0; background: var(--bg-card); z-index: 1; font-weight: 600;">
-                    ${c.name}
+                    ${escapeHTML(c.name)}
                     ${isAnalyzed ? '' : '<span class="matrix-badge-pending">Pending</span>'}
                   </td>
                   ${mustHaves.map(s => {
@@ -238,7 +239,7 @@ function renderDeepAnalysisPane(job, container) {
                     return '<td class="matrix-cell dash" style="color: var(--color-text-faint); text-align: center;">—</td>';
                   }).join('')}
                   <td style="text-align: center;">
-                    ${!isAnalyzed ? '<span style="color: var(--color-text-faint);">—</span>' : (hasRedFlags ? `<span style="color: #ef4444; font-size: 1.1rem;" title="${analysis.redFlagsDetected.join(', ')}">⚠</span>` : '<span style="color: #10b981;">✓</span>')}
+                    ${!isAnalyzed ? '<span style="color: var(--color-text-faint);">—</span>' : (hasRedFlags ? `<span style="color: #ef4444; font-size: 1.1rem;" title="${escapeHTML(analysis.redFlagsDetected.join(', '))}">⚠</span>` : '<span style="color: #10b981;">✓</span>')}
                   </td>
                   <td style="text-align: center; font-weight: 700;">
                     <span class="interview-score-dot ${scoreClass}"></span> ${scoreText}

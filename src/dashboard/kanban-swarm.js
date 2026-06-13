@@ -1,4 +1,5 @@
-import { document, signal } from './runtime.js';
+import { document, signal, setTimeout, setInterval, clearInterval } from './runtime.js';
+import { escapeHTML } from './escape.js';
 import { filterCandidatesByDateRange, renderAnalyticsTable, renderJobCards, updateSummaryMetrics } from './render-views.js';
 import { soundEngine } from './sound.js';
 import { AppState } from './state.js';
@@ -69,8 +70,8 @@ function renderKanbanBoard() {
     const isHired = stage === 'Hired';
     
     card.innerHTML = `
-      <div class="kanban-card-title">${c.name}</div>
-      <div class="kanban-card-job">${c.jobApplied}</div>
+      <div class="kanban-card-title">${escapeHTML(c.name)}</div>
+      <div class="kanban-card-job">${escapeHTML(c.jobApplied)}</div>
       <div class="kanban-card-footer">
         <span class="kanban-card-score">${c.score}</span>
         ${isHired 
@@ -138,21 +139,21 @@ let swarmLogsInterval = null;
 const simulatedLogTemplates = [
   () => {
     if (AppState.candidates.length === 0) return `<code>[${new Date().toLocaleTimeString()}] Swarm:</code> Awaiting candidate records...`;
-    const name = AppState.candidates[Math.floor(Math.random() * AppState.candidates.length)].name;
+    const name = escapeHTML(AppState.candidates[Math.floor(Math.random() * AppState.candidates.length)].name);
     return `<code>[${new Date().toLocaleTimeString()}] Lina:</code> Analysed resume profile for ${name}. Match index: ${(80 + Math.random()*19).toFixed(0)}%.`;
   },
   () => {
     if (AppState.candidates.length === 0) return `<code>[${new Date().toLocaleTimeString()}] Swarm:</code> Vetting pipeline inactive.`;
-    const name = AppState.candidates[Math.floor(Math.random() * AppState.candidates.length)].name;
+    const name = escapeHTML(AppState.candidates[Math.floor(Math.random() * AppState.candidates.length)].name);
     return `<code>[${new Date().toLocaleTimeString()}] Kaelen:</code> Finished functional assessment evaluations for ${name}.`;
   },
   () => {
     if (AppState.candidates.length === 0) return `<code>[${new Date().toLocaleTimeString()}] Swarm:</code> Communications queue idle.`;
-    const name = AppState.candidates[Math.floor(Math.random() * AppState.candidates.length)].name;
+    const name = escapeHTML(AppState.candidates[Math.floor(Math.random() * AppState.candidates.length)].name);
     return `<code>[${new Date().toLocaleTimeString()}] Lyra:</code> Dispatched automated onboarding checklist update to ${name}.`;
   },
   () => {
-    const job = AppState.jobs[Math.floor(Math.random() * AppState.jobs.length)].roleName;
+    const job = escapeHTML(AppState.jobs[Math.floor(Math.random() * AppState.jobs.length)].roleName);
     return `<code>[${new Date().toLocaleTimeString()}] Lina:</code> Correlating candidates index for ${job}.`;
   },
   () => {

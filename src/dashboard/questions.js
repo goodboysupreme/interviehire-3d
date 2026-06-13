@@ -1,4 +1,5 @@
 import { document } from './runtime.js';
+import { escapeHTML } from './escape.js';
 import { callDeepSeekAPI, sanitizeJSONResponse, saveStateToLocalStorage } from './ai-api.js';
 import { soundEngine } from './sound.js';
 import { showPremiumToast } from './sourcing.js';
@@ -203,7 +204,7 @@ function renderQuestionsPane(job) {
         <div class="q-collapsed-row" data-idx="${qIndex}">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="q-collapse-chevron"><polyline points="6 9 12 15 18 9"></polyline></svg>
           <span class="q-number">Q${qIndex + 1}</span>
-          <span class="q-collapsed-text">${questionPreview || 'Untitled question'}</span>
+          <span class="q-collapsed-text">${questionPreview ? escapeHTML(questionPreview) : 'Untitled question'}</span>
           ${metaHints ? `<span class="q-collapsed-meta">${metaHints}</span>` : ''}
           <div class="q-badges">
             <span class="q-badge-pill" style="background:${tc.bg};border-color:${tc.border};color:${tc.text};">${(q.type || 'technical').charAt(0).toUpperCase() + (q.type || 'technical').slice(1)}</span>
@@ -255,7 +256,7 @@ function renderQuestionsPane(job) {
                 ${(q.follow_ups || []).map((f, idx) => `
                   <li class="q-followup-item">
                     <span class="q-followup-num">${idx + 1}</span>
-                    <input type="text" class="q-followup-input" data-idx="${idx}" value="${f}" />
+                    <input type="text" class="q-followup-input" data-idx="${idx}" value="${escapeHTML(f)}" />
                     <button class="btn-q-remove-followup" data-idx="${idx}" data-q-idx="${qIndex}" title="Remove">
                       <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
@@ -799,8 +800,8 @@ function showStagingArea(job) {
         </div>
         <button type="button" class="btn-staging-discard-item" data-idx="${idx}" aria-label="Remove from batch">&times;</button>
       </div>
-      <div class="qg-staging-q">${q.question}</div>
-      <div class="qg-staging-rubric">Rubric: ${q.rubric}</div>
+      <div class="qg-staging-q">${escapeHTML(q.question)}</div>
+      <div class="qg-staging-rubric">Rubric: ${escapeHTML(q.rubric)}</div>
     </div>
   `).join('');
 
@@ -883,7 +884,7 @@ function openEnhanceModal(originalQuestion, onAcceptCallback, precalculatedData 
     
     const followUps = precalculatedData.follow_ups || [];
     followUpsContainer.innerHTML = followUps.map((f, idx) => `
-      <input type="text" class="modal-followup-input" data-idx="${idx}" value="${f}" style="width: 100%; border-radius: 6px; border: 1px solid var(--glass-border); padding: 8px; color: var(--color-text-primary); background: rgba(0,0,0,0.25); font-family: var(--font-body); font-size: 0.8rem; outline: none;" />
+      <input type="text" class="modal-followup-input" data-idx="${idx}" value="${escapeHTML(f)}" style="width: 100%; border-radius: 6px; border: 1px solid var(--glass-border); padding: 8px; color: var(--color-text-primary); background: rgba(0,0,0,0.25); font-family: var(--font-body); font-size: 0.8rem; outline: none;" />
     `).join('');
   } else {
     enhancedTextarea.value = "Loading enhancement...";
@@ -910,7 +911,7 @@ Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdow
         rubricTextarea.value = parsed.rubric || "";
         const followUps = parsed.follow_ups || [];
         followUpsContainer.innerHTML = followUps.map((f, idx) => `
-          <input type="text" class="modal-followup-input" data-idx="${idx}" value="${f}" style="width: 100%; border-radius: 6px; border: 1px solid var(--glass-border); padding: 8px; color: var(--color-text-primary); background: rgba(0,0,0,0.25); font-family: var(--font-body); font-size: 0.8rem; outline: none;" />
+          <input type="text" class="modal-followup-input" data-idx="${idx}" value="${escapeHTML(f)}" style="width: 100%; border-radius: 6px; border: 1px solid var(--glass-border); padding: 8px; color: var(--color-text-primary); background: rgba(0,0,0,0.25); font-family: var(--font-body); font-size: 0.8rem; outline: none;" />
         `).join('');
       }
     }).catch(err => {
