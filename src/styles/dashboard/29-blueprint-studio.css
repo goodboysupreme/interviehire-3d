@@ -36,6 +36,11 @@ body.light-theme .bs-btn-generate { color: #fff; }
 .bs-strip .bs-spacer { flex: 1; }
 .bs-insp-toggle { font-family: var(--font-body); font-size: 0.72rem; font-weight: 600; color: var(--color-text-muted); background: var(--color-surface-2); border: 1px solid var(--glass-border); border-radius: 8px; padding: 6px 11px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: var(--spring-fast); }
 .bs-insp-toggle:hover { border-color: var(--glass-border-hover); color: var(--color-text); }
+.bs-save { display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; font-weight: 600; color: var(--color-text-muted); padding: 5px 10px; border-radius: 8px; border: 1px solid transparent; transition: var(--spring-fast); user-select: none; }
+.bs-save[data-state="error"] { color: #f87171; border-color: #f8717140; background: #f8717112; }
+.bs-save[data-state="saved"] { color: #34d399; }
+.bs-save-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c, #6b7280); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c, #6b7280) 22%, transparent); }
+.bs-save-dot.spin { border-radius: 50%; box-shadow: none; border: 1.5px solid var(--c); border-top-color: transparent; background: transparent; width: 11px; height: 11px; animation: bs-spin .7s linear infinite; }
 
 /* ── layout ── */
 .bs-work { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; }

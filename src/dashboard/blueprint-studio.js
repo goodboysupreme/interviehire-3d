@@ -4,11 +4,12 @@
 // #jd-pane-questions and wires it to the contract-aligned blueprint-engine.
 // Replaces the old renderQuestionsPane / flat job.questions surface.
 
-import { document } from './runtime.js';
+import { document, setTimeout, clearTimeout } from './runtime.js';
 import { escapeHTML } from './escape.js';
 import { saveStateToLocalStorage } from './ai-api.js';
 import { soundEngine } from './sound.js';
 import { showPremiumToast } from './sourcing.js';
+import { isApiMode, apiPatchJobParameters } from './api.js';
 import {
   MODE_FUNCTIONAL, MODE_SCREENING, CONTRACT_DIFFICULTY, TOPIC_TYPES, QUESTION_TYPES, SEVERITY_LEVELS,
   migrateLegacyQuestions, emptyScreeningBlueprint, createTopic, createQuestionBlueprint, createRubricPoint, createRedFlag,
@@ -29,6 +30,15 @@ const studioUi = {
 };
 
 let dragState = null;
+
+// The job currently rendered in the studio — so persist() can target the right
+// backend record without threading `job` through every call site.
+let activeJob = null;
+
+// Debounced autosave to the live backend (api mode only). Latest-wins: rapid
+// edits and the generation batch coalesce into one PATCH; an edit landing
+// mid-flight queues exactly one follow-up save. 'local' mode is untouched.
+const backendSave = { timer: null, inflight: false, again: false, status: 'idle', toasted: false };
 
 const TYPE_TINT = {
   technical_theory: '#38bdf8', coding: '#38bdf8', system_design: '#38bdf8',
@@ -63,12 +73,67 @@ function findQuestion(job, qid) {
   const sq = screeningOf(job).questions.find((x) => x.id === qid);
   return sq ? { q: sq, topic: null } : { q: null, topic: null };
 }
-const persist = () => saveStateToLocalStorage();
+// Every mutation flows through persist(): localStorage always (the local cache
+// + 'local' mode source of truth), plus a debounced backend PATCH in api mode.
+const persist = () => { saveStateToLocalStorage(); scheduleBackendSave(); };
+
+// ── Backend autosave ─────────────────────────────────────────────────────────
+const SAVE_UI = {
+  idle:   ['#6b7280', 'Synced'],
+  saving: ['#fbbf24', 'Saving…'],
+  saved:  ['#34d399', 'Saved'],
+  error:  ['#f87171', 'Save failed'],
+};
+function saveStatusInner(status) {
+  const [color, label] = SAVE_UI[status] || SAVE_UI.idle;
+  return `<span class="bs-save-dot ${status === 'saving' ? 'spin' : ''}" style="--c:${color};"></span>${label}`;
+}
+function saveStatusMarkup() {
+  if (!(isApiMode() && activeJob && activeJob._backend)) return '';
+  return `<span class="bs-save" id="bs-save-status" data-state="${backendSave.status}" title="Authored blueprint syncs to the live backend">${saveStatusInner(backendSave.status)}</span>`;
+}
+function setSaveStatus(status, detail) {
+  backendSave.status = status;
+  const el = document.getElementById('bs-save-status');
+  if (el) { el.dataset.state = status; el.innerHTML = saveStatusInner(status); }
+  if (status === 'error' && !backendSave.toasted) {
+    backendSave.toasted = true;
+    showPremiumToast(`Couldn't save to the backend: ${detail || 'unknown error'}`, 'error');
+  }
+  if (status === 'saved' || status === 'saving') backendSave.toasted = false;
+}
+function scheduleBackendSave() {
+  if (!activeJob || !isApiMode() || !activeJob._backend || !activeJob.id) return;
+  // During generation many partial saves would fire — batch into the single
+  // save that finish() schedules once `generating` clears.
+  if (studioUi.generating) return;
+  setSaveStatus('saving');
+  if (backendSave.timer) clearTimeout(backendSave.timer);
+  backendSave.timer = setTimeout(flushBackendSave, 1000);
+}
+async function flushBackendSave() {
+  const job = activeJob;
+  if (!job || !job.id) return;
+  if (backendSave.inflight) { backendSave.again = true; return; }
+  backendSave.inflight = true;
+  backendSave.again = false;
+  setSaveStatus('saving');
+  try {
+    await apiPatchJobParameters(job.id, job);
+    if (!backendSave.again) setSaveStatus('saved');
+  } catch (e) {
+    setSaveStatus('error', (e && e.message) || '');
+  } finally {
+    backendSave.inflight = false;
+    if (backendSave.again) { backendSave.again = false; flushBackendSave(); }
+  }
+}
 
 // ── Entry ────────────────────────────────────────────────────────────────
 export function renderBlueprintStudio(job) {
   const pane = document.getElementById('jd-pane-questions');
   if (!pane) return;
+  activeJob = job;
   functionalOf(job);
   screeningOf(job);
   pane.innerHTML = shellMarkup(job);
@@ -116,6 +181,7 @@ function shellMarkup(job) {
         <span class="bs-stat bs-stat-muted">Recruiter gate · keep it short, ~3 min each</span>
       `}
       <span class="bs-spacer"></span>
+      ${saveStatusMarkup()}
       <button class="bs-insp-toggle" data-action="toggle-inspector">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
         ${studioUi.inspectorOpen ? 'Hide' : 'Inspector'}
