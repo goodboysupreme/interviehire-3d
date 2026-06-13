@@ -2,6 +2,7 @@ import { document, requestAnimationFrame } from './runtime.js';
 import { saveStateToLocalStorage } from './ai-api.js';
 import { renderDeepAnalysisPane } from './deep-analysis.js';
 import { drawFunnelSVG, drawScoreDistributionSVG } from './funnel-charts.js';
+import { openInterviewScorecard } from './interview-scorecard.js';
 import { openJobFlowView, renderFunnelInsights, renderFunnelStages } from './job-flow.js';
 import { stopActiveCardPlayer, toggleCardPlayer } from './kanban-dnd.js';
 import { recalculateJobPipelines, renderKanbanBoard } from './kanban-swarm.js';
@@ -242,12 +243,20 @@ function renderJobDetailPanes(job) {
                     </td>
                     <td>${c.phone || '—'}</td>
                     <td>${statusIcon(c.interviewStatus)}</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td>${c.recruiterScreening ? `<span class="rs-fit-badge ${c.recruiterScreening === 'Good fit' ? 'good' : c.recruiterScreening === 'Moderate fit' ? 'moderate' : 'poor'}">${c.recruiterScreening}</span>` : '—'}</td>
+                    <td>${c.interviewScore != null ? `<span class="isc-score-pill ${c.interviewScore >= 70 ? 'score-green' : c.interviewScore >= 45 ? 'score-yellow' : 'score-red'}">${c.interviewScore}%</span>` : '—'}</td>
                     <td>${hasReport ? `<a href="#" class="report-link" data-cand-id="${c.id}">Report <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : '—'}</td>
                     <td><span class="source-badge">${sourceIcon} ${c.source || '—'}</span></td>
                     <td>${c.attemptedAt || '—'}</td>
-                    <td><button class="${actionClass}" data-candidate-id="${c.id}">${c.interviewStatus === 'Slot Missed' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> ' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg> '}${actionLabel}</button></td>
+                    <td>
+                      <div class="stage-row-actions">
+                        <button class="btn-scorecard" data-candidate-id="${c.id}" title="Score this interview against the analyst's probes and competencies">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                          ${c.interviewScorecard ? 'Edit Scorecard' : 'Scorecard'}
+                        </button>
+                        <button class="${actionClass}" data-candidate-id="${c.id}">${c.interviewStatus === 'Slot Missed' ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> ' : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg> '}${actionLabel}</button>
+                      </div>
+                    </td>
                   </tr>
                 `;
               }).join('')}
@@ -580,6 +589,14 @@ function renderJobDetailPanes(job) {
       btn.addEventListener('click', () => {
         soundEngine.playClick();
         triggerExcelExport('candidates');
+      });
+    });
+
+    pane.querySelectorAll('.btn-scorecard').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const candId = btn.getAttribute('data-candidate-id');
+        openInterviewScorecard(candId, job, () => renderJobDetailPanes(job));
       });
     });
 

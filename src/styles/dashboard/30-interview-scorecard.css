@@ -1,0 +1,148 @@
+/* ============================================================
+   INTERVIEW SCORECARD
+   ============================================================ */
+
+/* ── Screening table surfacing ── */
+.stage-row-actions { display: inline-flex; align-items: center; gap: 8px; }
+.btn-scorecard {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: 8px;
+  border: 1px solid rgba(var(--color-gold-rgb), 0.34);
+  background: rgba(var(--color-gold-rgb), 0.1);
+  color: var(--color-gold);
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--spring-snappy);
+}
+.btn-scorecard:hover { background: rgba(var(--color-gold-rgb), 0.18); border-color: var(--glass-border-gold); }
+.isc-score-pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.76rem;
+  background: rgba(255,255,255,0.05);
+}
+body.light-theme .isc-score-pill { background: rgba(15,23,42,0.05); }
+.rs-fit-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.rs-fit-badge.good { background: var(--color-success-dim); color: var(--color-success); border-color: rgba(16,185,129,0.28); }
+.rs-fit-badge.moderate { background: var(--color-warning-dim); color: var(--color-warning); border-color: rgba(245,158,11,0.28); }
+.rs-fit-badge.poor { background: rgba(239,68,68,0.12); color: #f87171; border-color: rgba(239,68,68,0.3); }
+
+/* ── Modal ── */
+.isc-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(8px);
+  animation: iscFade 0.2s ease;
+}
+@keyframes iscFade { from { opacity: 0; } to { opacity: 1; } }
+.isc-modal {
+  width: min(720px, 100%);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow-hover);
+  overflow: hidden;
+  animation: iscRise 0.32s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes iscRise { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }
+.isc-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 18px 22px; border-bottom: 1px solid var(--glass-border);
+}
+.isc-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; color: var(--color-text-primary); margin: 0; }
+.isc-sub { font-size: 0.8rem; color: var(--color-text-muted); margin: 3px 0 0; }
+.isc-close {
+  background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 8px;
+  width: 30px; height: 30px; color: var(--color-text-muted); cursor: pointer; font-size: 0.9rem;
+  transition: var(--spring-snappy);
+}
+.isc-close:hover { color: var(--color-text-primary); border-color: var(--glass-border-hover); }
+
+/* ── Scoreboard ── */
+.isc-scoreboard {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 22px; border-bottom: 1px solid var(--glass-border);
+  background: var(--color-surface-2);
+  flex-wrap: wrap;
+}
+.isc-stat { display: flex; flex-direction: column; gap: 2px; }
+.isc-stat-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-faint); }
+.isc-stat-val { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; color: var(--color-text-primary); }
+.isc-stat.blended { padding-left: 14px; border-left: 1px solid var(--glass-border); }
+.isc-stat.blended .isc-stat-val { color: var(--color-gold); }
+.isc-progress { margin-left: auto; font-size: 0.76rem; color: var(--color-text-muted); }
+
+/* ── Items ── */
+.isc-body { overflow: auto; padding: 8px 22px 4px; }
+.isc-item { padding: 14px 0; border-bottom: 1px solid var(--glass-border); }
+.isc-item:last-child { border-bottom: none; }
+.isc-item-head { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.isc-item-label { font-weight: 600; color: var(--color-text-primary); font-size: 0.9rem; }
+.isc-item-hint { font-size: 0.78rem; color: var(--color-text-muted); margin: 0 0 9px; }
+.isc-kind {
+  font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;
+  padding: 1px 6px; border-radius: 4px; background: var(--glass-bg); color: var(--color-text-muted);
+  border: 1px solid var(--glass-border);
+}
+.isc-kind.comp { background: rgba(var(--color-indigo-rgb),0.12); color: var(--color-indigo-light); border-color: rgba(var(--color-indigo-rgb),0.28); }
+.isc-kind.probe { background: rgba(var(--color-gold-rgb),0.12); color: var(--color-gold); border-color: var(--glass-border-gold); }
+
+.isc-rating { display: flex; gap: 6px; margin-bottom: 9px; flex-wrap: wrap; }
+.isc-rate {
+  flex: 1; min-width: 64px;
+  padding: 7px 4px; border-radius: 8px;
+  border: 1px solid var(--glass-border); background: var(--glass-bg);
+  color: var(--color-text-muted); font-family: var(--font-body); font-size: 0.74rem; font-weight: 600;
+  cursor: pointer; transition: var(--spring-snappy);
+}
+.isc-rate:hover { border-color: var(--glass-border-hover); color: var(--color-text-primary); }
+.isc-rate.on { background: var(--gradient-brand); border-color: transparent; color: #fff; }
+.isc-note {
+  width: 100%; padding: 8px 11px;
+  background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 8px;
+  color: var(--color-text-primary); font-family: var(--font-body); font-size: 0.8rem; outline: none;
+}
+.isc-note:focus { border-color: var(--glass-border-gold); }
+
+/* ── Footer ── */
+.isc-footer {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px 22px; border-top: 1px solid var(--glass-border);
+}
+.isc-decision { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--color-text-muted); }
+.isc-decision select {
+  padding: 7px 10px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: 8px; color: var(--color-text-primary); font-size: 0.8rem; outline: none; cursor: pointer;
+}
+.isc-save {
+  padding: 9px 18px; border-radius: 9px; border: none;
+  background: var(--gradient-brand); color: #fff;
+  font-family: var(--font-body); font-size: 0.82rem; font-weight: 700; cursor: pointer;
+  transition: var(--spring-snappy);
+}
+.isc-save:hover:not(:disabled) { filter: brightness(1.08); }
+.isc-save:disabled { opacity: 0.45; cursor: not-allowed; }
