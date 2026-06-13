@@ -1,4 +1,5 @@
 import { document, signal, setTimeout, clearTimeout } from './runtime.js';
+import { reviewJdRewrite } from './jd-rewrite.js';
 import { renderDeepAnalysisPane } from './deep-analysis.js';
 import { generateQuestionsLocally } from './questions.js';
 import { soundEngine } from './sound.js';
@@ -494,14 +495,29 @@ Specifically:
       { role: "system", content: systemPrompt },
       { role: "user", content: `Optimize this job description:\n\n${job.description}` }
     ]);
-    
-    job.description = improved.trim();
+
+    // Restore the button before review so it isn't stuck spinning behind the modal.
+    btn.disabled = false;
+    btn.innerHTML = originalLabel;
+
+    // AI suggests, the recruiter disposes — never overwrite their prose silently.
+    const accepted = await reviewJdRewrite({
+      title: 'Optimized Job Description',
+      original: job.description,
+      suggested: improved.trim()
+    });
+    if (accepted === null) {
+      showPremiumToast('Kept your original job description.', 'info');
+      return;
+    }
+
+    job.description = accepted;
     showPremiumToast("Job description optimized with AI.", "success");
-    
+
     await enrichJobWithAI(job, job.description);
-    
+
     renderDeepAnalysisPane(job, container);
-    
+
     const rawDesc = document.getElementById('jd-raw-description');
     if (rawDesc) rawDesc.value = job.description;
 

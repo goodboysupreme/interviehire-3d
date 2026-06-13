@@ -2,6 +2,7 @@ import { document, window, requestAnimationFrame, setTimeout } from './runtime.j
 import { EXPERIENCE_BANDS_PROMPT } from './constants.js';
 import { escapeHTML } from './escape.js';
 import { callDeepSeekAPI, enrichJobWithAI, loadStateFromLocalStorage, parseAIJson, saveStateToLocalStorage } from './ai-api.js';
+import { reviewJdRewrite } from './jd-rewrite.js';
 import { initCrystalAnimations } from './animations.js';
 import { drawFunnelSVG, drawScoreDistributionSVG } from './funnel-charts.js';
 import { navigateToJobDetail } from './job-detail.js';
@@ -147,9 +148,20 @@ function initMountBindings() {
           { role: "system", content: systemPrompt },
           { role: "user", content: `Improve this job description:\n\n${currentText}` }
         ]);
-        if (textarea) textarea.value = improved.trim();
-        soundEngine.playChime([523.25, 659.25], 0.12, 0.08);
-        showPremiumToast("Job description enhanced successfully.", "success");
+        // Restore the button before review so it isn't stuck spinning behind the modal.
+        btnEnhanceDrawerJd.disabled = false;
+        btnEnhanceDrawerJd.textContent = originalLabel;
+
+        const accepted = await reviewJdRewrite({
+          title: 'Enhanced Job Description',
+          original: currentText,
+          suggested: improved.trim()
+        });
+        if (accepted !== null && textarea) {
+          textarea.value = accepted;
+          soundEngine.playChime([523.25, 659.25], 0.12, 0.08);
+          showPremiumToast("Job description enhanced successfully.", "success");
+        }
       } catch (err) {
         console.error("JD enhancement failed:", err);
         showPremiumToast("Enhancement failed. Check API status.", "error");
