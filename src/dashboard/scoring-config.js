@@ -22,9 +22,9 @@ const SCORING_DIMENSIONS = [
 
 const DEFAULT_SCORING_CONFIG = {
   weights: { mustHave: 35, niceToHave: 10, projects: 25, experience: 15, education: 5, custom: 10 },
-  thresholds: { advance: 70, hold: 45 },
+  thresholds: { advance: 65, hold: 40 },
   mustHaveGate: true,
-  mustHaveCap: 48,
+  mustHaveCap: 60,
   customCriteria: [],
 };
 

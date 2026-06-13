@@ -63,18 +63,19 @@ function normalizeRubric(parsed, job) {
   const weights = {};
   dims.forEach(k => { weights[k] = clampWeight(parsed?.weights?.[k], local.weights[k]); });
 
-  const asArr = (v, max) => Array.isArray(v) ? v.map(x => String(x).trim()).filter(Boolean).slice(0, max) : [];
+  // Generous bound only as an abuse guard — the count is JD-driven, not fixed.
+  const asArr = (v, max = 25) => Array.isArray(v) ? v.map(x => String(x).trim()).filter(Boolean).slice(0, max) : [];
   const advance = clampWeight(parsed?.thresholds?.advance, DEFAULT_SCORING_CONFIG.thresholds.advance);
   const hold = Math.min(advance - 1, clampWeight(parsed?.thresholds?.hold, DEFAULT_SCORING_CONFIG.thresholds.hold));
 
   return {
     resumeCriteria: {
-      mustHave: asArr(parsed?.mustHave, 8).length ? asArr(parsed.mustHave, 8) : local.resumeCriteria.mustHave,
-      goodToHave: asArr(parsed?.goodToHave, 8).length ? asArr(parsed.goodToHave, 8) : local.resumeCriteria.goodToHave,
-      redFlags: asArr(parsed?.redFlags, 8).length ? asArr(parsed.redFlags, 8) : local.resumeCriteria.redFlags,
+      mustHave: asArr(parsed?.mustHave).length ? asArr(parsed.mustHave) : local.resumeCriteria.mustHave,
+      goodToHave: asArr(parsed?.goodToHave).length ? asArr(parsed.goodToHave) : local.resumeCriteria.goodToHave,
+      redFlags: asArr(parsed?.redFlags).length ? asArr(parsed.redFlags) : local.resumeCriteria.redFlags,
       goodToHaveMinMatch: local.resumeCriteria.goodToHaveMinMatch,
     },
-    customCriteria: (Array.isArray(parsed?.customCriteria) ? parsed.customCriteria : []).slice(0, 6).map((c, i) => ({
+    customCriteria: (Array.isArray(parsed?.customCriteria) ? parsed.customCriteria : []).slice(0, 12).map((c, i) => ({
       id: `cc-jd-${i}`,
       label: String(c?.label || '').trim(),
       description: String(c?.description || '').trim(),
@@ -91,9 +92,9 @@ const RUBRIC_PROMPT = `You are an expert technical recruiter building a resume-s
 
 Return ONLY valid JSON, no markdown fences:
 {
-  "mustHave": ["3-6 essential, evidence-checkable requirements"],
-  "goodToHave": ["3-5 bonus qualifications"],
-  "redFlags": ["2-4 disqualifying signals specific to this role"],
+  "mustHave": ["essential, evidence-checkable requirements"],
+  "goodToHave": ["bonus qualifications"],
+  "redFlags": ["disqualifying signals specific to this role"],
   "customCriteria": [{"label": "short name", "description": "what strong evidence looks like", "weight": 1-10}],
   "weights": {"mustHave": 0-50, "niceToHave": 0-50, "projects": 0-50, "experience": 0-50, "education": 0-50, "custom": 0-50},
   "thresholds": {"advance": 0-100, "hold": 0-100},
@@ -101,8 +102,9 @@ Return ONLY valid JSON, no markdown fences:
 }
 
 Rules:
+- List exactly as many must-haves and nice-to-haves as the JD genuinely implies — do NOT pad to a number or trim to one. A focused JD may yield 3; a dense one may yield 12+. Let the description drive the count.
 - Weight the dimensions for the role: seniors lean on projects + experience; entry roles lean on must-haves + education.
-- customCriteria: 2-4 role-specific checks not already covered by the dimensions (e.g. "Worked in a regulated industry").
+- customCriteria: role-specific checks not already covered by the dimensions (e.g. "Worked in a regulated industry").
 - Be concrete and role-specific. No generic filler.`;
 
 async function generateRubricFromJD(job) {

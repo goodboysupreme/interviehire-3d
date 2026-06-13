@@ -251,6 +251,24 @@ body.light-theme .cmp-bar { background: rgba(15,23,42,0.08); }
   border-color: rgba(var(--color-indigo-rgb), 0.6);
 }
 .sce-btn-generate:disabled { opacity: 0.6; cursor: wait; }
+
+/* ── Re-analyse button (resume table, next to View Report) ── */
+.btn-ra-reanalyse {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(var(--color-gold-rgb), 0.08);
+  border: 1px solid var(--glass-border-gold);
+  color: var(--color-gold);
+  cursor: pointer;
+  transition: var(--spring-fast);
+}
+.btn-ra-reanalyse:hover { background: rgba(var(--color-gold-rgb), 0.18); }
+.btn-ra-reanalyse:disabled { opacity: 0.6; cursor: wait; }
 .sce-btn-generate .ra-spinner {
   width: 12px; height: 12px;
   border: 2px solid currentColor;

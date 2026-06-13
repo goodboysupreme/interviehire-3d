@@ -170,10 +170,16 @@ function renderResumeStagePaneForJob(candidates, job, container) {
                     <div class="ra-input-cell">
                       <input type="file" id="ra-file-${c.id}" accept=".pdf,.doc,.docx,.txt" hidden>
                       ${isAnalysed
-                        ? `<button class="btn-ra-view-resume" data-cid="${c.id}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                            View Report
-                          </button>`
+                        ? `<div class="ra-input-group">
+                            <button class="btn-ra-view-resume" data-cid="${c.id}">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                              View Report
+                            </button>
+                            <button class="btn-ra-reanalyse" data-cid="${c.id}" id="ra-btn-${c.id}" title="Re-run analysis with the current scoring config and criteria">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                              Re-analyse
+                            </button>
+                          </div>`
                         : `<div class="ra-input-group">
                             <button class="btn-ra-upload" data-cid="${c.id}" title="Upload resume file">
                               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -228,8 +234,11 @@ function bindResumeAnalysisEvents(job) {
     const fileInput = document.getElementById(`ra-file-${cid}`);
     const analyseBtn = row.querySelector('.btn-ra-analyse');
     const viewBtn = row.querySelector('.btn-ra-view-resume');
+    const reanalyseBtn = row.querySelector('.btn-ra-reanalyse');
     const uploadBtn = row.querySelector('.btn-ra-upload');
     const pasteArea = document.getElementById(`ra-paste-${cid}`);
+
+    reanalyseBtn?.addEventListener('click', () => runResumeAnalysis(cid, job));
 
     uploadBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -441,16 +450,20 @@ function applyGatesAndScore(result, config, criteria) {
   result.weightedBreakdown = breakdown;
   result.gateNotes = [];
 
-  const missingMust = (result.criteriaVerdicts || [])
-    .filter(v => v.group === 'mustHave' && v.met !== true && v.met !== 'true' && v.met !== 'partial')
+  const mustHaveVerdicts = (result.criteriaVerdicts || []).filter(v => v.group === 'mustHave');
+  const missingMust = mustHaveVerdicts
+    .filter(v => v.met !== true && v.met !== 'true' && v.met !== 'partial')
     .map(v => v.criterion);
+  // A single missing must-have caps the score but still lets a strong candidate
+  // land on Hold for human review; only a majority of unmet must-haves rejects.
+  const majorityMustMissing = mustHaveVerdicts.length > 0 && missingMust.length > mustHaveVerdicts.length / 2;
   if (config.mustHaveGate && missingMust.length > 0 && result.matchScore > config.mustHaveCap) {
     result.matchScore = config.mustHaveCap;
     result.gateNotes.push(`Score capped at ${config.mustHaveCap}: missing must-have — ${missingMust.slice(0, 3).join(', ')}`);
   }
 
   result.recommendation = recommendationFromScore(result.matchScore, config);
-  if (config.mustHaveGate && missingMust.length > 0) result.recommendation = 'Reject';
+  if (config.mustHaveGate && majorityMustMissing) result.recommendation = 'Reject';
 
   if (result.redFlagsDetected.length > 0) {
     result.matchScore = Math.min(30, result.matchScore);
@@ -590,7 +603,7 @@ function matchCriterion(resumeLower, criterion) {
   const words = clean.split(/\s+/).filter(w => w.length > 3 && !STOPWORDS.has(w));
   if (!words.length) return false;
   const hits = words.filter(w => resumeLower.includes(w)).length;
-  return hits === words.length ? true : hits / words.length >= 0.5 ? 'partial' : false;
+  return hits === words.length ? true : hits / words.length >= 0.4 ? 'partial' : false;
 }
 
 function buildLocalDeepAnalysis(resumeText, job, config, criteria) {
@@ -613,7 +626,7 @@ function buildLocalDeepAnalysis(resumeText, job, config, criteria) {
     // Match against the label first; the description only dilutes keyword overlap
     const met = matchCriterion(resumeLower, c.label) || matchCriterion(resumeLower, c.description || '');
     verdicts.push({ criterion: c.label, group: 'custom', met, evidence: met ? 'Related keywords present in resume.' : 'No supporting evidence found.' });
-    return { weight: c.weight || 5, score: met === true ? 75 : met === 'partial' ? 50 : 20 };
+    return { weight: c.weight || 5, score: met === true ? 80 : met === 'partial' ? 58 : 35 };
   });
   const customWeightSum = customScores.reduce((s, c) => s + c.weight, 0);
   const customScore = customWeightSum ? Math.round(customScores.reduce((s, c) => s + c.score * c.weight, 0) / customWeightSum) : 0;
@@ -624,17 +637,17 @@ function buildLocalDeepAnalysis(resumeText, job, config, criteria) {
     .filter(s => resumeLower.includes(s.toLowerCase())).slice(0, 8);
 
   const projects = extractProjectsLocally(resumeText, job, criteria);
-  const projectsScore = projects.length ? Math.round(projects.reduce((s, p) => s + p.relevance, 0) / projects.length) : 30;
+  const projectsScore = projects.length ? Math.round(projects.reduce((s, p) => s + p.relevance, 0) / projects.length) : 45;
 
   const expText = extractExperienceYearsFromText(resumeText);
   const expYears = parseFloat(expText) || 0;
   const bandMin = parseFloat(String(job.experienceBand || '').match(/\d+/)?.[0] || '0');
-  const experienceScore = expText === 'Not stated' ? 35 : Math.min(95, 50 + Math.min(expYears, bandMin + 4) * 10);
+  const experienceScore = expText === 'Not stated' ? 48 : Math.min(95, 55 + Math.min(expYears, bandMin + 4) * 10);
 
-  const eduScore = /ph\.?d|doctorate/.test(resumeLower) ? 90
-    : /master|m\.?tech|mba|m\.?sc/.test(resumeLower) ? 80
-    : /b\.?tech|bachelor|b\.?e\b|b\.?sc|undergraduate/.test(resumeLower) ? 70
-    : /diploma|certificat/.test(resumeLower) ? 55 : 35;
+  const eduScore = /ph\.?d|doctorate/.test(resumeLower) ? 92
+    : /master|m\.?tech|mba|m\.?sc/.test(resumeLower) ? 82
+    : /b\.?tech|bachelor|b\.?e\b|b\.?sc|undergraduate/.test(resumeLower) ? 74
+    : /diploma|certificat/.test(resumeLower) ? 60 : 48;
 
   const mustRatio = criteria.mustHave.length ? criteria.mustHave.filter(c => matched.includes(c)).length / criteria.mustHave.length : 0;
   const niceRatio = criteria.goodToHave.length ? criteria.goodToHave.filter(c => matched.includes(c)).length / criteria.goodToHave.length : 0;
@@ -677,12 +690,15 @@ function buildLocalDeepAnalysis(resumeText, job, config, criteria) {
 async function runResumeAnalysis(cid, job) {
   const pasteArea = document.getElementById(`ra-paste-${cid}`);
   const btn = document.getElementById(`ra-btn-${cid}`);
-  let resumeText = ((resumeTextCache[cid] || '') + '\n' + (pasteArea?.value || '')).trim();
   const candidate = AppState.candidates.find(c => c.id === cid);
+  // Fall back to the persisted resume text so re-analysis works after a reload,
+  // when the in-memory text cache is empty.
+  let resumeText = ((resumeTextCache[cid] || candidate?.resumeText || candidate?.textContent || '') + '\n' + (pasteArea?.value || '')).trim();
   if (!resumeText || isGarbageText(resumeText)) {
     showPremiumToast('Upload a resume or paste resume text first.', 'error');
     return false;
   }
+  resumeTextCache[cid] = resumeText;
 
   const origHTML = btn ? btn.innerHTML : '';
   if (btn) {
@@ -712,7 +728,7 @@ THINK DEEPLY, THEN REPORT:
 - For every project in the resume, reason about what it actually proves: scale, the candidate's own contribution, and how directly it transfers to this specific role.
 - Quote or paraphrase concrete resume evidence — never generic praise.
 - Score each dimension 0-100 INDEPENDENTLY. Do NOT compute an overall score; the platform combines dimensions using the recruiter's own weights.
-- Be honest. Thin or auto-generated resumes get low dimension scores and a note in the summary. Missing evidence = low score, not benefit of the doubt.
+- Be fair and balanced. Give reasonable credit for transferable, adjacent or clearly implied experience — not just exact keyword matches. Don't tank a strong candidate over one missing detail. Reserve genuinely low scores for thin, irrelevant or auto-generated resumes, and never invent evidence that isn't there.
 
 DIMENSIONS (score each 0-100 with 1-line evidence):
 - mustHave: coverage of the MUST HAVE list (100 = all clearly evidenced)
@@ -790,6 +806,7 @@ ${prepared.text}`;
   if (cand) {
     cand.score = `${result.matchScore}%`;
     cand.resumeAnalysis = result;
+    cand.resumeText = resumeText; // persist so re-analysis survives a reload
     saveStateToLocalStorage();
   }
   renderAnalysisResult(cid, result);
@@ -825,14 +842,23 @@ function renderAnalysisResult(cid, result) {
     tds[3].innerHTML = `<span class="ra-rec-badge ${recCls}">${result.recommendation}</span>`;
   }
   if (tds[4]) {
-    tds[4].innerHTML = `<div class="ra-input-cell">
+    tds[4].innerHTML = `<div class="ra-input-cell"><div class="ra-input-group">
       <button class="btn-ra-view-resume" data-cid="${cid}">
         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         View Report
       </button>
-    </div>`;
+      <button class="btn-ra-reanalyse" data-cid="${cid}" id="ra-btn-${cid}" title="Re-run analysis with the current scoring config and criteria">
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Re-analyse
+      </button>
+    </div></div>`;
     tds[4].querySelector('.btn-ra-view-resume')?.addEventListener('click', () => {
       openReportDrawerForCandidate(cid);
+    });
+    const cand = AppState.candidates.find(c => c.id === cid);
+    const job = cand && AppState.jobs.find(j => j.roleName === cand.jobApplied || j.cardName === cand.jobApplied);
+    tds[4].querySelector('.btn-ra-reanalyse')?.addEventListener('click', () => {
+      if (job) runResumeAnalysis(cid, job);
     });
   }
 

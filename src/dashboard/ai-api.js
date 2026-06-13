@@ -192,9 +192,9 @@ async function enrichJobWithAI(job, jdText) {
 Return ONLY valid JSON with this exact structure:
 {
   "resumeCriteria": {
-    "mustHave": ["3-5 strings: essential skills/experience the candidate MUST demonstrate"],
-    "redFlags": ["3-5 strings: disqualifying traits or gaps that should reject a candidate"],
-    "goodToHave": ["3-5 strings: bonus qualifications that strengthen a candidate"],
+    "mustHave": ["essential skills/experience the candidate MUST demonstrate — list as many as the JD genuinely requires, do not pad or cap to a fixed number"],
+    "redFlags": ["disqualifying traits or gaps that should reject a candidate"],
+    "goodToHave": ["bonus qualifications that strengthen a candidate — as many as the JD implies"],
     "goodToHaveMinMatch": 1
   },
   "screeningParams": [
