@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB — cap before buffering into memory
+
 async function ensurePdfNodePolyfills() {
   if (globalThis.DOMMatrix && globalThis.ImageData && globalThis.Path2D) return;
 
@@ -21,6 +23,10 @@ export async function POST(request) {
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+
+    if (typeof file.size === 'number' && file.size > MAX_FILE_BYTES) {
+      return NextResponse.json({ error: 'File too large (max 5 MB)' }, { status: 413 });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
