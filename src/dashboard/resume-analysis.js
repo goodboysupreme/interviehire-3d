@@ -654,8 +654,8 @@ async function runResumeAnalysis(cid, job) {
   const config = getScoringConfig(job);
   const criteriaBlock = buildCriteriaBlock(criteria, config);
 
-  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Initiated deep resume analysis for <strong>${candidate ? escapeHTML(candidate.name) : cid}</strong>...`);
-  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> Scoring ${criteria.mustHave.length + criteria.goodToHave.length + config.customCriteria.length} criteria across 6 weighted dimensions for <strong>${escapeHTML(job.roleName)}</strong>...`);
+  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Lina:</code> Initiated deep resume analysis for <strong>${candidate ? escapeHTML(candidate.name) : cid}</strong>...`);
+  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Lina:</code> Scoring ${criteria.mustHave.length + criteria.goodToHave.length + config.customCriteria.length} criteria across 6 weighted dimensions for <strong>${escapeHTML(job.roleName)}</strong>...`);
 
   const systemPrompt = `You are Lina, an expert recruiting analyst for IntervieHire. You perform rigorous, evidence-first resume screening FOR RECRUITERS — they need to understand exactly how this candidate's real work history maps to THEIR role.
 
@@ -718,7 +718,7 @@ ${resumeText.slice(0, 5000)}`;
     normalizeDeepResult(result, config, criteria);
   } catch (err) {
     console.warn('AI analysis failed, using local deep-scan engine:', err);
-    appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> <span style="color: #f59e0b;">DeepSeek API offline. Engaging local deep-scan engine...</span>`);
+    appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Lina:</code> <span style="color: #f59e0b;">DeepSeek API offline. Engaging local deep-scan engine...</span>`);
     try {
       result = buildLocalDeepAnalysis(resumeText, job, config, criteria);
     } catch (fallbackErr) {
@@ -738,7 +738,7 @@ ${resumeText.slice(0, 5000)}`;
   }
   renderAnalysisResult(cid, result);
   showPremiumToast(result.engine === 'local' ? 'Resume analysed (local engine).' : 'Deep resume analysis complete.', 'success');
-  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Aria:</code> <strong>${candidate ? escapeHTML(candidate.name) : cid}</strong> scored <strong style="color: #10b981;">${result.matchScore}/100</strong> (weighted) → <strong>${escapeHTML(result.recommendation)}</strong>.`, result.recommendation === 'Advance' ? 'font-gold' : '');
+  appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Lina:</code> <strong>${candidate ? escapeHTML(candidate.name) : cid}</strong> scored <strong style="color: #10b981;">${result.matchScore}/100</strong> (weighted) → <strong>${escapeHTML(result.recommendation)}</strong>.`, result.recommendation === 'Advance' ? 'font-gold' : '');
   return true;
 }
 

@@ -158,7 +158,7 @@ function renderOverviewPane(candidate, job, analysis) {
 
   const recCard = analysis ? `
     <div class="rp-card rp-rec-card">
-      <h4 class="rp-card-title gradient">✦ Aria Recommendation*</h4>
+      <h4 class="rp-card-title gradient">✦ Lina Recommendation*</h4>
       ${bulletList(analysis.recommendationBullets?.length ? analysis.recommendationBullets : [analysis.recommendationReason, analysis.summary])}
     </div>` : emptyCard('No resume analysis yet', 'Run resume analysis from the job’s Resume Analysis tab to generate the full evidence-backed report.');
 
@@ -205,12 +205,12 @@ function renderOverviewPane(candidate, job, analysis) {
         ${strengthsCard}
         ${improvementsCard}
         ${probesCard}
-        ${analysis ? '<p class="rp-disclaimer">*Aria assists decision-makers with rationale and evidence; hiring decisions stay with humans.</p>' : ''}
+        ${analysis ? '<p class="rp-disclaimer">*Lina assists decision-makers with rationale and evidence; hiring decisions stay with humans.</p>' : ''}
       </div>
       <div class="rp-overview-side">
         ${renderScoreRing(score, analysis?.recommendation)}
         ${analysis ? `<div class="rp-analysed-meta">
-          <span>${analysis.engine === 'local' ? 'Local rules engine' : 'Aria · DeepSeek'}</span>
+          <span>${analysis.engine === 'local' ? 'Local rules engine' : 'Lina · DeepSeek'}</span>
           <span>${analysis.analysedAt ? new Date(analysis.analysedAt).toLocaleString() : ''}</span>
         </div>` : ''}
         <div class="rp-card rp-insights-card">
@@ -220,7 +220,7 @@ function renderOverviewPane(candidate, job, analysis) {
           </div>
           <form class="rp-insight-form" id="rp-insight-form">
             <input type="text" id="rp-insight-input" placeholder="Write your own prompt ✎" autocomplete="off" />
-            <button type="submit" aria-label="Ask Aria">→</button>
+            <button type="submit" aria-label="Ask Lina">→</button>
           </form>
           <div class="rp-insight-feed" id="rp-insight-feed"></div>
         </div>
@@ -320,7 +320,7 @@ async function renderResumePane(candidate, analysis) {
           ${Array.isArray(p.skills) && p.skills.length ? `<div class="rp-tag-row">${p.skills.map(s => `<span class="rp-tag">${escapeHTML(s)}</span>`).join('')}</div>` : ''}
         </div>
       `).join('')}
-    </div>` : (analysis ? emptyCard('No project evidence extracted', 'The analyser did not find distinct projects in this resume. Ask Aria in Custom AI Insights to dig deeper.') : '');
+    </div>` : (analysis ? emptyCard('No project evidence extracted', 'The analyser did not find distinct projects in this resume. Ask Lina in Custom AI Insights to dig deeper.') : '');
 
   const verdicts = analysis?.criteriaVerdicts || [];
   const verdictBlock = verdicts.length ? `
@@ -536,7 +536,7 @@ async function askInsight(candidate, job, analysis, question, feed) {
 
   const thinking = document.createElement('div');
   thinking.className = 'rp-insight-msg aria thinking';
-  thinking.innerHTML = '<span class="ra-spinner"></span> Aria is thinking…';
+  thinking.innerHTML = '<span class="ra-spinner"></span> Lina is thinking…';
   feed.appendChild(thinking);
   feed.scrollTop = feed.scrollHeight;
   soundEngine.playClick();
@@ -547,7 +547,7 @@ async function askInsight(candidate, job, analysis, question, feed) {
     const answer = await callDeepSeekAPI([
       {
         role: 'system',
-        content: `You are Aria, the AI recruiting analyst. Answer the recruiter's question about this candidate concisely with concrete evidence from the resume. Use short bullet points where natural. Never invent facts not present below.\n\nROLE: ${job.roleName}\nJD: ${(job.description || '').slice(0, 1500)}\n\nCANDIDATE: ${candidate.name}\nRESUME:\n${resumeText.slice(0, 3500)}${analysisBlock}`,
+        content: `You are Lina, the AI recruiting analyst. Answer the recruiter's question about this candidate concisely with concrete evidence from the resume. Use short bullet points where natural. Never invent facts not present below.\n\nROLE: ${job.roleName}\nJD: ${(job.description || '').slice(0, 1500)}\n\nCANDIDATE: ${candidate.name}\nRESUME:\n${resumeText.slice(0, 3500)}${analysisBlock}`,
       },
       { role: 'user', content: question },
     ], false);
