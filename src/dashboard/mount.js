@@ -1,7 +1,7 @@
 import { document, window, requestAnimationFrame, setTimeout } from './runtime.js';
 import { EXPERIENCE_BANDS_PROMPT } from './constants.js';
 import { escapeHTML } from './escape.js';
-import { callDeepSeekAPI, enrichJobWithAI, loadStateFromLocalStorage, sanitizeJSONResponse, saveStateToLocalStorage } from './ai-api.js';
+import { callDeepSeekAPI, enrichJobWithAI, loadStateFromLocalStorage, parseAIJson, saveStateToLocalStorage } from './ai-api.js';
 import { initCrystalAnimations } from './animations.js';
 import { drawFunnelSVG, drawScoreDistributionSVG } from './funnel-charts.js';
 import { navigateToJobDetail } from './job-detail.js';
@@ -1113,7 +1113,7 @@ Return ONLY valid JSON:
           { role: 'user', content: `Parse this job description:\n\n${textToProcess.slice(0, 2500)}` }
         ], true);
 
-        const parsed = JSON.parse(sanitizeJSONResponse(response));
+        const parsed = parseAIJson(response);
         const newJob = {
           id: generateJobId(),
           roleName: parsed.roleName,

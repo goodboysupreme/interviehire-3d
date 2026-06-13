@@ -1,7 +1,7 @@
 import { document, setTimeout } from './runtime.js';
 import { escapeHTML } from './escape.js';
 import { EXPERIENCE_BANDS_PROMPT } from './constants.js';
-import { callDeepSeekAPI, enrichJobWithAI, sanitizeJSONResponse, saveStateToLocalStorage } from './ai-api.js';
+import { callDeepSeekAPI, enrichJobWithAI, parseAIJson, saveStateToLocalStorage } from './ai-api.js';
 import { openJobFlowView, toggleHeaderElementsForJobFlow } from './job-flow.js';
 import { renderKanbanBoard, resetWaveformAudio, startSwarmLogs } from './kanban-swarm.js';
 import { renderAnalyticsTable, renderJobCards, renderTeamTable, updateSummaryMetrics } from './render-views.js';
@@ -228,7 +228,7 @@ If you need more info, respond ONLY with this JSON (no extra text):
 
     if (typingRow && typingRow.parentNode) typingRow.remove();
 
-    const parsed = JSON.parse(sanitizeJSONResponse(response));
+    const parsed = parseAIJson(response);
 
     if (parsed.ready) {
       const newJob = {

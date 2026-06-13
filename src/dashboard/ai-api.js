@@ -165,22 +165,44 @@ async function callDeepSeekAPI(messages, jsonMode = false) {
 }
 
 function sanitizeJSONResponse(text) {
-  let cleaned = text.trim();
-  const firstBrace = cleaned.indexOf('{');
-  const lastBrace = cleaned.lastIndexOf('}');
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-    cleaned = cleaned.substring(firstBrace, lastBrace + 1);
-  } else {
-    if (cleaned.startsWith("```json")) {
-      cleaned = cleaned.substring(7);
-    } else if (cleaned.startsWith("```")) {
-      cleaned = cleaned.substring(3);
-    }
-    if (cleaned.endsWith("```")) {
-      cleaned = cleaned.substring(0, cleaned.length - 3);
-    }
+  let cleaned = String(text || '').trim();
+  // Strip a leading/trailing markdown code fence (```json … ``` or ``` … ```).
+  cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  // If the model wrapped the JSON in prose, slice to the outermost object/array.
+  const starts = [cleaned.indexOf('{'), cleaned.indexOf('[')].filter(i => i !== -1);
+  if (starts.length) {
+    const start = Math.min(...starts);
+    const end = Math.max(cleaned.lastIndexOf('}'), cleaned.lastIndexOf(']'));
+    if (end > start) cleaned = cleaned.slice(start, end + 1);
   }
   return cleaned.trim();
+}
+
+// Best-effort repair for the JSON errors DeepSeek most commonly emits:
+// trailing commas and an unbalanced number of closing braces/brackets.
+function repairJSONString(text) {
+  let s = text.replace(/,(\s*[}\]])/g, '$1');
+  const balance = (open, close) => {
+    const o = (s.match(new RegExp('\\' + open, 'g')) || []).length;
+    const c = (s.match(new RegExp('\\' + close, 'g')) || []).length;
+    if (o > c) s += close.repeat(o - c);
+  };
+  balance('{', '}');
+  balance('[', ']');
+  return s;
+}
+
+// Parse an AI JSON response with extraction + a single repair retry, instead of
+// the old brace-slice + one JSON.parse that collapsed any fenced or
+// trailing-comma response into a silent generic fallback. Throws only if the
+// text is genuinely unparseable (callers still catch and degrade).
+function parseAIJson(text) {
+  const cleaned = sanitizeJSONResponse(text);
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    return JSON.parse(repairJSONString(cleaned));
+  }
 }
 
 async function enrichJobWithAI(job, jdText) {
@@ -270,7 +292,7 @@ Rules:
 
   if (criteriaResult.status === 'fulfilled') {
     try {
-      const parsed = JSON.parse(sanitizeJSONResponse(criteriaResult.value));
+      const parsed = parseAIJson(criteriaResult.value);
       if (parsed.resumeCriteria) {
         job.resumeCriteria = {
           mustHave: parsed.resumeCriteria.mustHave || [],
@@ -318,7 +340,7 @@ Rules:
 
   if (questionsResult.status === 'fulfilled') {
     try {
-      const parsed = JSON.parse(sanitizeJSONResponse(questionsResult.value));
+      const parsed = parseAIJson(questionsResult.value);
       if (parsed.questions && Array.isArray(parsed.questions)) {
         job.questions = parsed.questions;
         job.questionsSource = 'ai';
@@ -499,4 +521,4 @@ Specifically:
 }
 
 
-export { auditJobDescriptionLocally, callDeepSeekAPI, enrichJobWithAI, loadStateFromLocalStorage, optimizeJobDescriptionWithAI, sanitizeJSONResponse, saveStateToLocalStorage };
+export { auditJobDescriptionLocally, callDeepSeekAPI, enrichJobWithAI, loadStateFromLocalStorage, optimizeJobDescriptionWithAI, parseAIJson, sanitizeJSONResponse, saveStateToLocalStorage };

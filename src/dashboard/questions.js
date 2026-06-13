@@ -1,6 +1,6 @@
 import { document } from './runtime.js';
 import { escapeHTML } from './escape.js';
-import { callDeepSeekAPI, sanitizeJSONResponse, saveStateToLocalStorage } from './ai-api.js';
+import { callDeepSeekAPI, parseAIJson, sanitizeJSONResponse, saveStateToLocalStorage } from './ai-api.js';
 import { soundEngine } from './sound.js';
 import { showPremiumToast } from './sourcing.js';
 
@@ -340,7 +340,7 @@ function renderQuestionsPane(job) {
             { role: 'system', content: prompt },
             { role: 'user', content: origText }
           ], true);
-          const parsed = JSON.parse(sanitizeJSONResponse(resp));
+          const parsed = parseAIJson(resp);
           q.question = parsed.question || origText;
           q.rubric = parsed.rubric || q.rubric;
           q.follow_ups = parsed.follow_ups || q.follow_ups;
@@ -428,7 +428,7 @@ function renderQuestionsPane(job) {
             { role: 'system', content: prompt },
             { role: 'user', content: origText }
           ], true);
-          const parsed = JSON.parse(sanitizeJSONResponse(resp));
+          const parsed = parseAIJson(resp);
           q.question = parsed.question || origText;
           q.rubric = parsed.rubric || q.rubric;
           q.follow_ups = parsed.follow_ups || q.follow_ups;
@@ -551,7 +551,7 @@ Rules:
         ], true);
 
         const cleanText = sanitizeJSONResponse(responseText);
-        const parsed = JSON.parse(cleanText);
+        const parsed = parseAIJson(cleanText);
 
         const questionsArr = parsed.questions || parsed.interview_questions || (Array.isArray(parsed) ? parsed : null);
         if (questionsArr && questionsArr.length > 0) {
@@ -664,7 +664,7 @@ Output ONLY valid JSON starting with { and ending with }. Do not wrap in markdow
         ], true);
 
         const cleanText = sanitizeJSONResponse(responseText);
-        const parsed = JSON.parse(cleanText);
+        const parsed = parseAIJson(cleanText);
         
         if (parsed) {
           openEnhanceModal(txt, (enhancedData) => {

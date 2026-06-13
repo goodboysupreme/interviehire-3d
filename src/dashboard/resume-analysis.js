@@ -1,6 +1,6 @@
 import { document } from './runtime.js';
 import { escapeHTML } from './escape.js';
-import { callDeepSeekAPI, sanitizeJSONResponse, saveStateToLocalStorage } from './ai-api.js';
+import { callDeepSeekAPI, parseAIJson, saveStateToLocalStorage } from './ai-api.js';
 import { renderJobDetailPanes } from './job-detail-panes.js';
 import { appendTerminalLog } from './kanban-swarm.js';
 import { openReportDrawerForCandidate } from './report.js';
@@ -713,7 +713,7 @@ ${resumeText.slice(0, 5000)}`;
       [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }],
       true
     );
-    result = JSON.parse(sanitizeJSONResponse(raw));
+    result = parseAIJson(raw);
     result.engine = 'deepseek';
     normalizeDeepResult(result, config, criteria);
   } catch (err) {
