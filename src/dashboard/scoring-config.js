@@ -1,5 +1,6 @@
 import { document } from './runtime.js';
 import { saveStateToLocalStorage } from './ai-api.js';
+import { generateRubricFromJD } from './rubric-generator.js';
 import { soundEngine } from './sound.js';
 import { AppState } from './state.js';
 
@@ -219,6 +220,10 @@ function renderScoringEditor(job, container) {
         <div class="sce-footer">
           <button class="sce-btn-reset" id="sce-reset">Reset to defaults</button>
           <div class="sce-footer-right">
+            <button class="sce-btn-generate" id="sce-generate" title="Draft criteria, role-tuned weights and custom checks from this job's description">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              Generate from JD
+            </button>
             <span class="sce-dirty-note" id="sce-dirty-note"></span>
             <button class="sce-btn-save" id="sce-save">Save Scoring Config</button>
           </div>
@@ -315,6 +320,33 @@ function bindScoringEditor(job, container) {
     saveStateToLocalStorage();
     renderScoringEditor(job, container);
     soundEngine.playClick();
+  });
+
+  container.querySelector('#sce-generate')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    const original = btn.innerHTML;
+    const { showPremiumToast } = await import('./sourcing.js');
+    if (!(job.description || '').trim()) {
+      showPremiumToast('Add a job description first — the rubric is generated from it.', 'info');
+      return;
+    }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="ra-spinner"></span> Generating…';
+    try {
+      const { applied, engine } = await generateRubricFromJD(job);
+      container.dataset.expanded = 'true';
+      renderScoringEditor(job, container);
+      showPremiumToast(
+        `${engine === 'local' ? 'Rubric drafted locally' : 'Rubric generated from JD'} — ${applied.rationale}`,
+        'success'
+      );
+      soundEngine.playChime([523.25, 659.25, 783.99], 0.12, 0.08);
+    } catch (err) {
+      console.error('Rubric generation failed:', err);
+      btn.disabled = false;
+      btn.innerHTML = original;
+      showPremiumToast('Could not generate the rubric — please try again.', 'error');
+    }
   });
 
   container.querySelector('#sce-save')?.addEventListener('click', async () => {
