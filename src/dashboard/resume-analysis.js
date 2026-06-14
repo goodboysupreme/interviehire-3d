@@ -634,13 +634,14 @@ function buildLocalDeepAnalysis(resumeText, job, config, criteria) {
   return result;
 }
 
-async function runResumeAnalysis(cid, job) {
+async function runResumeAnalysis(cid, job, opts = {}) {
+  const quiet = opts.quiet === true;
   const pasteArea = document.getElementById(`ra-paste-${cid}`);
   const btn = document.getElementById(`ra-btn-${cid}`);
   let resumeText = ((resumeTextCache[cid] || '') + '\n' + (pasteArea?.value || '')).trim();
   const candidate = AppState.candidates.find(c => c.id === cid);
   if (!resumeText || isGarbageText(resumeText)) {
-    showPremiumToast('Upload a resume or paste resume text first.', 'error');
+    if (!quiet) showPremiumToast('Upload a resume or paste resume text first.', 'error');
     return false;
   }
 
@@ -723,7 +724,7 @@ ${resumeText.slice(0, 5000)}`;
       result = buildLocalDeepAnalysis(resumeText, job, config, criteria);
     } catch (fallbackErr) {
       console.error('Fallback analysis failed:', fallbackErr);
-      showPremiumToast('Analysis failed — please try again.', 'error');
+      if (!quiet) showPremiumToast('Analysis failed — please try again.', 'error');
       if (btn) { btn.disabled = false; btn.innerHTML = origHTML; }
       return false;
     }
@@ -737,7 +738,7 @@ ${resumeText.slice(0, 5000)}`;
     saveStateToLocalStorage();
   }
   renderAnalysisResult(cid, result);
-  showPremiumToast(result.engine === 'local' ? 'Resume analysed (local engine).' : 'Deep resume analysis complete.', 'success');
+  if (!quiet) showPremiumToast(result.engine === 'local' ? 'Resume analysed (local engine).' : 'Deep resume analysis complete.', 'success');
   appendTerminalLog(`<code>[${new Date().toLocaleTimeString()}] Lina:</code> <strong>${candidate ? escapeHTML(candidate.name) : cid}</strong> scored <strong style="color: #10b981;">${result.matchScore}/100</strong> (weighted) → <strong>${escapeHTML(result.recommendation)}</strong>.`, result.recommendation === 'Advance' ? 'font-gold' : '');
   return true;
 }
@@ -798,23 +799,49 @@ function renderAnalysisResult(cid, result) {
   }
 }
 
+// How many resumes to analyse concurrently. Parallel calls cut wall-clock time
+// roughly N-fold, but firing every resume at once risks DeepSeek rate-limiting
+// (a 429 silently falls back to the lower-quality local engine), so we cap it.
+const RESUME_ANALYSIS_CONCURRENCY = 4;
+
 async function runBulkResumeAnalysis(candidateIds, job) {
   const pending = candidateIds.filter(id => !resumeAnalysisCache[id]);
   if (pending.length === 0) {
     showPremiumToast('All candidates already analysed.', 'info');
     return;
   }
-  showPremiumToast(`Analysing ${pending.length} candidate${pending.length > 1 ? 's' : ''}…`, 'info');
+  const total = pending.length;
+  showPremiumToast(`Analysing ${total} candidate${total > 1 ? 's' : ''} (${Math.min(RESUME_ANALYSIS_CONCURRENCY, total)} at a time)…`, 'info');
+
+  // Bounded-concurrency worker pool: each worker pulls the next candidate off a
+  // shared cursor, so at most RESUME_ANALYSIS_CONCURRENCY calls are ever in
+  // flight. Each runResumeAnalysis writes only its own candidate, so concurrent
+  // runs don't race. quiet:true suppresses the per-candidate toasts.
   let done = 0;
-  for (const cid of pending) {
-    try {
-      const ok = await runResumeAnalysis(cid, job);
-      if (ok === true) done++;
-    } catch {
-      showPremiumToast(`Failed to analyse candidate ${cid}, continuing…`, 'error');
+  let failed = 0;
+  let cursor = 0;
+  const worker = async () => {
+    while (cursor < pending.length) {
+      const cid = pending[cursor];
+      cursor += 1;
+      try {
+        const ok = await runResumeAnalysis(cid, job, { quiet: true });
+        if (ok === true) done += 1; else failed += 1;
+      } catch {
+        failed += 1;
+      }
     }
-  }
-  showPremiumToast(`Bulk analysis complete: ${done}/${pending.length} succeeded.`, done === pending.length ? 'success' : 'info');
+  };
+
+  const workerCount = Math.min(RESUME_ANALYSIS_CONCURRENCY, pending.length);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+
+  showPremiumToast(
+    failed
+      ? `Bulk analysis complete: ${done}/${total} succeeded, ${failed} failed.`
+      : `Bulk analysis complete: all ${total} succeeded.`,
+    failed ? 'info' : 'success',
+  );
 }
 
 function toggleResumeCriteriaEdit(job) {
