@@ -14,7 +14,7 @@ import {
   MODE_FUNCTIONAL, MODE_SCREENING, CONTRACT_DIFFICULTY, TOPIC_TYPES, QUESTION_TYPES, SEVERITY_LEVELS,
   migrateLegacyQuestions, emptyScreeningBlueprint, createTopic, createQuestionBlueprint, createRubricPoint, createRedFlag,
   generateFunctionalOutline, enrichQuestionRubric, generateScreeningQuestions, generateGapQuestion, generateScenarioVariant,
-  computeGenerationPlan, analyzeRequirements, pinBlueprintToRequirements,
+  computeGenerationPlan, analyzeRequirements, pinBlueprintToRequirements, mergeBlueprintPreservingEdits,
   localFunctionalBlueprint, localScreeningQuestions, localGapQuestion, localScenarioVariant,
   computeCoverage, computeCalibration, computeBandFit, rubricStrength, critiqueRubric, critiqueBlueprint, leakageRisk,
 } from './blueprint-engine.js';
@@ -510,7 +510,7 @@ function bindStudio(pane, job) {
       }
       case 'add-question': {
         const topic = functionalOf(job).topics.find((t) => t.id === el.dataset.topicId);
-        if (topic) { const nq = createQuestionBlueprint({ difficulty: topic.difficulty }); topic.questions.push(nq); studioUi.expandedQuestionId = nq.id; persist(); reRender(); }
+        if (topic) { const nq = createQuestionBlueprint({ difficulty: topic.difficulty, edited: true }); topic.questions.push(nq); studioUi.expandedQuestionId = nq.id; persist(); reRender(); }
         break;
       }
       case 'add-screening': {
@@ -518,17 +518,17 @@ function bindStudio(pane, job) {
         screeningOf(job).questions.push(nq); persist(); reRender(); break;
       }
       case 'delete-question': deleteQuestion(job, qid); persist(); reRender(); break;
-      case 'add-point': { const { q } = findQuestion(job, qid); const pts = pointsOf(q, el.dataset.kind); if (pts) { pts.push(createRubricPoint('', el.dataset.kind === 'required' ? 2 : 1)); persist(); reRender(); } break; }
-      case 'remove-point': { const { q } = findQuestion(job, qid); const pts = pointsOf(q, el.dataset.kind); if (pts) { pts.splice(Number(el.dataset.idx), 1); persist(); reRender(); } break; }
-      case 'add-flag': { const { q } = findQuestion(job, qid); if (q) { q.rubric.redFlags.push(createRedFlag('', 'medium')); persist(); reRender(); } break; }
-      case 'remove-flag': { const { q } = findQuestion(job, qid); if (q) { q.rubric.redFlags.splice(Number(el.dataset.idx), 1); persist(); reRender(); } break; }
+      case 'add-point': { const { q } = findQuestion(job, qid); const pts = pointsOf(q, el.dataset.kind); if (pts) { q.edited = true; pts.push(createRubricPoint('', el.dataset.kind === 'required' ? 2 : 1)); persist(); reRender(); } break; }
+      case 'remove-point': { const { q } = findQuestion(job, qid); const pts = pointsOf(q, el.dataset.kind); if (pts) { q.edited = true; pts.splice(Number(el.dataset.idx), 1); persist(); reRender(); } break; }
+      case 'add-flag': { const { q } = findQuestion(job, qid); if (q) { q.edited = true; q.rubric.redFlags.push(createRedFlag('', 'medium')); persist(); reRender(); } break; }
+      case 'remove-flag': { const { q } = findQuestion(job, qid); if (q) { q.edited = true; q.rubric.redFlags.splice(Number(el.dataset.idx), 1); persist(); reRender(); } break; }
       case 'set-weight': {
         const dot = e.target.closest('.bs-wdot'); if (!dot) break;
         const { q } = findQuestion(job, qid); if (!q) break;
         const w = Number(dot.dataset.w);
         const pts = pointsOf(q, el.dataset.kind);
         const pt = pts && pts[Number(el.dataset.idx)];
-        if (pt) pt.weight = w;
+        if (pt) { pt.weight = w; q.edited = true; }
         // update dots in place so the editor doesn't re-render and lose focus/flicker
         el.querySelectorAll('.bs-wdot').forEach((d) => d.classList.toggle('on', Number(d.dataset.w) <= w));
         persist(); break;
@@ -554,6 +554,7 @@ function bindStudio(pane, job) {
       const f = q.rubric.redFlags[Number(el.dataset.idx)];
       if (f) f[field] = el.value;
     }
+    q.edited = true;
     persist();
   };
 
@@ -664,6 +665,7 @@ async function handleScenarioVariant(job, qid, reRender) {
   q.modelAnswer = v.modelAnswer;
   q.rubric = v.rubric;
   q.followUpIntent = v.followUpIntent;
+  q.edited = true; // recruiter-initiated rewrite → preserve on regenerate
 
   studioUi.generating = false;
   studioUi.scenarioQid = null;
@@ -694,6 +696,7 @@ async function handleDraftGap(job, requirement, reRender) {
   // Pin it so the coverage panel registers this requirement as covered (and the
   // "+ Q" button stops offering to draft a duplicate for the same requirement).
   q.targetRequirement = requirement;
+  q.edited = true; // recruiter-initiated → preserve on regenerate
 
   const fb = functionalOf(job);
   let topic = fb.topics.find((t) => t.name === GAP_TOPIC_NAME);
@@ -741,6 +744,7 @@ async function handleGenerate(job, reRender) {
 
   // Functional — phase 1: outline (small, fits the token cap), scaled to the
   // role's complexity and pinned to its required competencies.
+  const existing = job.functionalParameters; // preserve hand-edited questions across regenerate
   const plan = computeGenerationPlan(job);
   let requirements = plan.requirements;
   // Isolate the (non-throwing) pre-pass so an LLM-expanded list never leaks into
@@ -761,6 +765,7 @@ async function handleGenerate(job, reRender) {
   // Pin every question to a required competency + fill any uncovered requirement
   // with a targeted gap question, so coverage is complete on both paths.
   fb = pinBlueprintToRequirements(job, fb, requirements);
+  fb = mergeBlueprintPreservingEdits(existing, fb); // carry over hand-edited questions
   job.functionalParameters = fb;
   studioUi.expandedTopicId = fb.topics[0] ? fb.topics[0].id : null;
 
@@ -775,10 +780,15 @@ async function handleGenerate(job, reRender) {
   const worker = async () => {
     while (queue.length) {
       const { q, topicName } = queue.shift();
+      if (q.edited) { done += 1; continue; } // never clobber a recruiter-edited question's rubric
       try {
         const r = await enrichQuestionRubric(job, q, topicName);
-        q.modelAnswer = r.modelAnswer; q.rubric = r.rubric;
-        if (r.followUpIntent) q.followUpIntent = r.followUpIntent;
+        // Re-check after the await: if the recruiter edited this question while
+        // its enrich call was in flight, keep their work and drop the AI result.
+        if (!q.edited) {
+          q.modelAnswer = r.modelAnswer; q.rubric = r.rubric;
+          if (r.followUpIntent) q.followUpIntent = r.followUpIntent;
+        }
       } catch { /* keep the outline-only question; rubric badge stays 'missing' */ }
       done += 1;
       studioUi.genLabel = `Authoring rubrics ${done}/${total}`;

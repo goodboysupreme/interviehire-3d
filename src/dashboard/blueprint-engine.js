@@ -98,6 +98,10 @@ export function createQuestionBlueprint(overrides = {}) {
       redFlags: arr(overrides.rubric?.redFlags).map((f) => createRedFlag(f.description, f.severity)),
     },
     followUpIntent: clean(overrides.followUpIntent),
+    // Set once the recruiter hand-edits/authors this question, so a later
+    // "Generate" preserves it instead of clobbering manual work (survives reload
+    // via the v2 guidance envelope).
+    edited: !!overrides.edited,
   };
 }
 
@@ -592,6 +596,33 @@ export function pinBlueprintToRequirements(job, functionalBlueprint, requirement
   return functionalBlueprint;
 }
 
+// Non-destructive regenerate: carry the recruiter's hand-edited questions over
+// into a freshly generated blueprint instead of discarding them. Edited
+// questions land back in their original topic (by name), or a "Kept questions"
+// topic if that topic no longer exists. Non-edited questions are fully refreshed.
+// NOTE: mutates freshFb in place (extends its topics) and carries LIVE question
+// references from existingFb — treat both args as consumed and use only the
+// return value (the call site reassigns + stores it, discarding the old one).
+export function mergeBlueprintPreservingEdits(existingFb, freshFb) {
+  const merged = freshFb && Array.isArray(freshFb.topics) ? freshFb : { topics: [] };
+  const edited = [];
+  (existingFb?.topics || []).forEach((t) => t.questions.forEach((q) => { if (q.edited) edited.push({ q, topicName: t.name }); }));
+  if (!edited.length) return merged;
+  const presentIds = new Set(merged.topics.flatMap((t) => t.questions.map((q) => q.id)));
+  let keptTopic = null;
+  edited.forEach(({ q, topicName }) => {
+    if (presentIds.has(q.id)) return;
+    let topic = merged.topics.find((t) => t.name === topicName);
+    if (!topic) {
+      if (!keptTopic) { keptTopic = createTopic({ name: 'Kept questions', type: 'Experiential' }); merged.topics.push(keptTopic); }
+      topic = keptTopic;
+    }
+    topic.questions.push(q);
+    presentIds.add(q.id);
+  });
+  return merged;
+}
+
 // Scale the blueprint's size to the role's complexity (must-have count + JD
 // length) instead of a fixed 4×2, and surface the controlled requirement list.
 export function computeGenerationPlan(job) {
@@ -694,6 +725,7 @@ export function toAiEvaluationGuidance(qb) {
     competency: qb.competency,
     targetRequirement: qb.targetRequirement || '',
     followUpIntent: qb.followUpIntent,
+    edited: !!qb.edited,
     modelAnswer: qb.modelAnswer,
     rubric: {
       requiredPoints: qb.rubric.requiredPoints.map(serializeRubricPoint),

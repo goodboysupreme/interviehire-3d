@@ -161,7 +161,7 @@ function mapFunctionalIn(fp) {
           prompt: q.text || q.prompt, questionType: q.questionType || guidance.questionType,
           difficulty: q.difficulty, estimatedMinutes: q.estimatedMinutes,
           competency: guidance.competency, targetRequirement: guidance.targetRequirement,
-          followUpIntent: guidance.followUpIntent,
+          followUpIntent: guidance.followUpIntent, edited: guidance.edited,
           modelAnswer: guidance.modelAnswer, rubric: guidance.rubric,
         });
       }),
