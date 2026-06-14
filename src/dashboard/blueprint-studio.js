@@ -15,7 +15,7 @@ import {
   migrateLegacyQuestions, emptyScreeningBlueprint, createTopic, createQuestionBlueprint, createRubricPoint, createRedFlag,
   generateFunctionalOutline, enrichQuestionRubric, generateScreeningQuestions, generateGapQuestion,
   localFunctionalBlueprint, localScreeningQuestions, localGapQuestion,
-  computeCoverage, computeCalibration, rubricStrength, critiqueRubric, critiqueBlueprint,
+  computeCoverage, computeCalibration, computeBandFit, rubricStrength, critiqueRubric, critiqueBlueprint,
 } from './blueprint-engine.js';
 
 // Shared mutable UI state — imported bindings are read-only, so studio view
@@ -358,7 +358,7 @@ function inspectorMarkup(job, fb, cov, cal) {
       ${studioUi.inspectorTab === 'coverage' ? coveragePanel(cov)
         : studioUi.inspectorTab === 'review' ? reviewPanel(fb)
         : studioUi.inspectorTab === 'preview' ? previewPanel(job, fb)
-        : calibratePanel(cal)}
+        : calibratePanel(cal, computeBandFit(job, fb))}
     </div>`;
 }
 
@@ -408,15 +408,26 @@ function previewPanel(job, fb) {
     <p class="bs-faint" style="font-size:11px;margin-top:10px;">Scripted read now — becomes a live VAPI test call once wired to the backend.</p>`;
 }
 
-function calibratePanel(cal) {
+function calibratePanel(cal, fit) {
   const dims = [['Questions', cal.questionCount], ['Topics', cal.topicCount], ['Minutes', cal.totalMinutes], ['Rubric ready', `${cal.rubricCoverage}%`]];
   const mix = CONTRACT_DIFFICULTY.map((d) => [d, cal.difficultyMix[d] || 0]);
-  const maxMix = Math.max(1, ...mix.map(([, n]) => n));
+  const hasBand = !!fit.band;
+  const maxMix = Math.max(1, ...mix.map(([, n]) => n), ...CONTRACT_DIFFICULTY.map((d) => fit.targetCount[d] || 0));
   return `
-    <div class="bs-insp-h">Calibration</div>
+    <div class="bs-insp-h">Calibration${hasBand ? ` · ${escapeHTML(fit.tierLabel)} band` : ''}</div>
     <div class="bs-metric-grid">${dims.map(([l, v]) => `<div class="bs-metric"><div class="bs-m-label">${l}</div><div class="bs-m-val">${v}</div></div>`).join('')}</div>
-    <div class="bs-rg-label" style="margin-top:14px;">Difficulty curve</div>
-    ${mix.map(([d, n]) => `<div class="bs-dim-row"><span class="bs-dim-name">${d}</span><span class="bs-dim-track"><span class="bs-dim-fill" style="width:${Math.round((n / maxMix) * 100)}%;background:${tint(DIFF_TINT, d)};"></span></span><span class="bs-dim-pct">${n}</span></div>`).join('')}`;
+    <div class="bs-rg-label" style="margin-top:14px;">Difficulty curve${hasBand ? ` <span class="bs-faint">· tick = ${escapeHTML(fit.tierLabel)} target</span>` : ''}</div>
+    ${mix.map(([d, n]) => {
+      const target = fit.targetCount[d] || 0;
+      return `<div class="bs-dim-row"><span class="bs-dim-name">${d}</span><span class="bs-dim-track">
+        <span class="bs-dim-fill" style="width:${Math.round((n / maxMix) * 100)}%;background:${tint(DIFF_TINT, d)};"></span>
+        ${hasBand ? `<span class="bs-dim-target" style="left:${Math.min(100, Math.round((target / maxMix) * 100))}%;" title="target ${target}"></span>` : ''}
+      </span><span class="bs-dim-pct">${n}${hasBand ? `<span class="bs-faint"> / ${target}</span>` : ''}</span></div>`;
+    }).join('')}
+    ${fit.recommendations.length ? `
+      <div class="bs-rg-label" style="margin-top:14px;">Band fit</div>
+      ${fit.recommendations.map((r) => `<div class="bs-rev-issue ${r.level === 'info' ? 'info' : ''}"><span class="bs-rev-dot"></span><span>${escapeHTML(r.message)}</span></div>`).join('')}`
+      : hasBand && cal.questionCount ? `<p class="bs-faint" style="font-size:11px;margin-top:12px;">Difficulty mix fits the ${escapeHTML(fit.tierLabel)} band.</p>` : ''}`;
 }
 
 // ── Interactions (event delegation on the pane) ──────────────────────────────

@@ -384,6 +384,55 @@ export function computeCalibration(functionalBlueprint) {
   };
 }
 
+// ── Difficulty calibration to the experience band ───────────────────────────
+// Seniority should shape the difficulty curve and question mix: a junior round
+// leans on fundamentals, a senior round on depth, architecture and trade-offs.
+// We bucket the free-text band into a tier, define a target profile per tier,
+// and report how the authored blueprint deviates from it.
+const TIER_PROFILE = {
+  junior: { label: 'Junior', difficulty: { Easy: 0.45, Medium: 0.45, Hard: 0.10 }, emphasize: ['technical_theory', 'behavioral'], note: 'fundamentals over depth' },
+  mid: { label: 'Mid-level', difficulty: { Easy: 0.20, Medium: 0.50, Hard: 0.30 }, emphasize: ['coding', 'case_study', 'technical_theory'], note: 'applied, hands-on depth' },
+  senior: { label: 'Senior', difficulty: { Easy: 0.10, Medium: 0.40, Hard: 0.50 }, emphasize: ['system_design', 'case_study'], note: 'architecture and trade-offs' },
+};
+
+export function bandTier(experienceBand) {
+  const nums = String(experienceBand || '').match(/\d+/g);
+  const maxYears = nums ? Math.max(...nums.map(Number)) : 0;
+  if (maxYears <= 2) return 'junior';
+  if (maxYears <= 6) return 'mid';
+  return 'senior';
+}
+
+export function computeBandFit(job, functionalBlueprint) {
+  const tier = bandTier(job.experienceBand);
+  const profile = TIER_PROFILE[tier];
+  const questions = (functionalBlueprint.topics || []).flatMap((t) => t.questions);
+  const n = questions.length;
+  const actualCount = CONTRACT_DIFFICULTY.reduce((m, d) => { m[d] = questions.filter((q) => q.difficulty === d).length; return m; }, {});
+  const targetCount = CONTRACT_DIFFICULTY.reduce((m, d) => { m[d] = Math.round((profile.difficulty[d] || 0) * n); return m; }, {});
+  const typeCounts = questions.reduce((m, q) => { m[q.questionType] = (m[q.questionType] || 0) + 1; return m; }, {});
+
+  const recommendations = [];
+  if (!clean(job.experienceBand)) {
+    recommendations.push({ level: 'info', message: 'Set an experience band on this job to calibrate difficulty to seniority.' });
+  } else if (n) {
+    const hardShare = actualCount.Hard / n;
+    const targetHard = profile.difficulty.Hard;
+    if (hardShare < targetHard - 0.15) {
+      recommendations.push({ level: 'warn', message: `${profile.label} role skews easy — aim for ~${Math.round(targetHard * 100)}% Hard (now ${Math.round(hardShare * 100)}%). Raise a few Medium questions or add depth.` });
+    } else if (hardShare > targetHard + 0.2) {
+      recommendations.push({ level: 'warn', message: `This may be too hard for a ${profile.label.toLowerCase()} band — ease some questions toward fundamentals.` });
+    }
+    profile.emphasize.forEach((type) => {
+      if (!typeCounts[type]) {
+        recommendations.push({ level: tier === 'senior' && type === 'system_design' ? 'warn' : 'info', message: `No ${type.replace(/_/g, ' ')} questions — a ${profile.label.toLowerCase()} round should test ${profile.note}.` });
+      }
+    });
+  }
+
+  return { band: clean(job.experienceBand), tier, tierLabel: profile.label, note: profile.note, count: n, actualCount, targetCount, recommendations };
+}
+
 // ── Contract serialization (the portability layer to Krishna's backend) ──────
 // Exactly the JSON string the Prisma Question.aiEvaluationGuidance field +
 // evaluation service consume.
